@@ -8,6 +8,7 @@ const connectDB = require('./config/mongodb');
 
 //Initialize Routes
 const usersRouter = require('./routes/users');
+const reportsRouter = require('./routes/reports');
 
 const app = express();
 
@@ -21,6 +22,7 @@ app.use(cookieParser());
 
 // API Routes
 app.use('/users', usersRouter);
+app.use('/reports', reportsRouter);
 
 // 404 handler
 app.use((req, res, next) => {
