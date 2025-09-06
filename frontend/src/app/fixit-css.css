@@ -235,12 +235,13 @@ nav ul li:hover, .register-btn:hover {
       width: 30rem;
       text-align: center;
       margin-left: 8rem;
-      margin-top: -2rem;
+      margin-top: -3.5rem;
+      height: 33rem;
     }
 
 .register-container h1 {
-      margin-bottom: 2rem;
-      margin-top:-1.5rem;
+      margin-bottom: 0rem;
+      margin-top:-3.5rem;
       font-size: 2rem;
       color: #2E294E;
     }
@@ -252,7 +253,7 @@ nav ul li:hover, .register-btn:hover {
 .register-container input {
       width: 100%;
       padding: 10px;
-      margin: 8px 0;
+      margin: 4px 0;
       border: 1px solid #ddd;
       border-radius: 6px;
     }
@@ -265,7 +266,7 @@ nav ul li:hover, .register-btn:hover {
       border: none;
       cursor: pointer;
       margin-top: 1.5rem;
-      margin-bottom: -1.5rem;
+      margin-bottom: -2rem;
       font-size: 1.5rem;
 	  border-radius: 0.6rem;
 	  transition: background 0.3s, transform 0.4s;
