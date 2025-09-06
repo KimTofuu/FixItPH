@@ -3,6 +3,19 @@ const router = express.Router();
 const bcrypt = require('bcryptjs');
 const User = require('../models/Users');
 const jwt = require('jsonwebtoken');
+// JWT authentication middleware
+function authenticateToken(req, res, next) {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  if (!token) return res.sendStatus(401);
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    if (err) return res.sendStatus(403);
+    req.user = user;
+    next();
+  });
+}
+
 require('dotenv').config();
 
 // Registration route
@@ -33,6 +46,9 @@ router.post('/register', async (req, res) => {
     console.error(err);
   }
 });
+router.get('/protected', authenticateToken, (req, res) => {
+  res.json({ message: 'This is a protected route', user: req.user });
+});
 
 router.post('/login', async (req, res) => {
   try {
@@ -57,7 +73,7 @@ router.post('/login', async (req, res) => {
     res.cookie('token', token, { httpOnly: true, secure: true, sameSite: 'strict' });
 
     res.status(200).json({ message: 'Login successful', token });
-    console.log(token);
+    // console.log(token);
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
     console.error(err);
