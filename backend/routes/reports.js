@@ -32,4 +32,54 @@ router.get('/', async (req, res) => {
   }
 });
 
+router.get('/getAllReports', async (req, res) => {
+  try {
+    const reports = await Report.find().select('-__v').populate('user', 'fName lName email');
+    res.json(reports);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+router.get('/getAllPendingReports', async (req, res) => {
+  try {
+    const reports = await Report.find({ status: 'pending' }).select('-__v').populate('user', 'fName lName email');
+    res.json(reports);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+router.get('/getAllInProgressReports', async (req, res) => {
+  try {
+    const reports = await Report.find({ status: 'in-progress' }).select('-__v').populate('user', 'fName lName email');
+    res.json(reports);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+router.get('/getAllResolvedReports', async (req, res) => {
+  try {
+    const reports = await Report.find({ status: 'resolved' }).select('-__v').populate('user', 'fName lName email');
+    res.json(reports);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+router.post('/getReport', async (req, res) => {
+  try {
+    const { id } = req.body;
+    const report = await Report.findById(id).select('-__v').populate('user', 'fName lName email');
+    if (!report) {
+      return res.status(404).json({ message: 'Report not found' });
+    }
+    res.status(200).json(report);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+    console.error(err);
+  }
+});
+
 module.exports = router;
