@@ -34,8 +34,11 @@ export default function RegisterPage() {
 
                 <form>
                   {/* Input tags must be self-closing (/>) */}
-                  <input type="text" placeholder="Resident Name" required />
-                  <input type="text" placeholder="Resident Username" required />
+                  <input type="text" placeholder="First Name" required />
+                  <input type="text" placeholder="Last Name" required />
+                  <input type="text" placeholder="Barangay" required />
+                  <input type="text" placeholder="Municipality" required />
+                  <input type="text" placeholder="Username" required />
                   <input type="password" placeholder="Password" required />
                   <input type="password" placeholder="Confirm Password" required />
                   <Link href="/welcome">
