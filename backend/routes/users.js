@@ -80,6 +80,30 @@ router.post('/login', async (req, res) => {
   }
 });
 
+router.get('/getAllUsers', async (req, res) => {
+  try {
+    const users = await User.find({}, '-password'); // Exclude password field
+    res.status(200).json(users);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+    console.error(err);
+  }
+});
+
+router.post('/getUser', async (req, res) => {
+  try {
+    const { id } = req.body;
+    const user = await User.findById(id, '-password'); // Exclude password field
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.status(200).json(user);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+    console.error(err);
+  }
+});
+
 router.post('/logout', (req, res) => {
   res.clearCookie('token');
   res.status(200).json({ message: 'Logout successful' });
