@@ -5,7 +5,35 @@ import Link from 'next/link'; // Import Link
 import { useState } from 'react';
 import '../fixit-css.css';
 
+async function loginUser(formData: {
+  email: string;
+  password: string;
+}) {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(formData),
+  });
+  return res.json();
+}
+
 export default function LoginPage() {
+  const [form, setForm] = useState({
+      email: '',
+      password: '',
+    });
+  
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      setForm({ ...form, [e.target.name]: e.target.value });
+    };
+  
+    const handleSubmit = async (e: React.FormEvent) => {
+      e.preventDefault();
+      const result = await loginUser(form);
+      // handle result (show message, redirect, etc.)
+      alert(result.message || "Welcome!");
+      // Optionally redirect here
+    };
   const [isResident, setIsResident] = useState(true);
 
   const toggleForm = () => {
@@ -39,9 +67,23 @@ export default function LoginPage() {
               <div className="login-container">
                 <h1 id="form-title">{isResident ? 'Resident Login' : 'Admin Login'}</h1>
 
-                <form id="resident-form" className={isResident ? 'active' : ''}>
-                  <input type="text" placeholder="Resident Username" required />
-                  <input type="password" placeholder="Password" required />
+                <form id="resident-form" className={isResident ? 'active' : ''} onSubmit={handleSubmit}>
+                  <input
+                    type="email"
+                    name="email"
+                    placeholder="Resident Email"
+                    value={form.email}
+                    onChange={handleChange}
+                    required
+                  />
+                  <input
+                    type="password"
+                    name="password"
+                    placeholder="Password"
+                    value={form.password}
+                    onChange={handleChange}
+                    required
+                  />
                   <button type="submit">Log in</button>
                 </form>
 
