@@ -21,7 +21,7 @@ require('dotenv').config();
 // Registration route
 router.post('/register', async (req, res) => {
   try {
-    const { fName, lName, email, password, confirmPassword, barangay, municipality } = req.body;
+    const { fName, lName, email, contact, password, confirmPassword, barangay, municipality } = req.body;
 
     if (password !== confirmPassword) {
       return res.status(400).json({ message: 'Passwords do not match' });
@@ -37,7 +37,7 @@ router.post('/register', async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Create new user
-    const newUser = new User({ fName, lName, email, password: hashedPassword , barangay, municipality });
+    const newUser = new User({ fName, lName, email, contact, password: hashedPassword , barangay, municipality });
     await newUser.save();
 
     res.status(201).json({ message: 'User registered successfully' });
@@ -46,6 +46,7 @@ router.post('/register', async (req, res) => {
     console.error(err);
   }
 });
+
 router.get('/protected', authenticateToken, (req, res) => {
   res.json({ message: 'This is a protected route', user: req.user });
 });
