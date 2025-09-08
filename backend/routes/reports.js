@@ -82,4 +82,22 @@ router.post('/getReport', async (req, res) => {
   }
 });
 
+router.post('/getReportbyUser', async (req, res) => {
+  try {
+    const { id } = req.body;
+    if (!id) {
+      return res.status(400).json({ message: 'userId is required' });
+    }
+    const reports = await Report.find({ user: id }).select('-__v')
+      .populate('user', 'fName lName email');
+    if (!reports || reports.length === 0) {
+      return res.status(404).json({ message: 'No reports found for this user' });
+    }
+    res.status(200).json(reports);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+    console.error(err);
+  }
+});
+
 module.exports = router;
