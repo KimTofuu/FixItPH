@@ -8,6 +8,12 @@ const UserSchema = new mongoose.Schema({
     password: { type: String, required: true },
     barangay: { type: String, required: true },
     municipality: { type: String, required: true },
+
+    // Optional profile picture
+    profilePicture: {
+        url: { type: String, default: "" },       // Cloudinary URL
+        public_id: { type: String, default: "" }, // Cloudinary public_id for update/delete
+    }
 }, { collection: 'users' });
 
 module.exports = mongoose.model('User', UserSchema);
