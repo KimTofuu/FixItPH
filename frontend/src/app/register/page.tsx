@@ -77,6 +77,7 @@ export default function RegisterPage() {
                   <input name="confirmPassword" type="password" placeholder="Confirm Password" value={form.confirmPassword} onChange={handleChange} required />
                   <input name="barangay" type="text" placeholder="Barangay" value={form.barangay} onChange={handleChange} required />
                   <input name="municipality" type="text" placeholder="Municipality" value={form.municipality} onChange={handleChange} required />
+                  <input type="tel" id="contact" name="contact" placeholder="Enter contact number" pattern="[0-9]{10,15}" required />
                   <button type="submit">Register</button>
                 </form>
               </div>
