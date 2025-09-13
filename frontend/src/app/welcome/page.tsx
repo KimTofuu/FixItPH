@@ -26,6 +26,9 @@ export default function WelcomePage() {
           <h1>Welcome, Resident!</h1>
           <p>You have successfully logged in.</p>
           <p>This is your dashboard page.</p>
+          <Link href="/user-map" style={{ marginRight: '2rem' }}>
+                <button className="continue-btn">Continue</button>
+          </Link>
         </div>
       </div>
     </>
