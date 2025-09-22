@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link'; // Import Link
 import { useState } from 'react';
 import '../fixit-css.css';
+import { useRouter } from 'next/navigation';
 
 async function loginUser(formData: {
   email: string;
@@ -22,6 +23,8 @@ export default function LoginPage() {
       email: '',
       password: '',
     });
+
+    const router = useRouter();
   
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       setForm({ ...form, [e.target.name]: e.target.value });
@@ -30,9 +33,11 @@ export default function LoginPage() {
     const handleSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
       const result = await loginUser(form);
-      // handle result (show message, redirect, etc.)
-      alert(result.message || "Welcome!");
-      // Optionally redirect here
+      if (result.token) {
+        router.push('/user-feed');
+      } else {
+        alert(result.message || "Login failed");
+      }
     };
   const [isResident, setIsResident] = useState(true);
 
