@@ -10,14 +10,14 @@ import Image from "next/image";
 
 
 interface Report {
-  id: number;
-  user: string;
+  _id: string;
+  user: { fName: string; lName: string; email: string };
   title: string;
-  details: string;
+  description: string;
   status: string;
-  address: string;
+  location: string;
   image: string;
-  comments: { user: string; text: string }[];
+  comments?: { user: string; text: string }[];
 }
 
 export default function UserFeedPage() {
@@ -35,33 +35,12 @@ export default function UserFeedPage() {
     longitude: "",
   });
 
-  const [reports, setReports] = useState<Report[]>([
-    {
-      id: 1,
-      user: "Juan Dela Cruz",
-      title: "Broken Streetlight",
-      details: "The streetlight has been broken for over a week, making it unsafe at night.",
-      status: "Pending",
-      address: "Magsaysay Drive, Olongapo City",
-      image: "/streetlight.jpg",
-      comments: [{ user: "Ana", text: "I pass here daily, it’s really dark at night." }],
-    },
-    {
-      id: 2,
-      user: "Maria Santos",
-      title: "Uncollected Garbage",
-      details: "Garbage has not been collected for three days and is starting to smell bad.",
-      status: "In Progress",
-      address: "Rizal Avenue, Olongapo City",
-      image: "/garbage.jpg",
-      comments: [{ user: "Pedro", text: "I also noticed this, it’s becoming unhygienic." }],
-    },
-  ]);
+  const [reports, setReports] = useState<Report[]>([]);
 
   const [searchTerm, setSearchTerm] = useState("");
 
   const filteredReports = reports.filter((r) =>
-    `${r.user} ${r.title} ${r.address} ${r.details}`
+    `${r.user} ${r.title} ${r.location} ${r.description}`
       .toLowerCase()
       .includes(searchTerm.toLowerCase())
   );
@@ -109,6 +88,17 @@ export default function UserFeedPage() {
     }
   }, [modalVisible, modalMap, modalMarker]);
 
+  useEffect(() => {
+    const fetchReports = async () => {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reports`);
+      if (res.ok) {
+        const data = await res.json();
+        setReports(data);
+      }
+    };
+    fetchReports();
+  }, []);
+
   const getAddressFromCoords = async (lat: number, lng: number) => {
     try {
       const res = await fetch(
@@ -153,7 +143,7 @@ export default function UserFeedPage() {
     }
   };
 
-  const toggleBookmark = (reportId: number) => {
+  const toggleBookmark = (reportId: string) => {
     const btn = document.querySelector(`#bookmark-${reportId} i`);
     if (btn) {
       btn.classList.toggle("fa-regular");
@@ -161,10 +151,10 @@ export default function UserFeedPage() {
     }
   };
 
-  const addComment = (reportId: number, text: string) => {
+  const addComment = (reportId: string, text: string) => {
     setReports((prev) =>
       prev.map((r) =>
-        r.id === reportId ? { ...r, comments: [...r.comments, { user: "You", text }] } : r
+        r._id === reportId ? { ...r, comments: [...(r.comments ?? []), { user: "You", text }] } : r
       )
     );
   };
@@ -243,18 +233,18 @@ export default function UserFeedPage() {
             <div id="reportList">
               {filteredReports.length > 0 ? (
                 filteredReports.map((r) => (
-                  <div className="report-card" key={r.id}>
+                  <div className="report-card" key={r._id}>
                     <div className="report-header">
                       <img src="/images/sample_avatar.png" className="report-avatar" alt="Avatar" />
-                      <span className="report-user">{r.user}</span>
-                      <button id={`bookmark-${r.id}`} className="bookmark-btn" onClick={() => toggleBookmark(r.id)}>
+                      <span className="report-user">{r.user.fName} {r.user.lName}</span>
+                      <button id={`bookmark-${r._id}`} className="bookmark-btn" onClick={() => toggleBookmark(r._id)}>
                         <i className="fa-regular fa-bookmark"></i>
                       </button>
                     </div>
 
                     <h3 className="report-title">{r.title}</h3>
-                    <p className="report-location"><i className="fa-solid fa-location-dot"></i> {r.address}</p>
-                    <p className="report-details">{r.details}</p>
+                    <p className="report-location"><i className="fa-solid fa-location-dot"></i> {r.location}</p>
+                    <p className="report-details">{r.description}</p>
                     <span className={`report-status ${r.status.toLowerCase().replace(" ", "-")}`}>{r.status}</span>
 
                     <div className="report-image"><Image src={"/images/broken-streetlights.jpg"} alt="Report Image" width={600} height={350} /></div>
@@ -262,7 +252,7 @@ export default function UserFeedPage() {
                     <div className="report-comments">
                       <h4>Comments</h4>
                       <ul className="comment-list">
-                        {r.comments.map((c, idx) => (
+                        {(r.comments ?? []).map((c, idx) => (
                           <li key={idx}><b>{c.user}:</b> {c.text}</li>
                         ))}
                       </ul>
@@ -272,7 +262,7 @@ export default function UserFeedPage() {
                         placeholder="Add a comment..."
                         onKeyDown={(e) => {
                           if (e.key === "Enter" && e.currentTarget.value.trim() !== "") {
-                            addComment(r.id, e.currentTarget.value);
+                            addComment(r._id, e.currentTarget.value);
                             e.currentTarget.value = "";
                           }
                         }}
