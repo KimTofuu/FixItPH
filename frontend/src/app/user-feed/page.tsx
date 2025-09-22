@@ -101,6 +101,10 @@ export default function UserFeedPage() {
         const addressInput = document.getElementById("address") as HTMLInputElement;
         const address = await getAddressFromCoords(lat, lng);
         addressInput.value = address || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+        setReportForm(prev => ({
+          ...prev,
+          address: addressInput.value
+        }));
       });
     }
   }, [modalVisible, modalMap, modalMarker]);
