@@ -27,6 +27,15 @@ export default function UserMapPage() {
     shadowSize: [41, 41],
   });
 
+  const [reportForm, setReportForm] = useState({
+    title: "",
+    description: "",
+    image: null as File | null,
+    address: "",
+    latitude: "",
+    longitude: "",
+  });
+
   // Initialize Feed Map
   useEffect(() => {
     if (feedMapRef.current) return;
@@ -91,6 +100,14 @@ export default function UserMapPage() {
       const address = await getAddressFromCoords(lat, lng);
       (document.getElementById("address") as HTMLInputElement).value =
         address || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+
+      // Update React state so the form submits correct values!
+      setReportForm(prev => ({
+        ...prev,
+        address: address || `${lat.toFixed(5)}, ${lng.toFixed(5)}`,
+        latitude: lat.toString(),
+        longitude: lng.toString(),
+      }));
     });
 
     setTimeout(() => modalMap.invalidateSize(), 200);
@@ -148,6 +165,35 @@ export default function UserMapPage() {
     }
   };
 
+  const handleReportSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const formData = new FormData();
+    formData.append("title", reportForm.title);
+    formData.append("description", reportForm.description);
+    if (reportForm.image) formData.append("image", reportForm.image);
+    formData.append("location", reportForm.address);
+
+    // Get the JWT token from localStorage
+    const token = localStorage.getItem('token');
+
+    // Send the report with the Authorization header
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reports`, {
+      method: 'POST',
+      body: formData,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (res.ok) {
+      // Optionally refresh the reports list
+      setModalOpen(false);
+    } else {
+      alert("Failed to submit report");
+    }
+  };
+
   return (
     <>
       <Head>
@@ -200,11 +246,23 @@ export default function UserMapPage() {
             </span>
             <h2>Add Report</h2>
 
-            <form id="reportForm" className="form-grid">
+            <form className="form-grid" onSubmit={handleReportSubmit}>
               <div className="form-left">
-                <input type="text" name="title" placeholder="Report Title" required />
-                <textarea name="description" placeholder="Describe the issue..." required></textarea>
-
+                <input
+                  type="text"
+                  name="title"
+                  placeholder="Report Title"
+                  value={reportForm.title}
+                  onChange={e => setReportForm({ ...reportForm, title: e.target.value })}
+                  required
+                />
+                <textarea
+                  name="description"
+                  placeholder="Describe the issue..."
+                  value={reportForm.description}
+                  onChange={e => setReportForm({ ...reportForm, description: e.target.value })}
+                  required
+                />
                 <label htmlFor="imageUpload">Upload Image</label>
                 <div className="upload-wrapper">
                   <input
@@ -212,7 +270,7 @@ export default function UserMapPage() {
                     id="imageUpload"
                     name="image"
                     accept="image/*"
-                    onChange={handleImageChange}
+                    onChange={e => setReportForm({ ...reportForm, image: e.target.files?.[0] || null })}
                   />
                   {uploadedFile && (
                     <div id="imagePreview" className="image-preview">
@@ -238,23 +296,18 @@ export default function UserMapPage() {
                   id="address"
                   name="address"
                   placeholder="Search or click on map"
+                  value={reportForm.address}
+                  onChange={e => setReportForm({ ...reportForm, address: e.target.value })}
                   required
-                  onChange={handleAddressChange}
                 />
-
                 <input type="hidden" id="latitude" name="latitude" />
                 <input type="hidden" id="longitude" name="longitude" />
-
                 <div
                   id="modal-map"
-                  style={{
-                    width: "100%",
-                    height: "18rem",
-                    margin: "10px 0",
-                    borderRadius: "6px",
-                  }}
+                  style={{ width: "100%", height: "18rem", margin: "10px 0", borderRadius: "6px" }}
                 ></div>
               </div>
+              <button type="submit">Submit Report</button>
             </form>
 
             <button type="submit" form="reportForm">
