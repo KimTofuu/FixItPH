@@ -3,16 +3,28 @@ const Report = require('../models/Report');
 // Create a new report
 exports.createReport = async (req, res) => {
   try {
-    const { image, description, issueType, location, status, user } = req.body;
-    const newReport = new Report({ image, description, issueType, location, status, user });
-    await newReport.save();
-    await newReport.populate('user', 'fName lName');
-    res.status(201).json({
-      message: 'Report submitted successfully',
-      reporter: `${newReport.user.fName} ${newReport.user.lName}`
+    const { title, description, location } = req.body;
+    // If you want to use issueType and status, set defaults or get from req.body
+    // const { issueType, status } = req.body;
+    // const user = req.user.userId; // If using JWT
+
+    const image = req.file ? req.file.filename : null;
+
+    const user = req.user.userId;
+    const newReport = new Report({
+      title,
+      description,
+      image,
+      location,
+      // issueType,
+      // status,
+      user,
     });
+    await newReport.save();
+    res.status(201).json({ message: 'Report submitted successfully' });
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
+    console.error(err);
   }
 };
 
