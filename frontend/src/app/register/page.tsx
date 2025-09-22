@@ -13,6 +13,7 @@ async function registerUser(formData: {
   confirmPassword: string;
   barangay: string;
   municipality: string;
+  contact: string;
 }) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/register`, {
     method: 'POST',
@@ -31,6 +32,7 @@ export default function RegisterPage() {
     confirmPassword: '',
     barangay: '',
     municipality: '',
+    contact: '',
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -41,7 +43,6 @@ export default function RegisterPage() {
     e.preventDefault();
     const result = await registerUser(form);
     alert(result.message || "Registration complete!");
-  
   };
 
   return (
@@ -71,7 +72,7 @@ export default function RegisterPage() {
             <input name="confirmPassword" type="password" placeholder="Confirm Password" value={form.confirmPassword} onChange={handleChange} required />
             <input name="barangay" type="text" placeholder="Barangay" value={form.barangay} onChange={handleChange} required />
             <input name="municipality" type="text" placeholder="Municipality" value={form.municipality} onChange={handleChange} required />
-            <input type="tel" id="contact" name="contact" placeholder="Enter contact number" pattern="[0-9]{10,15}" required />
+            <input type="tel" id="contact" name="contact" placeholder="Enter contact number" pattern="[0-9]{10,15}" value={form.contact} onChange={handleChange} required />
             <button type="submit">Register</button>
           </form>
         </div>
