@@ -26,6 +26,15 @@ export default function UserFeedPage() {
   const [modalMarker, setModalMarker] = useState<L.Marker | null>(null);
   const [modalMap, setModalMap] = useState<L.Map | null>(null);
 
+  const [reportForm, setReportForm] = useState({
+    title: "",
+    description: "",
+    image: null as File | null,
+    address: "",
+    latitude: "",
+    longitude: "",
+  });
+
   const [reports, setReports] = useState<Report[]>([
     {
       id: 1,
@@ -156,6 +165,35 @@ export default function UserFeedPage() {
     );
   };
 
+  const handleReportSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const formData = new FormData();
+    formData.append("title", reportForm.title);
+    formData.append("description", reportForm.description);
+    if (reportForm.image) formData.append("image", reportForm.image);
+    formData.append("location", reportForm.address);
+
+    // Get the JWT token from localStorage
+    const token = localStorage.getItem('token');
+
+    // Send the report with the Authorization header
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reports`, {
+      method: 'POST',
+      body: formData,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (res.ok) {
+      // Optionally refresh the reports list
+      setModalVisible(false);
+    } else {
+      alert("Failed to submit report");
+    }
+  };
+
   return (
     <>
       <Head>
@@ -257,14 +295,31 @@ export default function UserFeedPage() {
             <span className="close" onClick={() => setModalVisible(false)}>&times;</span>
             <h2>Add Report</h2>
 
-            <form className="form-grid">
+            <form className="form-grid" onSubmit={handleReportSubmit}>
               <div className="form-left">
-                <input type="text" name="title" placeholder="Report Title" required />
-                <textarea name="description" placeholder="Describe the issue..." required></textarea>
+                <input
+                  type="text"
+                  name="title"
+                  placeholder="Report Title"
+                  value={reportForm.title}
+                  onChange={e => setReportForm({ ...reportForm, title: e.target.value })}
+                />
+                <textarea
+                  name="description"
+                  placeholder="Describe the issue..."
+                  value={reportForm.description}
+                  onChange={e => setReportForm({ ...reportForm, description: e.target.value })}
+                />
 
                 <label htmlFor="imageUpload">Upload Image</label>
                 <div className="upload-wrapper">
-                  <input type="file" id="imageUpload" name="image" accept="image/*" />
+                  <input
+                    type="file"
+                    id="imageUpload"
+                    name="image"
+                    accept="image/*"
+                    onChange={e => setReportForm({ ...reportForm, image: e.target.files?.[0] || null })}
+                  />
                   <div id="imagePreview" className="image-preview">
                     <a href="#" id="imageLink" target="_blank"></a>
                     <button type="button" id="removeImage" className="remove-btn">✖</button>
@@ -274,7 +329,14 @@ export default function UserFeedPage() {
 
               <div className="form-right">
                 <label htmlFor="address">Location</label>
-                <input type="text" id="address" name="address" placeholder="Search or click on map" onChange={handleAddressChange} required />
+                <input
+                  type="text"
+                  id="address"
+                  name="address"
+                  placeholder="Search or click on map"
+                  value={reportForm.address}
+                  onChange={e => setReportForm({ ...reportForm, address: e.target.value })}
+                />
                 <input type="hidden" id="latitude" name="latitude" />
                 <input type="hidden" id="longitude" name="longitude" />
 
@@ -284,9 +346,8 @@ export default function UserFeedPage() {
                   style={{ width: "100%", height: "18rem", margin: "10px 0", borderRadius: "6px" }}
                 ></div>
               </div>
+              <button type="submit">Submit Report</button>
             </form>
-
-            <button type="submit" form="reportForm">Submit Report</button>
           </div>
         </div>
       )}
