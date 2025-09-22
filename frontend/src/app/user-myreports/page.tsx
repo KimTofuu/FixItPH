@@ -1,15 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import "../fixit-css.css";
 
 interface Report {
-  user: string;
+  user: {
+    fName: string;
+    lName: string;
+  };
   title: string;
   location: string;
-  details: string;
+  description: string;
   status: "Pending" | "In Progress";
   image: string;
   comments: { author: string; text: string }[];
@@ -17,26 +20,23 @@ interface Report {
 
 export default function UserMyReportsPage() {
   const [search, setSearch] = useState("");
-  const [reports, setReports] = useState<Report[]>([
-    {
-      user: "Juan Dela Cruz",
-      title: "Broken Streetlight",
-      location: "Magsaysay Drive, Olongapo City",
-      details: "The streetlight has been broken for over a week, making it unsafe at night.",
-      status: "Pending",
-      image: "/streetlight.jpg",
-      comments: [{ author: "Ana", text: "I pass here daily, it’s really dark at night." }],
-    },
-    {
-      user: "Maria Santos",
-      title: "Uncollected Garbage",
-      location: "Rizal Avenue, Olongapo City",
-      details: "Garbage has not been collected for three days and is starting to smell bad.",
-      status: "In Progress",
-      image: "/garbage.jpg",
-      comments: [{ author: "Pedro", text: "I also noticed this, it’s becoming unhygienic." }],
-    },
-  ]);
+  const [reports, setReports] = useState<Report[]>([]);
+
+  useEffect(() => {
+    const fetchReports = async () => {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reports/my`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (res.ok) {
+        const myReports = await res.json();
+        setReports(myReports);
+      }
+    };
+    fetchReports();
+  }, []);
 
   // Profile picture (dynamic check)
   const userPhoto: string | null = null;
@@ -52,7 +52,7 @@ export default function UserMyReportsPage() {
 
   // Search filter
   const filteredReports = reports.filter((r) => {
-    const text = `${r.user} ${r.title} ${r.location} ${r.details}`.toLowerCase();
+    const text = `${r.user} ${r.title} ${r.location} ${r.description}`.toLowerCase();
     return text.includes(search.toLowerCase());
   });
 
@@ -101,7 +101,7 @@ export default function UserMyReportsPage() {
                         width={32}
                         height={32}
                       />
-                      <span className="report-user">{report.user}</span>
+                      <span className="report-user">{report.user.fName} {report.user.lName}</span>
                     </div>
 
                     {/* Report Content */}
@@ -109,7 +109,7 @@ export default function UserMyReportsPage() {
                     <p className="report-location">
                       <i className="fa-solid fa-location-dot"></i> {report.location}
                     </p>
-                    <p className="report-details">{report.details}</p>
+                    <p className="report-details">{report.description}</p>
                     <span className={`report-status ${report.status.toLowerCase().replace(" ", "-")}`}>
                       {report.status}
                     </span> <br></br><br></br>
@@ -123,7 +123,7 @@ export default function UserMyReportsPage() {
                     <div className="report-comments">
                       <h4>Comments</h4>
                       <ul className="comment-list">
-                        {report.comments.map((c, j) => (
+                        {(report.comments ?? []).map((c, j) => (
                           <li key={j}>
                             <b>{c.author}:</b> {c.text}
                           </li>

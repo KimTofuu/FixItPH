@@ -100,3 +100,14 @@ exports.getReportByUser = async (req, res) => {
     console.error(err);
   }
 };
+
+exports.getMyReports = async (req, res) => {
+  try {
+    const userId = req.user.userId; // Get from JWT, not from req.body
+    const reports = await Report.find({ user: userId }).select('-__v').populate('user', 'fName lName email');
+    res.status(200).json(reports);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+    console.error(err);
+  }
+};
