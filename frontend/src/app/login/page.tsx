@@ -34,7 +34,8 @@ export default function LoginPage() {
       e.preventDefault();
       const result = await loginUser(form);
       if (result.token) {
-        router.push('/user-feed');
+        localStorage.setItem('token', result.token); // Store token
+        router.push('/user-feed'); // Redirect to user-feed
       } else {
         alert(result.message || "Login failed");
       }
