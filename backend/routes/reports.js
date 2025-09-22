@@ -13,5 +13,6 @@ router.get('/getAllInProgressReports', reportController.getAllInProgressReports)
 router.get('/getAllResolvedReports', reportController.getAllResolvedReports);
 router.post('/getReport', reportController.getReport);
 router.post('/getReportByUser', reportController.getReportByUser);
+router.get('/my', authenticateToken, reportController.getMyReports);
 
 module.exports = router;
