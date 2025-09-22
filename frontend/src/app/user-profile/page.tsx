@@ -26,7 +26,7 @@ export default function ProfilePage() {
     contact: "09123456789",
   });
 
-  // This controls whether the inputs are editable
+
   const [isEditing, setIsEditing] = useState(false);
 
   const profilePic =
@@ -48,12 +48,7 @@ export default function ProfilePage() {
       {/* HEADER */}
       <header>
         <nav>
-          <Image
-            src="/images/Fix t_5.png"
-            alt="FixIt Logo"
-            width={120}
-            height={50}
-          />
+          <Image src="/images/Fix-it_logo_2.png" alt="Fixit Logo" className="logo" width={160} height={40} />
           <ul className="nav-list-user-side">
             <li><Link href="/user-map">Map</Link></li>
             <li><Link href="/user-feed">Feed</Link></li>
@@ -70,7 +65,6 @@ export default function ProfilePage() {
       {/* PROFILE FORM */}
       <div id="profile-page">
         <div className="profile-container">
-          <h2>My Profile</h2>
 
           <div className="profile-field">
             <label>First Name</label>

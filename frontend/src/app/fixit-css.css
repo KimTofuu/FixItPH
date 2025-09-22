@@ -1,3 +1,6 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&display=swap');
+
 * {
 	margin: 0;
 	padding: 0;
@@ -8,11 +11,17 @@
 html {
 	font-size: 16px;
 	scroll-behavior: smooth;
-    background-color: #F0FFFC;
+  background: radial-gradient(
+    circle at bottom,
+    papayawhip 54%,      
+    #00CCCB 63%,        
+    #1C1C1C 90%         
+  );
 }
 
 body{
-    overflow-x: hidden;
+  overflow-x: hidden;
+  font-family: 'Roboto', sans-serif;
 }
 
 #header {
@@ -26,17 +35,14 @@ nav {
 	align-items: center;
 	justify-content: space-between;
 	flex-wrap: wrap;
-    background-color: white;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    height: 6rem;
+  background-color: transparent;
+  height: 6rem;
 }
 
 .logo {
-	width: 50%;
-	max-width: 15rem;
-    max-height:5rem;
-	margin-left: 1.5rem;
-    //margin-bottom: 0.5rem;
+ margin-left: 2rem;
+ width: 160;
+ height: 40;
 }
 
 .welcome_logo {
@@ -48,7 +54,7 @@ nav {
 .nav-list {
 	display: flex;
 	align-items: center;
-	gap: 0.9rem;
+	gap: 1.5rem;
 	list-style: none;
 	padding: 0;
 	margin: 0;
@@ -60,7 +66,7 @@ nav ul li {
 
 nav ul li a {
 	text-decoration: none;
-    color: #2e294e;
+    color: #ffffff;
     font-size: 1.2rem;
 }
 
@@ -70,11 +76,11 @@ nav ul li:hover, .register-btn:hover {
 
 #header-text {
 	padding: 5rem 0;
-	color: #1D1D1B;
+	color: #000000;
 }
 
 .login-btn, .back-btn {
-	background-color: #FFCC0C;
+	background-color: #ffffff;
 	color: #1D1D1B;
 	padding: 0.625rem 1.25rem;
 	border: none;
@@ -87,12 +93,12 @@ nav ul li:hover, .register-btn:hover {
 }
 
 .back-btn{
-    background-color: #007bff; 
-    color: white;
+    background-color: transparent;
+    color: #ffffff;
 }
 .register-btn, .admin-btn, .user-btn {
-	background-color: #FFCC0C;
-	color: #1D1D1B;
+	background-color: #1C1C1C;
+	color: #ffffff;
 	padding: 0.625rem 2.5rem;
 	border: none;
 	cursor: pointer;
@@ -105,178 +111,242 @@ nav ul li:hover, .register-btn:hover {
 
 .row {
 	display: flex;
-	justify-content: space-between;
-	flex-wrap: wrap;
+	align-items: center;
+  flex-direction: column;
+  text-align: center;
+  margin-top: 5rem;
 }
 
-.col_2 {
-	flex-basis: 35%;
-	margin-bottom: -0.2rem;
-}
-
-.col_2 img {
-	width: 50rem;
-	border-radius: 0rem;
-    margin-left: -24rem;
-    margin-top: -2rem;
-}
-
-.col_1 {
-	flex-basis: 60%;
-	margin:0;
-	padding: 0rem;
-}
-
-.col_1 h1{
-	font-size: 3rem;
+.row h1{
+	font-size: 3.5rem;
 	font-weight: 1000;
 	margin-bottom: 1.25rem;
-	color: #2E294E;
-    margin-top: 2rem;
+	color: #ffffff;
+  margin-top: 2rem;
+  font-family: arial;
 }
 
-.col_1 p {
-	font-size: 1.25rem;
+.row p {
+	font-size: 1rem;
 	margin-bottom: 2.5rem;
-	color: #2E294E;
+	color: #ecececff;
 }
 
 
 .container {
-	padding: 0.625rem 10%;
-	width: 100%;
+	padding: ;
+	width: 84rem;
 	margin: 0 auto;
-    height:22rem;
+  margin-top: -2rem;
+  height:25rem;
 }
+
+
+
+
+
 
 /*About*/
 
 #about {
-	background-color: white;
-    height: 20rem;
-    box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.1);
-
+	background-color: #1C1C1C;
+  padding: ;
+	width: 84rem;
+	margin: 0 auto;
+  height:35rem;
+  border-radius: 2rem 2rem 0 0;
+  margin-top: -3rem;
 }
+
+
+
+
+
+
+/*Services*/
+
+#services {
+	background-color: #1C1C1C;
+  padding: ;
+	width: 84rem;
+	margin: 0 auto;
+  height:35rem;
+  border-radius: 0 0 2rem 2rem;
+  margin-top: -3rem;
+}
+
+
+
+
+
 
 
 /*Log-In*/
 
 .login-container {
-      background: white;
-      padding: 5rem;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      width: 30rem;
-      text-align: center;
-      margin-left: 8rem;
-    }
+  padding: 5rem;
+  border-radius: 12px;
+  width: 50rem;
+  text-align: center;
+  margin: 0 auto;
+  margin-bottom: 69rem;
+  margin-top: 5rem;
+}
 
 .login-container h1 {
-      margin-bottom: 2rem;
-      margin-top:-1.5rem;
-      font-size: 2rem;
-      color: #2E294E;
-    }
+  margin-bottom: 2rem;
+  margin-top:-1.5rem;
+  color: #ffffff;
+  font-size: 2rem;
+}
 
 .login-container form {
-      display: none; 
-      margin-top: 1rem;
-    }
+  display: none; 
+  margin-top: 1rem;
+}
 
 .login-container form.active {
-      display: block; 
-    }
+  display: block; 
+}
 
 .login-container input {
-      width: 100%;
-      padding: 10px;
-      margin: 8px 0;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-    }
+  width: 70%;
+  padding: 10px;
+  margin: 8px 0;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  height: 3rem;
+}
 
 .login-container button {
-      width: 100%;
-      padding: 10px;
-      background: #FFCC0C;
-      color: #1D1D1B;
-      border: none;
-      cursor: pointer;
-      margin-top: 1.5rem;
-      font-size: 1.5rem;
-	  border-radius: 0.6rem;
-	  transition: background 0.3s, transform 0.4s;
-    }
+  width: 40%;
+  padding: 10px;
+  background: #1c1c1c;
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  margin-top: 1.5rem;
+  font-size: 1.9rem;;
+	border-radius: 0.6rem;
+	transition: background 0.3s, transform 0.4s;
+}
 
 .login-container button:hover {
-      transform: scale(1.05);
-    }
+  transform: scale(1.05);
+}
 
 .toggle {
-      margin-top: 1rem;
-      font-size: 0.9rem;
-      cursor: pointer;
-      color: #007bff;
-    }
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  color: #1c1c1c;
+}
 
 .toggle:hover {
-      text-decoration: underline;
-    }
+  text-decoration: underline;
+}
+ 
 
 
 
-    /*Register*/
+
+
+
+  /*Register*/
 
 .register-container {
-      background: white;
-      padding: 5rem;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      width: 30rem;
-      text-align: center;
-      margin-left: 8rem;
-      margin-top: -3.5rem;
-      height: 33rem;
-    }
+  padding: 5rem;
+  border-radius: 12px;
+  width: 50rem;
+  text-align: center;
+  margin: 0 auto;
+  margin-bottom: 69rem;
+  height: 33rem;
+  margin-top: -4rem;
+}
 
 .register-container h1 {
-      margin-bottom: 0rem;
-      margin-top:-3.5rem;
-      font-size: 2rem;
-      color: #2E294E;
-    }
+  margin-bottom: 2rem;
+  margin-top:-1.5rem;
+  color: #ffffff;
+  font-size: 2rem;
+}
 
 .register-container form {
-      margin-top: 1rem;
-    }
+  margin-top: 1rem;
+}
 
 .register-container input {
-      width: 100%;
-      padding: 10px;
-      margin: 4px 0;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-    }
+  width: 70%;
+  padding: 10px;
+  margin: 6px 0;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  height: 2.5rem;
+}
 
 .register-container button {
-      width: 100%;
-      padding: 10px;
-      background: #FFCC0C;
-      color: #1D1D1B;
-      border: none;
-      cursor: pointer;
-      margin-top: 1.5rem;
-      margin-bottom: -2rem;
-      font-size: 1.5rem;
-	  border-radius: 0.6rem;
-	  transition: background 0.3s, transform 0.4s;
-    }
+  width: 40%;
+  padding: 0.7rem 2.5rem;
+  background: #1c1c1c;
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  margin-top: 1.5rem;
+  font-size: 1.9rem;;
+	border-radius: 0.6rem;
+	transition: background 0.3s, transform 0.4s;
+}
 
 .register-container button:hover {
-      transform: scale(1.05);
-    }
+  transform: scale(1.05);
+}
 
-    ///////////////////////////////////////////////////////////////*User Map*/
+  
+
+
+/*welcome*/
+
+  .welcome-container {
+  padding: 5rem;
+  border-radius: 12px;
+  width: 50rem;
+  text-align: center;
+  align-items:center;
+  margin: 0 auto;
+  margin-bottom: 69rem;
+  height: 33rem;
+  margin-top: 2rem;
+}
+
+.welcome-container h1{
+  margin-bottom: 2rem;
+  margin-top: 2rem;
+  color: #ffffff;
+  font-size: 2rem;
+}
+
+.welcome-container p{
+  color: #ffffff;
+  font-size: 1rem;
+}
+
+.welcome-container button {
+  width: 40%;
+  padding: 0.7rem 2.5rem;
+  background: #1c1c1c;
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  margin-top: 2rem;
+  font-size: 1.9rem;;
+	border-radius: 0.6rem;
+	transition: background 0.3s, transform 0.4s;
+}
+
+
+
+ /*User Map*/
 
 .nav-list-user-side {
   display: flex;           
@@ -284,19 +354,19 @@ nav ul li:hover, .register-btn:hover {
   align-items: center;     
   gap: 1.5rem;             
   list-style: none;        
-  margin: 0;
+  margin-right: 2rem;
   padding: 0;
 }
 
 .nav-list-user-side li {
   display: inline-flex;    
   align-items: center;
-  margin: 0 1rem;
+  margin: 0 0.2rem;
 }
 
 .nav-list-user-side a {
   text-decoration: none;
-  color: #2e294e;
+  color: white;
   font-size: 1.2rem;
   transition: transform 0.2s ease-in-out;
 }
@@ -314,9 +384,9 @@ nav ul li:hover, .register-btn:hover {
 
 .map-container {
 	padding: 0.625rem 5%;
-	width: 100%;
+	max-width: 90rem;
 	margin: 0 auto;
-    height:22rem;
+  margin-bottom: 69rem;
 }
 
 .map-row-1{
@@ -324,33 +394,28 @@ nav ul li:hover, .register-btn:hover {
 }
 .report-btn {
     padding: 10px 16px;
-    background: #007bff;
+    background: #ffffff;
     border: none;
     border-radius: 6px;
-    color: white;
+    color: #1c1c1c;
     font-size: 1rem;
     cursor: pointer;
   }
 
-  .report-btn:hover {
-    background: #0056b3;
-  }
+.modal {
+  display: none; 
+  position: fixed; 
+  z-index: 1000; 
+  left: 0;
+  top: 0;
+  width: 100%; 
+  height: 100%;
+  background: rgba(0,0,0,0.5); 
+  justify-content: center; 
+  align-items: center;
+}
 
-
-    .modal {
-    display: none; 
-    position: fixed; 
-    z-index: 1000; 
-    left: 0;
-    top: 0;
-    width: 100%; 
-    height: 100%;
-    background: rgba(0,0,0,0.5); 
-    justify-content: center; 
-    align-items: center;
-  }
-
- .modal-content {
+.modal-content {
   background: white;
   padding: 2rem;
   border-radius: 10px;
@@ -377,6 +442,7 @@ nav ul li:hover, .register-btn:hover {
 .form-right input,
 .form-right label {
   margin: 8px 0;
+  height: 3rem;
 }
 
 #modal-map {
@@ -390,27 +456,23 @@ nav ul li:hover, .register-btn:hover {
 
 .modal-content button[type="submit"] {
   margin-top: 1rem;
-  width: 100%;
+  width: 30%;
   padding: 10px;
-  background: #28a745;
+  background: #1c1c1c;
   color: white;
   border: none;
   border-radius: 6px;
   cursor: pointer;
 }
 
-.modal-content button[type="submit"]:hover {
-  background: #218838;
+
+.close {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  font-size: 24px;
+  cursor: pointer;
 }
-
-
-  .close {
-    position: absolute;
-    top: 12px;
-    right: 16px;
-    font-size: 24px;
-    cursor: pointer;
-  }
 
 
 .upload-wrapper {
@@ -466,27 +528,33 @@ nav ul li:hover, .register-btn:hover {
   background: #c0392b;
 }
 
-//////////////////////////////////////////////////////////////*User Feed*/
+  
+
+
+
+
+ /*User Feed*/
 
 #user-feed {
   margin: 2rem auto;
   padding: 1rem;
-  max-width: 1200px;
+  max-width: 90rem;
 }
 
 .feed-container {
   display: flex;
-  gap: 2rem;                
+  gap: 3rem;                
   align-items: flex-start; 
-  margin: 1rem 1rem;  
+  margin: 1rem; 
+  margin-bottom: 69rem; 
 }
 
 
 .feed-column-1 {
-  flex: 2;                  
+  flex: 3;                  
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 2rem;
 }
 
 
@@ -522,7 +590,12 @@ nav ul li:hover, .register-btn:hover {
   font-size: 14px;
 }
 
-/* Report Cards */
+  
+
+
+
+
+ /* Report Cards */
 .report-card {
   background: #fff;
   padding: 1rem;
@@ -542,12 +615,14 @@ nav ul li:hover, .register-btn:hover {
   height: 40px;
   border-radius: 50%;
   margin-right: 10px;
+  margin-bottom: 1rem;
 }
 
 .report-user {
   font-weight: bold;
   color: #333;
   margin-right: auto;
+  margin-bottom: 1rem;
 }
 
 .report-status {
@@ -557,6 +632,7 @@ nav ul li:hover, .register-btn:hover {
   font-size: 0.85rem;
   font-weight: bold;
   margin-top: 0.5rem;
+   margin-bottom: 1rem;
 }
 
 .report-status.pending {
@@ -578,6 +654,7 @@ nav ul li:hover, .register-btn:hover {
   max-width: 100%;
   border-radius: 8px;
   margin-top: 0.5rem;
+   margin-bottom: 1rem;
 }
 
 .report-comments {
@@ -594,16 +671,22 @@ nav ul li:hover, .register-btn:hover {
   padding: 0.5rem;
   border: 1px solid #ccc;
   border-radius: 6px;
+   margin-top: 1rem;
 }
 
 
 
-//////////////////////////////////////////////////////////////*User Feed*/
+  
+
+
+
+
+ /*My Reports*/
 
 #user-myreports {
   margin: 2rem auto;
   padding: 1rem;
-  max-width: 1200px;
+  max-width: 90rem;
 }
 
 .myreports-container {
@@ -611,6 +694,7 @@ nav ul li:hover, .register-btn:hover {
   gap: 2rem;                
   align-items: flex-start; 
   margin: 1rem;  
+  margin-bottom: 69rem; 
 }
 
 
@@ -626,6 +710,7 @@ nav ul li:hover, .register-btn:hover {
   gap: 1rem;
   align-items: center;
   margin-top: 1rem;
+  width: 25%;
 }
 
 .myreports-search input {
@@ -636,35 +721,45 @@ nav ul li:hover, .register-btn:hover {
   font-size: 1rem;
 }
 
-/////////////////////////////////////////////////////*User Profile*///
+  
+
+
+
+
+
+  /*User Profile*/
 
 #profile-page {
-  max-width: 500px;
-  margin: 2rem auto;
-  background: #fff;
+  width: 60rem;
+  margin: 0rem auto;
   padding: 2rem;
   border-radius: 12px;
+  margin-bottom: 69rem; 
+  margin-top: -2rem;
 }
 
 #profile-page h2 {
   text-align: center;
   margin-bottom: 1.5rem;
-  color: #2a2a2a;
+  color: #ffffff;
 }
 
 .profile-container{
     width: 50rem;
     margin: 0 auto;
+   
 }
+
 .profile-field {
   margin-bottom: 1rem;
+  color: #ffffff;
 }
 
 .profile-field label {
   display: block;
   font-weight: 100;
   margin-bottom: 0rem;
-  color: #444;
+  color: #ffffff;
 }
 
 .profile-field input {
@@ -677,7 +772,7 @@ nav ul li:hover, .register-btn:hover {
 
 .profile-actions {
   display: flex;
-  gap: 10px; /* spacing between buttons */
+  gap: 10px;
   margin-top: 15px;
 }
 
@@ -701,8 +796,8 @@ nav ul li:hover, .register-btn:hover {
 }
 
 .save-btn {
-  background: #ffc107;
-  color: black;
+  background: #1c1c1c;
+  color: #ffffff;
   padding: 8px 16px;
   font-size: 14px;
 }

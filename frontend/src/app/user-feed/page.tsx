@@ -6,6 +6,8 @@ import Head from "next/head";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "../fixit-css.css";
+import Image from "next/image";
+
 
 interface Report {
   id: number;
@@ -164,7 +166,7 @@ export default function UserFeedPage() {
 
       <header>
         <nav>
-          <img src="/images/Fix t_5.png" className="logo" alt="Logo" />
+          <Image src="/images/Fix-it_logo_2.png" alt="Fixit Logo" className="logo" width={160} height={40} />
           <ul className="nav-list-user-side">
             <li><a href="/user-map">Map</a></li>
             <li><a href="/user-feed">Feed</a></li>
@@ -201,7 +203,7 @@ export default function UserFeedPage() {
                 filteredReports.map((r) => (
                   <div className="report-card" key={r.id}>
                     <div className="report-header">
-                      <img src="/default-user.png" className="report-avatar" alt="Avatar" />
+                      <img src="/images/sample_avatar.png" className="report-avatar" alt="Avatar" />
                       <span className="report-user">{r.user}</span>
                       <button id={`bookmark-${r.id}`} className="bookmark-btn" onClick={() => toggleBookmark(r.id)}>
                         <i className="fa-regular fa-bookmark"></i>
@@ -213,7 +215,7 @@ export default function UserFeedPage() {
                     <p className="report-details">{r.details}</p>
                     <span className={`report-status ${r.status.toLowerCase().replace(" ", "-")}`}>{r.status}</span>
 
-                    <div className="report-image"><img src={r.image} alt="Report Image" /></div>
+                    <div className="report-image"><Image src={"/images/broken-streetlights.jpg"} alt="Report Image" width={600} height={350} /></div>
 
                     <div className="report-comments">
                       <h4>Comments</h4>

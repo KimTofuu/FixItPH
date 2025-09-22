@@ -8,11 +8,11 @@ export default function Home() {
       <header>
         <nav>
           <Image 
-            src="/images/Fix t_5.png" 
+            src="/images/Fix-it_logo_2.png" 
             alt="Fixit Logo"
             className="logo"
-            width={150} 
-            height={50} 
+            width={160} 
+            height={40} 
           />
           <ul className="nav-list">
             <li><a href="#about">About</a></li>
@@ -29,26 +29,25 @@ export default function Home() {
       <div id="header-text">
         <div className="container">
           <div className="row">
-            <div className="col_2">
-              <Image 
-                src="/images/community_5.png"
-                alt="Community illustration"
-                width={500}
-                height={500}
-              />
-            </div>
-
-            <div className="col_1">
               <h1>Empowering citizens, <br /> improving communities.</h1>
               <p>The app for citizens to report local issues, track repairs, and improve communities together.</p>
               {/* This button is now correctly linked to the register page */}
               <Link href="/register">
                 <button className="register-btn">Register</button>
               </Link>
-            </div>
           </div>
         </div>
       </div>
+
+
+      <div id="about">
+
+      </div>
+
+      <div id="services">
+
+      </div>
+  
     </>
   );
 }
