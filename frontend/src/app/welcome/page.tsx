@@ -9,24 +9,16 @@ export default function WelcomePage() {
     <>
       <header>
         <nav>
-          <Image src="/images/Fix t_5.png" alt="Fixit Logo" className="logo" width={150} height={50} />
-          <ul className="nav-list">
-            <li>
-            
-              <Link href="/" style={{ marginRight: '2rem' }}>
-                <button className="back-btn">Logout</button>
-              </Link>
-            </li>
-          </ul>
+          <Image src="/images/Fix-it_logo_2.png" alt="Fixit Logo" className="logo" width={160} height={40} />
         </nav>
       </header>
 
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh', textAlign: 'center' }}>
-        <div>
+      <div className="welcome">
+        <div className="welcome-container">
           <h1>Welcome, Resident!</h1>
           <p>You have successfully logged in.</p>
           <p>This is your dashboard page.</p>
-          <Link href="/user-map" style={{ marginRight: '2rem' }}>
+          <Link href="/user-map">
                 <button className="continue-btn">Continue</button>
           </Link>
         </div>

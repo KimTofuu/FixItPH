@@ -4,6 +4,7 @@ import Head from "next/head";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "../fixit-css.css";
+import Image from "next/image";
 
 export default function UserMapPage() {
   const [modalOpen, setModalOpen] = useState(false);
@@ -64,7 +65,7 @@ export default function UserMapPage() {
     });
   }, []);
 
-  // Initialize Modal Map
+  
   useEffect(() => {
     if (!modalOpen || modalMapRef.current) return;
 
@@ -161,7 +162,7 @@ export default function UserMapPage() {
 
       <header>
         <nav>
-          <img src="/images/Fix t_5.png" className="logo" />
+          <Image src="/images/Fix-it_logo_2.png" alt="Fixit Logo" className="logo" width={160} height={40} />
           <ul className="nav-list-user-side">
             <li><a href="/user-map">Map</a></li>
             <li><a href="/user-feed">Feed</a></li>

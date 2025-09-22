@@ -61,7 +61,7 @@ export default function UserMyReportsPage() {
       {/* HEADER */}
       <header>
         <nav>
-          <Image src="/images/Fix t_5.png" alt="FixIt Logo" className="logo" width={120} height={50} />
+          <Image src="/images/Fix-it_logo_2.png" alt="Fixit Logo" className="logo" width={160} height={40} />
           <ul className="nav-list-user-side">
             <li><Link href="/user-map">Map</Link></li>
             <li><Link href="/user-feed">Feed</Link></li>
@@ -95,7 +95,7 @@ export default function UserMyReportsPage() {
                     {/* Header */}
                     <div className="report-header">
                       <Image
-                        src="/default-user.png"
+                        src="/images/sample_avatar.png"
                         alt="Avatar"
                         className="report-avatar"
                         width={32}
@@ -112,11 +112,11 @@ export default function UserMyReportsPage() {
                     <p className="report-details">{report.details}</p>
                     <span className={`report-status ${report.status.toLowerCase().replace(" ", "-")}`}>
                       {report.status}
-                    </span>
+                    </span> <br></br><br></br>
 
                     {/* Report Image */}
                     <div className="report-image">
-                      <Image src={report.image} alt="Report Image" width={400} height={250} />
+                      <Image src={"/images/broken-streetlights.jpg"} alt="Report Image" width={800} height={500} />
                     </div>
 
                     {/* Comments */}

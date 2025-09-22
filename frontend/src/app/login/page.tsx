@@ -44,7 +44,7 @@ export default function LoginPage() {
     <>
       <header>
         <nav>
-          <Image src="/images/Fix t_5.png" alt="Fixit Logo" className="logo" width={150} height={50} />
+          <Image src="/images/Fix-it_logo_2.png" alt="Fixit Logo" className="logo" width={160} height={40} />
           <ul className="nav-list">
             <li>
               {/* This is the corrected Back button link */}
@@ -56,14 +56,8 @@ export default function LoginPage() {
         </nav>
       </header>
 
-      <div id="header-text">
-        <div className="container">
-          <div className="row">
-            <div className="col_2">
-              <Image src="/images/community_5.png" alt="Community illustration" width={500} height={500} />
-            </div>
-
-            <div className="col_1">
+     
+            <div className="login">
               <div className="login-container">
                 <h1 id="form-title">{isResident ? 'Resident Login' : 'Admin Login'}</h1>
 
@@ -98,9 +92,6 @@ export default function LoginPage() {
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-      </div>
     </>
   );
 }
