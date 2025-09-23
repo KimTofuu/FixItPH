@@ -3,21 +3,16 @@ const Report = require('../models/Report');
 // Create a new report
 exports.createReport = async (req, res) => {
   try {
-    const { title, description, location } = req.body;
-    // If you want to use issueType and status, set defaults or get from req.body
-    // const { issueType, status } = req.body;
-    // const user = req.user.userId; // If using JWT
-
+    const { title, description, location, latitude, longitude } = req.body;
     const image = req.file ? req.file.filename : null;
-
     const user = req.user.userId;
     const newReport = new Report({
       title,
       description,
       image,
       location,
-      // issueType,
-      // status,
+      latitude, 
+      longitude,  
       user,
     });
     await newReport.save();
