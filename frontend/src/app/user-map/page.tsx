@@ -36,7 +36,19 @@ export default function UserMapPage() {
     longitude: "",
   });
 
-  // Initialize Feed Map
+  const [reports, setReports] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchReports = async () => {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reports`);
+      if (res.ok) {
+        const data = await res.json();
+        setReports(data);
+      }
+    };
+    fetchReports();
+  }, []);
+
   useEffect(() => {
     if (feedMapRef.current) return;
 
@@ -46,34 +58,30 @@ export default function UserMapPage() {
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>',
     }).addTo(feedMap);
-
-    const reports = [
-      {
-        lat: 14.8295,
-        lng: 120.282,
-        title: "Broken streetlight",
-        status: "Pending",
-        address: "Magsaysay Drive, Olongapo City",
-      },
-      {
-        lat: 14.827,
-        lng: 120.2845,
-        title: "Garbage not collected",
-        status: "In Progress",
-        address: "Rizal Avenue, Olongapo City",
-      },
-    ];
-
-    reports.forEach((r) => {
-      const m = L.marker([r.lat, r.lng], { icon: customPin }).addTo(feedMap);
-      m.bindPopup(`
-        <b>${r.title}</b><br>
-        <b>Status:</b> ${r.status}<br>
-        <b>Location:</b> ${r.address}
-      `);
-    });
   }, []);
 
+  useEffect(() => {
+    const feedMap = feedMapRef.current;
+    if (!feedMap) return;
+
+    // Remove existing markers (optional, for updates)
+    feedMap.eachLayer(layer => {
+      if (layer instanceof L.Marker) {
+        feedMap.removeLayer(layer);
+      }
+    });
+
+    reports.forEach((r) => {
+      if (r.latitude && r.longitude) {
+        const m = L.marker([parseFloat(r.latitude), parseFloat(r.longitude)], { icon: customPin }).addTo(feedMap);
+        m.bindPopup(`
+          <b>${r.title}</b><br>
+          <b>Status:</b> ${r.status}<br>
+          <b>Location:</b> ${r.location}
+        `);
+      }
+    });
+  }, [reports, customPin]);
   
   useEffect(() => {
     if (!modalOpen || modalMapRef.current) return;
@@ -173,6 +181,8 @@ export default function UserMapPage() {
     formData.append("description", reportForm.description);
     if (reportForm.image) formData.append("image", reportForm.image);
     formData.append("location", reportForm.address);
+    formData.append("latitude", reportForm.latitude);
+    formData.append("longitude", reportForm.longitude);
 
     // Get the JWT token from localStorage
     const token = localStorage.getItem('token');
