@@ -82,7 +82,9 @@ export default function UserFeedPage() {
         addressInput.value = address || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
         setReportForm(prev => ({
           ...prev,
-          address: addressInput.value
+          address: addressInput.value,
+          latitude: lat.toString(),
+          longitude: lng.toString(),
         }));
       });
     }
@@ -167,6 +169,8 @@ export default function UserFeedPage() {
     formData.append("description", reportForm.description);
     if (reportForm.image) formData.append("image", reportForm.image);
     formData.append("location", reportForm.address);
+    formData.append("latitude", reportForm.latitude);
+    formData.append("longitude", reportForm.longitude);
 
     // Get the JWT token from localStorage
     const token = localStorage.getItem('token');
