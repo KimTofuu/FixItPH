@@ -17,7 +17,7 @@ interface Report {
   status: string;
   location: string;
   image: string;
-  comments?: { user: string; text: string }[];
+  comments?: { user: string; text: string; createdAt?: string }[];
 }
 
 export default function UserFeedPage() {
@@ -153,12 +153,24 @@ export default function UserFeedPage() {
     }
   };
 
-  const addComment = (reportId: string, text: string) => {
-    setReports((prev) =>
-      prev.map((r) =>
-        r._id === reportId ? { ...r, comments: [...(r.comments ?? []), { user: "You", text }] } : r
-      )
-    );
+  const addComment = async (reportId: string, text: string) => {
+    const token = localStorage.getItem('token');
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reports/${reportId}/comment`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ text }),
+    });
+    if (res.ok) {
+      const updatedComments = await res.json();
+      setReports((prev) =>
+        prev.map((r) =>
+          r._id === reportId ? { ...r, comments: updatedComments } : r
+        )
+      );
+    }
   };
 
   const handleReportSubmit = async (e: React.FormEvent) => {
@@ -257,7 +269,14 @@ export default function UserFeedPage() {
                       <h4>Comments</h4>
                       <ul className="comment-list">
                         {(r.comments ?? []).map((c, idx) => (
-                          <li key={idx}><b>{c.user}:</b> {c.text}</li>
+                          <li key={idx}>
+                            <b>{c.user}:</b> {c.text}
+                            {c.createdAt && (
+                              <span style={{ color: "#888", marginLeft: 8, fontSize: "0.9em" }}>
+                                {new Date(c.createdAt).toLocaleString()}
+                              </span>
+                            )}
+                          </li>
                         ))}
                       </ul>
                       <input

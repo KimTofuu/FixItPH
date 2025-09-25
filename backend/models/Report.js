@@ -9,6 +9,13 @@ const ReportSchema = new mongoose.Schema({
     longitude: { type: String, required: true, index: true },  // <-- add this
     status: { type: String, enum: ['pending', 'in-progress', 'resolved'], default: 'pending', index: true },
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    comments: [
+        {
+            user: { type: String, required: true },
+            text: { type: String, required: true },
+            createdAt: { type: Date, default: Date.now }
+        }
+    ],
 }, { collection: 'reports' });
 
 module.exports = mongoose.model('Report', ReportSchema);

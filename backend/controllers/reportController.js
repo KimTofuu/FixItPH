@@ -1,4 +1,5 @@
 const Report = require('../models/Report');
+const User = require('../models/Users');
 
 // Create a new report
 exports.createReport = async (req, res) => {
@@ -104,5 +105,31 @@ exports.getMyReports = async (req, res) => {
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
     console.error(err);
+  }
+};
+
+exports.addComment = async (req, res) => {
+  try {
+    const reportId = req.params.id;
+    const { text } = req.body;
+    const user = req.user.userId; // or req.user.email or name, depending on your JWT
+
+   
+    const userDoc = await User.findById(user);
+
+    const comment = {
+      user: `${userDoc.fName} ${userDoc.lName}`,
+      text,
+      createdAt: new Date()
+    };
+
+    const report = await Report.findByIdAndUpdate(
+      reportId,
+      { $push: { comments: comment } },
+      { new: true }
+    );
+    res.status(200).json(report.comments);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
   }
 };
