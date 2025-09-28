@@ -237,7 +237,6 @@ export default function UserFeedPage() {
         <div className="feed-container">
           <div className="feed-column-1">
             <div className="feed-button-search">
-              <button className="report-btn" onClick={() => setModalVisible(true)}>+ Add Report</button>
               <input
                 type="text"
                 placeholder="Search reports..."
@@ -245,7 +244,6 @@ export default function UserFeedPage() {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-
             <div id="reportList">
               {filteredReports.length > 0 ? (
                 filteredReports.map((r) => (
@@ -300,7 +298,12 @@ export default function UserFeedPage() {
           </div>
 
           <div className="feed-column-2">
+            <div className="feed-button-search">
+              <button className="report-btn" onClick={() => setModalVisible(true)}>+ Add Report</button>
+            </div>
+            <div className="user-feed-bookmark">
             <h1>Bookmarks</h1>
+            </div>
           </div>
         </div>
       </div>
@@ -363,7 +366,7 @@ export default function UserFeedPage() {
                   style={{ width: "100%", height: "18rem", margin: "10px 0", borderRadius: "6px" }}
                 ></div>
               </div>
-              <button type="submit">Submit Report</button>
+              <button type="submit" className="submit-btn">Submit Report</button>
             </form>
           </div>
         </div>
