@@ -443,10 +443,10 @@ nav ul li:hover, .register-btn:hover {
 
 .report-btn {
   padding: 10px 16px; 
-  background: #ffffff; 
+  background: #00CCCB; 
   border: none; 
   border-radius: 6px; 
-  color: #1c1c1c; 
+  color: white; 
   font-size: 1rem; 
   cursor: pointer;
 }
@@ -635,6 +635,9 @@ nav ul li:hover, .register-btn:hover {
   border-radius: 6px;
   border: 1px solid #ccc;
   font-size: 1rem;
+  background: transparent;
+  color: white;
+  max-width: 25%;
 }
 
 .user-feed-bookmark{
