@@ -217,7 +217,16 @@ export default function UserMapPage() {
       </Head>
 
       <header>
-        <nav>
+        <nav
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            background: "linear-gradient(to bottom, rgba(0,0,0,0.8), rgba(0,0,0,0))",
+            zIndex: 1000,
+          }}
+        >
           <Image src="/images/Fix-it_logo_2.png" alt="Fixit Logo" className="logo" width={160} height={40} />
           <ul className="nav-list-user-side">
             <li><a href="/user-map">Map</a></li>
@@ -234,19 +243,44 @@ export default function UserMapPage() {
 
       <div id="user-map">
         <div className="map-container">
-          <div className="map-row-1">
-            <button className="report-btn" onClick={() => setModalOpen(true)}>
-              + Add Report
-            </button>
-          </div>
-          <div className="map-row-2">
+          <div className="map-row-2" style={{ position: "relative" }}>
             <div
               id="map"
-              style={{ width: "100%", height: "30rem", borderRadius: "1rem" }}
+              style={{ width: "100%", height: "42rem", borderRadius: "0rem" }}
             ></div>
+
+          <button
+            className="report-btn"
+            onClick={() => setModalOpen(true)}
+            style={{
+              padding: "0.7rem 1rem",
+              background: "#ffffff",
+              border: "none",
+              borderRadius: "6px",
+              color:"#1c1c1c",
+              fontSize: "1rem",
+              cursor: "pointer",
+              position: "absolute",
+              bottom: "6rem",
+              left: "2rem",
+              zIndex: 1000,
+              boxShadow: "0px 2px 6px rgba(0,0,0,0.2)",
+              display: "flex",          // make content horizontal
+              alignItems: "center",     // vertical centering
+              gap: "0.5rem", 
+            }}
+          >
+            <img
+              src="/images/add-report.png" // put your image inside /public/icons/add.png
+              alt="Add"
+              style={{ width: "2rem", height: "2rem" }}
+            />
+              Add Report
+            </button>
           </div>
         </div>
       </div>
+
 
       {modalOpen && (
         <div id="reportModal" className="modal" style={{ display: "flex" }}>
@@ -317,12 +351,8 @@ export default function UserMapPage() {
                   style={{ width: "100%", height: "18rem", margin: "10px 0", borderRadius: "6px" }}
                 ></div>
               </div>
-              <button type="submit">Submit Report</button>
+              <button type="submit" className="submit-btn">Submit Report</button>
             </form>
-
-            <button type="submit" form="reportForm">
-              Submit Report
-            </button>
           </div>
         </div>
       )}
