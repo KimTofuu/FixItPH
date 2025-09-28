@@ -26,7 +26,6 @@ export default function ProfilePage() {
     contact: "09123456789",
   });
 
-
   const [isEditing, setIsEditing] = useState(false);
 
   const profilePic =
@@ -41,6 +40,18 @@ export default function ProfilePage() {
     setIsEditing(false);
     alert("Profile updated successfully!\n\n" + JSON.stringify(profile, null, 2));
     console.log("Saved profile:", profile);
+  };
+
+  const handleLogout = () => {
+    const confirmed = window.confirm("Are you sure you want to log out?");
+    if (confirmed) {
+      // Clear any stored user session (localStorage, cookies, etc.)
+      localStorage.clear();
+      console.log("User logged out");
+
+      // Redirect to login page
+      window.location.href = "/login";
+    }
   };
 
   return (
@@ -67,7 +78,6 @@ export default function ProfilePage() {
         <div className="profile-container">
 
           <div className="profile-field">
-            <label>First Name</label>
             <input
               name="firstName"
               type="text"
@@ -78,7 +88,6 @@ export default function ProfilePage() {
           </div>
 
           <div className="profile-field">
-            <label>Last Name</label>
             <input
               name="lastName"
               type="text"
@@ -89,7 +98,6 @@ export default function ProfilePage() {
           </div>
 
           <div className="profile-field">
-            <label>Email</label>
             <input
               name="email"
               type="email"
@@ -100,7 +108,6 @@ export default function ProfilePage() {
           </div>
 
           <div className="profile-field">
-            <label>Password</label>
             <input
               name="password"
               type="password"
@@ -112,7 +119,6 @@ export default function ProfilePage() {
           </div>
 
           <div className="profile-field">
-            <label>Barangay</label>
             <input
               name="barangay"
               type="text"
@@ -123,7 +129,6 @@ export default function ProfilePage() {
           </div>
 
           <div className="profile-field">
-            <label>Municipality</label>
             <input
               name="municipality"
               type="text"
@@ -134,7 +139,6 @@ export default function ProfilePage() {
           </div>
 
           <div className="profile-field">
-            <label>Contact</label>
             <input
               name="contact"
               type="tel"
@@ -151,6 +155,9 @@ export default function ProfilePage() {
             </button>
             <button type="button" onClick={handleSave} className="save-btn">
               Save
+            </button>
+            <button type="button" onClick={handleLogout} className="logout-btn">
+              Log Out
             </button>
           </div>
         </div>
