@@ -254,10 +254,8 @@ export default function UserMapPage() {
             onClick={() => setModalOpen(true)}
             style={{
               padding: "0.7rem 1rem",
-              background: "#ffffff",
               border: "none",
               borderRadius: "6px",
-              color:"#1c1c1c",
               fontSize: "1rem",
               cursor: "pointer",
               position: "absolute",
@@ -270,11 +268,6 @@ export default function UserMapPage() {
               gap: "0.5rem", 
             }}
           >
-            <img
-              src="/images/add-report.png" // put your image inside /public/icons/add.png
-              alt="Add"
-              style={{ width: "2rem", height: "2rem" }}
-            />
               Add Report
             </button>
           </div>
