@@ -11,17 +11,17 @@
 html {
 	font-size: 16px;
 	scroll-behavior: smooth;
-  background: radial-gradient(
-    circle at bottom,
-    papayawhip 54%,      
-    #00CCCB 63%,        
-    #1C1C1C 90%         
-  );
 }
 
 body{
   overflow-x: hidden;
   font-family: 'Roboto', sans-serif;
+    background: radial-gradient(
+    circle at bottom,
+    papayawhip 54%,      
+    #00CCCB 63%,        
+    #1C1C1C 90%         
+  );
 }
 
 #header {
@@ -425,7 +425,7 @@ nav ul li:hover, .register-btn:hover {
   transform: scale(1.05);
 }
 
-.profile-pic {
+.profile-pic, .admin-profile-pic {
   width: 35px;
   height: 35px;
   border-radius: 50%;
@@ -657,7 +657,7 @@ nav ul li:hover, .register-btn:hover {
   font-size: 14px;
 }
 
-#reportList {
+#reportList, #admin-reportList {
   max-height: 28rem;
   overflow-y: auto;
   padding-right: 1rem; 
@@ -676,7 +676,7 @@ nav ul li:hover, .register-btn:hover {
 
 
  /* Report Cards */
-.report-card {
+.report-card, .admin-report-card {
   background: #fff;
   padding: 1rem;
   border-radius: 10px;
@@ -889,4 +889,202 @@ nav ul li:hover, .register-btn:hover {
 
 .logout-btn {
   margin-left: 36.2rem;
+}
+
+/*Admin Dashboard*/
+
+
+.admin-nav {
+	display: flex;
+	align-items: center;
+	gap: 1.5rem;
+	list-style: none;
+	padding: 0;
+	margin: 0;
+  height: 4rem;
+}
+
+.admin-nav li {
+	list-style: none;
+}
+
+.admin-nav a {
+	text-decoration: none;
+    color: #000000;
+    font-size: 1.2rem;
+}
+
+.admin-nav li:hover, .register-btn:hover {
+	transform: scale(1.05);
+}
+
+.reports-stats{
+  position: absolute;
+  top: 4rem;
+  left: 0.5rem;
+  z-index: 1000;
+  padding: 0.7rem 1rem;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  top: 5rem;
+  left: 1.2rem;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  align-content: center;
+  flex-direction: column;
+}
+
+.reported,
+.processing,
+.resolved {
+  padding: 1rem 2.5rem;
+  border-radius: 8px; 
+  min-width: 180px; 
+  text-align: center;
+  display: flex;
+  flex-direction: column; 
+  justify-content: space-between; 
+  align-items: center; 
+  box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.15);
+}
+
+
+.reported h3,
+.processing h3,
+.resolved h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.reported h1,
+.processing h1,
+.resolved h1 {
+  margin: 0;
+  font-size: 2.5rem;
+  font-weight: 700;
+}
+
+
+.reports-stats > div {
+  cursor: pointer; 
+  transition: all 0.2s ease-in-out; 
+  border: 3px solid transparent;
+}
+
+.reports-stats > div:hover {
+  transform: translateY(-3px); 
+}
+
+.active-card {
+  border: 3px solid #ffffff; 
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+
+
+/*Admin Report*/
+
+.reports-page {
+  min-height: 100%;
+  font-family: 'Inter', sans-serif;
+  background: #ffffff;
+}
+
+.main-container {
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 2rem 1.5rem;
+  background: transparent;
+}
+
+.content-card {
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+}
+
+.toolbar {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.search-container input {
+  width: 15rem;
+  height: 2rem;
+  border-radius: 0.5rem;
+  padding: 0 0.5rem;
+  border: 2px solid black;
+  background: white;
+}
+
+.toggle-button {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: 0.375rem;
+  transition: all 0.2s ease-in-out;
+  border: 1px solid transparent;
+  cursor: pointer;
+  background-color: white;
+  color: #4b5563; 
+  margin-left: 1rem;
+}
+
+
+.toggle-button.status-reported.active {
+  background-color: #c92a2a; 
+  color: #ffffff;
+  border-color: #c92a2a;
+}
+.toggle-button.status-reported:hover:not(.active) {
+  background-color: #fceaea;
+  color: #c92a2a;
+  border-color: #f8b4b4;
+}
+
+
+.toggle-button.status-processing.active {
+  background-color: #c2b82a; 
+  color: #ffffff;
+  border-color: #c2b82a;
+}
+.toggle-button.status-processing:hover:not(.active) {
+  background-color: #fcfade;
+  color: #8a821e;
+  border-color: #e6e09f;
+}
+
+
+.toggle-button.status-resolved.active {
+  background-color: #3a9d49; 
+  color: #ffffff;
+  border-color: #3a9d49;
+}
+.toggle-button.status-resolved:hover:not(.active) {
+  background-color: #e8f5e9;
+  color: #286a34;
+  border-color: #a3d3a9;
+}       
+
+.reports-list-section{
+  background: #f0f0f0;
+  padding: 1rem 2rem;
+  border-radius: 1rem;
+}
+.reports-scroll-container {
+  overflow-y: auto;
+  padding-right: 0.5rem;
+  max-height: 60vh;   
+}
+
+.admin-report-card{
+  background: #f0f0f0;
 }
