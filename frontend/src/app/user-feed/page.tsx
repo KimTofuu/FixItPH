@@ -7,6 +7,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "../fixit-css.css";
 import Image from "next/image";
+import { toast } from "react-toastify";
 
 
 interface Report {
@@ -197,10 +198,10 @@ export default function UserFeedPage() {
     });
 
     if (res.ok) {
-      // Optionally refresh the reports list
+      toast.success("Report submitted successfully!");
       setModalVisible(false);
     } else {
-      alert("Failed to submit report");
+      toast.error("Failed to submit report");
     }
   };
 

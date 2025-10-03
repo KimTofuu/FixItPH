@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 import "../fixit-css.css";
 import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
 
 async function loginUser(formData: {
   email: string;
@@ -33,14 +34,54 @@ export default function LoginPage() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  const handleAdminSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const formData = new FormData(e.target as HTMLFormElement);
+    const adminData = {
+      username: formData.get("username") as string,
+      password: formData.get("password") as string,
+    };
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(adminData),
+      });
+      
+      const result = await res.json();
+      
+      if (result.token) {
+        localStorage.setItem("adminToken", result.token);
+        toast.success("Admin login successful! Redirecting...");
+        setTimeout(() => {
+          router.push("/admin-dashboard");
+        }, 1000);
+      } else {
+        toast.error(result.message || "Admin login failed");
+      }
+    } catch (error) {
+      toast.error("Network error. Please try again.");
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const result = await loginUser(form);
-    if (result.token) {
-      localStorage.setItem("token", result.token);
-      router.push("/user-feed");
-    } else {
-      alert(result.message || "Login failed");
+    
+    try {
+      const result = await loginUser(form);
+      if (result.token) {
+        localStorage.setItem("token", result.token);
+        toast.success("Login successful! Redirecting...");
+        setTimeout(() => {
+          router.push("/user-feed");
+        }, 1000); // Small delay to show the toast
+      } else {
+        toast.error(result.message || "Login failed");
+      }
+    } catch (error) {
+      toast.error("Network error. Please try again.");
     }
   };
 
@@ -111,12 +152,22 @@ export default function LoginPage() {
           </form>
 
           {/* Admin Login */}
-          <form id="admin-form" className={!isResident ? "active" : ""}>
-            <input type="text" placeholder="Admin Username" required />
+          <form 
+            id="admin-form" 
+            className={!isResident ? "active" : ""}
+            onSubmit={handleAdminSubmit}
+          >
+            <input 
+              type="text" 
+              name="username"
+              placeholder="Admin Username" 
+              required 
+            />
 
             <div className="password-wrapper">
               <input
                 type={showAdminPassword ? "text" : "password"}
+                name="password"
                 placeholder="Password"
                 required
               />
