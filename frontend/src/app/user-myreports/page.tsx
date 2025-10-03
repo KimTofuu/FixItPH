@@ -6,6 +6,7 @@ import Link from "next/link";
 import "../fixit-css.css";
 
 interface Report {
+  _id: string;
   user: {
     fName: string;
     lName: string;
@@ -48,6 +49,26 @@ export default function UserMyReportsPage() {
     const updatedReports = [...reports];
     updatedReports[index].comments.push({ author: "You", text: comment });
     setReports(updatedReports);
+  };
+
+  const handleDelete = async (reportId: string, index: number) => {
+    if (!confirm("Are you sure you want to delete this report?")) return;
+
+    const token = localStorage.getItem('token');
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reports/${reportId}`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (res.ok) {
+      // Remove from local state
+      const updatedReports = reports.filter((_, i) => i !== index);
+      setReports(updatedReports);
+    } else {
+      alert("Failed to delete report");
+    }
   };
 
   // Search filter
@@ -112,7 +133,23 @@ export default function UserMyReportsPage() {
                     <p className="report-details">{report.description}</p>
                     <span className={`report-status ${report.status.toLowerCase().replace(" ", "-")}`}>
                       {report.status}
-                    </span> <br></br><br></br>
+                    </span>
+                    <button 
+                      className="delete-btn" 
+                      onClick={() => handleDelete(report._id, i)}
+                      style={{ 
+                        marginLeft: "10px", 
+                        backgroundColor: "#ff4444", 
+                        color: "white", 
+                        border: "none", 
+                        padding: "5px 10px", 
+                        borderRadius: "4px",
+                        cursor: "pointer"
+                      }}
+                    >
+                      Delete
+                    </button>
+                    <br></br><br></br>
 
                     {/* Report Image */}
                     <div className="report-image">
