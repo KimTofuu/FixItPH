@@ -133,3 +133,26 @@ exports.addComment = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+exports.deleteReport = async (req, res) => {
+  try {
+    const reportId = req.params.id;
+    const userId = req.user.userId;
+    
+    const report = await Report.findById(reportId);
+    if (!report) {
+      return res.status(404).json({ message: 'Report not found' });
+    }
+    
+    // Check if user owns this report
+    if (report.user.toString() !== userId) {
+      return res.status(403).json({ message: 'Not authorized to delete this report' });
+    }
+    
+    await Report.findByIdAndDelete(reportId);
+    res.status(200).json({ message: 'Report deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+    console.error(err);
+  }
+};
