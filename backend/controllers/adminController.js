@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const Admin = require('../models/Admins');
 const jwt = require('jsonwebtoken');
+const Report = require('../models/Report');
 
 exports.login = async (req, res) => {
   try {
@@ -35,5 +36,19 @@ exports.register = async (req, res) => {
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
     console.error(err);
+  }
+};
+
+exports.updateReportStatus = async (req, res) => {
+  try {
+    const { reportId } = req.params;
+    const { status } = req.body;
+    const report = await Report.findById(reportId);
+    if (!report) return res.status(404).json({ message: "Report not found" });
+    report.status = status;
+    await report.save();
+    res.status(200).json({ message: "Status updated", report });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
   }
 };

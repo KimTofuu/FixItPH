@@ -937,8 +937,8 @@ nav ul li:hover, .register-btn:hover {
   flex-direction: column;
 }
 
-.reported,
-.processing,
+.pending,
+.in-progress,
 .resolved {
   padding: 1rem 2.5rem;
   border-radius: 8px; 
@@ -952,16 +952,16 @@ nav ul li:hover, .register-btn:hover {
 }
 
 
-.reported h3,
-.processing h3,
+.pending h3,
+.in-progress h3,
 .resolved h3 {
   margin: 0;
   font-size: 1rem;
   font-weight: 500;
 }
 
-.reported h1,
-.processing h1,
+.pending h1,
+.in-progress h1,
 .resolved h1 {
   margin: 0;
   font-size: 2.5rem;
@@ -1039,24 +1039,24 @@ nav ul li:hover, .register-btn:hover {
 }
 
 
-.toggle-button.status-reported.active {
+.toggle-button.status-pending.active {
   background-color: #c92a2a; 
   color: #ffffff;
   border-color: #c92a2a;
 }
-.toggle-button.status-reported:hover:not(.active) {
+.toggle-button.status-pending:hover:not(.active) {
   background-color: #fceaea;
   color: #c92a2a;
   border-color: #f8b4b4;
 }
 
 
-.toggle-button.status-processing.active {
+.toggle-button.status-in-progress.active {
   background-color: #c2b82a; 
   color: #ffffff;
   border-color: #c2b82a;
 }
-.toggle-button.status-processing:hover:not(.active) {
+.toggle-button.status-in-progress:hover:not(.active) {
   background-color: #fcfade;
   color: #8a821e;
   border-color: #e6e09f;
