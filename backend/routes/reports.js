@@ -15,5 +15,6 @@ router.post('/getReport', reportController.getReport);
 router.post('/getReportByUser', reportController.getReportByUser);
 router.get('/my', authenticateToken, reportController.getMyReports);
 router.post('/:id/comment', authenticateToken, reportController.addComment);
+router.delete('/:id', authenticateToken, reportController.deleteReport);
 
 module.exports = router;
