@@ -4,6 +4,8 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import "../fixit-css.css";
+import { toast } from "react-toastify";
+import { useRouter } from "next/navigation";
 
 async function registerUser(formData: {
   fName: string;
@@ -24,6 +26,8 @@ async function registerUser(formData: {
 }
 
 export default function RegisterPage() {
+  const router = useRouter(); 
+  
   const [form, setForm] = useState({
     fName: "",
     lName: "",
@@ -65,21 +69,21 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (form.password !== form.confirmPassword) {
-      setPasswordError("Password and Confirm Password do not match");
-      return;
+    
+    try {
+      const result = await registerUser(form);
+      if (result.success) {
+        toast.success("Registration successful! Please log in.");
+        setTimeout(() => {
+          router.push("/login"); // <-- This redirects to login
+        }, 1000); // Small delay to show the toast
+      } else {
+        toast.error(result.message || "Registration failed");
+      }
+    } catch (error) {
+      toast.error("Network error. Please try again.");
     }
-
-    const unmet = conditions.filter((c) => !c.valid);
-    if (unmet.length > 0) {
-      alert("Please meet all password requirements before continuing.");
-      return;
-    }
-
-    const result = await registerUser(form);
-    alert(result.message || "✅ Registration complete!");
-  };
+};
 
   return (
     <>
