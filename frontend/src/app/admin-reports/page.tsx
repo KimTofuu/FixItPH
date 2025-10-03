@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import "leaflet/dist/leaflet.css";
 import "../fixit-css.css";
 import Image from "next/image";
+import { toast } from "react-toastify";
 
 // ---------- Types ----------
 interface Comment {
@@ -21,7 +22,7 @@ interface User {
 interface Report {
   _id: string;
   title: string;
-  status: "Reported" | "Processing" | "Resolved";
+  status: "pending" | "in-progress" | "resolved";
   location: string;
   timestamp: string;
   description: string;
@@ -30,111 +31,7 @@ interface Report {
   comments?: Comment[];
 }
 
-type StatusFilter = "Reported" | "Processing" | "Resolved";
-
-// ---------- Mock Data ----------
-const mockData: Report[] = [
-  {
-    _id: "1",
-    title: "Broken Streetlight",
-    status: "Reported",
-    location: "123 Maple St, Iba",
-    timestamp: "2025-09-30T01:15:00Z",
-    description: "Streetlight on the corner has been out for 3 days.",
-    imageUrl: "/images/placeholder.jpg",
-    user: {
-      fName: "Juan",
-      lName: "Dela Cruz",
-      avatarUrl: "/images/sample_avatar.png",
-    },
-    comments: [
-      {
-        user: "Maria",
-        text: "I also noticed this!",
-        createdAt: "2025-09-30T02:00:00Z",
-      },
-    ],
-  },
-  {
-    _id: "2",
-    title: "Flooding on Main Road",
-    status: "Processing",
-    location: "456 Main Rd, Iba",
-    timestamp: "2025-09-29T18:45:00Z",
-    description: "Heavy flooding after rain, needs urgent attention.",
-    imageUrl: "/images/placeholder.jpg",
-    user: {
-      fName: "Anna",
-      lName: "Santos",
-      avatarUrl: "/images/sample_avatar.png",
-    },
-    comments: [],
-  },
-
-  {
-  _id: "3",
-  title: "Pothole on Rizal Avenue",
-  status: "Reported",
-  location: "Rizal Ave, Iba",
-  timestamp: "2025-09-30T05:30:00Z",
-  description: "Large pothole causing traffic delays.",
-  imageUrl: "/images/placeholder.jpg",
-  user: {
-    fName: "Carlos",
-    lName: "Reyes",
-    avatarUrl: "/images/sample_avatar.png",
-  },
-  comments: [],
-},
-{
-  _id: "4",
-  title: "Garbage not collected",
-  status: "Processing",
-  location: "789 Coastal Rd, Iba",
-  timestamp: "2025-09-29T11:20:00Z",
-  description: "Trash bins overflowing, collection delayed.",
-  imageUrl: "/images/placeholder.jpg",
-  user: {
-    fName: "Liza",
-    lName: "Garcia",
-    avatarUrl: "/images/sample_avatar.png",
-  },
-  comments: [],
-},
-{
-  _id: "5",
-  title: "Water leak near plaza",
-  status: "Resolved",
-  location: "Central Plaza, Iba",
-  timestamp: "2025-09-28T15:10:00Z",
-  description: "Pipe burst fixed by maintenance crew.",
-  imageUrl: "/images/placeholder.jpg",
-  user: {
-    fName: "Roberto",
-    lName: "Torres",
-    avatarUrl: "/images/sample_avatar.png",
-  },
-  comments: [
-    { user: "Ana", text: "Glad this was fixed quickly!", createdAt: "2025-09-28T18:00:00Z" },
-  ],
-},
-{
-  _id: "6",
-  title: "Graffiti on public wall",
-  status: "Resolved",
-  location: "Poblacion St, Iba",
-  timestamp: "2025-09-27T09:45:00Z",
-  description: "Wall has been repainted and cleaned.",
-  imageUrl: "/images/placeholder.jpg",
-  user: {
-    fName: "Sofia",
-    lName: "Cruz",
-    avatarUrl: "/images/sample_avatar.png",
-  },
-  comments: [],
-},
-
-];
+type StatusFilter = "pending" | "in-progress" | "resolved";
 
 // ---------- Helpers ----------
 const formatTimeAgo = (timestamp: string): string => {
@@ -151,18 +48,25 @@ const formatTimeAgo = (timestamp: string): string => {
 export default function AdminReportsPage() {
   const [reports, setReports] = useState<Report[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeStatus, setActiveStatus] = useState<StatusFilter>("Reported");
+  const [activeStatus, setActiveStatus] = useState<StatusFilter>("pending");
   const [searchTerm, setSearchTerm] = useState("");
 
   const profilePicUrl =
     "https://cdn-icons-png.flaticon.com/512/149/149071.png";
 
-  // Simulate API fetch
   useEffect(() => {
-    setTimeout(() => {
-      setReports(mockData);
-      setIsLoading(false);
-    }, 500);
+    const fetchReports = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reports`);
+        if (res.ok) {
+          const data = await res.json();
+          setReports(data);
+        }
+      } finally {
+        setIsLoading(false); // <-- Always set loading to false
+      }
+    };
+    fetchReports();
   }, []);
 
   const toggleBookmark = (id: string) => {
@@ -174,19 +78,36 @@ export default function AdminReportsPage() {
   };
 
   // ✅ Function to update report status
-  const updateReportStatus = (reportId: string, newStatus: StatusFilter) => {
-    setReports((prev) =>
-      prev.map((r) =>
-        r._id === reportId ? { ...r, status: newStatus } : r
-      )
-    );
-    console.log(`Report ${reportId} status updated to ${newStatus}`);
+  const updateReportStatus = async (reportId: string, newStatus: StatusFilter) => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/reports/${reportId}/status`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      if (res.ok) {
+        setReports((prev) =>
+          prev.map((r) =>
+            r._id === reportId ? { ...r, status: newStatus } : r
+          )
+        );
+        toast.success("Report status updated");
+      } else {
+        toast.error("Failed to update report status");
+      }
+    } catch (err) {
+      toast.error("An error occurred while updating report status");
+    }
   };
 
   // Filter by status + search
   const filteredReports = useMemo(() => {
     return reports
-      .filter((r) => r.status === activeStatus)
+      .filter((r) => r.status.toLowerCase() === activeStatus.toLowerCase())
       .filter(
         (r) =>
           r.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -242,16 +163,16 @@ export default function AdminReportsPage() {
             {/* Toolbar */}
             <div className="toolbar">
               <div className="toggle-group">
-                {(["Reported", "Processing", "Resolved"] as StatusFilter[]).map(
+                {(["pending", "in-progress", "resolved"] as StatusFilter[]).map(
                   (status) => (
                     <button
                       key={status}
                       onClick={() => setActiveStatus(status)}
-                      className={`toggle-button status-${status.toLowerCase()} ${
+                      className={`toggle-button status-${status} ${
                         activeStatus === status ? "active" : ""
                       }`}
                     >
-                      {status}
+                      {status.charAt(0).toUpperCase() + status.slice(1).replace("-", " ")}
                     </button>
                   )
                 )}
@@ -313,9 +234,9 @@ export default function AdminReportsPage() {
                           updateReportStatus(r._id, e.target.value as StatusFilter)
                         }
                       >
-                        <option value="Reported">Reported</option>
-                        <option value="Processing">Processing</option>
-                        <option value="Resolved">Resolved</option>
+                        <option value="pending">Pending</option>
+                        <option value="in-progress">Processing</option>
+                        <option value="resolved">Resolved</option>
                       </select>
                     </div>
                     </div>
