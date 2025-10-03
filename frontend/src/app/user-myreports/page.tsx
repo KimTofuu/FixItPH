@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import "../fixit-css.css";
+import { toast } from "react-toastify";
+import { useRouter } from "next/navigation";
 
 interface Report {
   _id: string;
@@ -66,8 +68,9 @@ export default function UserMyReportsPage() {
       // Remove from local state
       const updatedReports = reports.filter((_, i) => i !== index);
       setReports(updatedReports);
+      toast.success("Report deleted successfully!");
     } else {
-      alert("Failed to delete report");
+      toast.error("Failed to delete report");
     }
   };
 
