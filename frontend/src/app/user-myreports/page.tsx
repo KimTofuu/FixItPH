@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import "../fixit-css.css";
+import "./user-myreports.css";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 
@@ -24,6 +24,7 @@ interface Report {
 export default function UserMyReportsPage() {
   const [search, setSearch] = useState("");
   const [reports, setReports] = useState<Report[]>([]);
+  const [menuOpen, setMenuOpen] = useState(false); // <-- hamburger menu state
 
   useEffect(() => {
     const fetchReports = async () => {
@@ -85,14 +86,32 @@ export default function UserMyReportsPage() {
       {/* HEADER */}
       <header>
         <nav>
-          <Image src="/images/Fix-it_logo_2.png" alt="Fixit Logo" className="logo" width={160} height={40} />
-          <ul className="nav-list-user-side">
+          <Image
+            src="/images/Fix-it_logo_3.png"
+            alt="Fixit Logo"
+            className="logo"
+            width={160}
+            height={40}
+          />
+
+          {/* Hamburger Button */}
+          <button className="hamburger" onClick={() => setMenuOpen(!menuOpen)}>
+            ☰
+          </button>
+
+          <ul className={`nav-list-user-side ${menuOpen ? "open" : ""}`}>
             <li><Link href="/user-map">Map</Link></li>
             <li><Link href="/user-feed">Feed</Link></li>
             <li><Link href="/user-myreports">My Reports</Link></li>
             <li>
               <Link href="/user-profile" className="profile-link">
-                <Image src={profilePic} alt="User Profile" className="profile-pic" width={40} height={40} />
+                <Image
+                  src={profilePic}
+                  alt="User Profile"
+                  className="profile-pic"
+                  width={40}
+                  height={40}
+                />
               </Link>
             </li>
           </ul>
@@ -116,49 +135,64 @@ export default function UserMyReportsPage() {
               {filteredReports.length > 0 ? (
                 filteredReports.map((report, i) => (
                   <div key={i} className="report-card">
-                    {/* Header */}
-                    <div className="report-header">
-                      <Image
-                        src="/images/sample_avatar.png"
-                        alt="Avatar"
-                        className="report-avatar"
-                        width={32}
-                        height={32}
-                      />
-                      <span className="report-user">{report.user.fName} {report.user.lName}</span>
+                    <div className="report-row">
+                      <div>
+                        {/* Header */}
+                        <div className="report-header">
+                          <Image
+                            src="/images/sample_avatar.png"
+                            alt="Avatar"
+                            className="report-avatar"
+                            width={32}
+                            height={32}
+                          />
+                          <span className="report-user">
+                            {report.user.fName} {report.user.lName}
+                          </span>
+                        </div>
+
+                        {/* Report Content */}
+                        <h3 className="report-title">{report.title}</h3>
+                        <p className="report-location">
+                          <i className="fa-solid fa-location-dot"></i>{" "}
+                          {report.location}
+                        </p>
+                        <p className="report-details">{report.description}</p>
+                        <span
+                          className={`report-status ${report.status
+                            .toLowerCase()
+                            .replace(" ", "-")}`}
+                        >
+                          {report.status}
+                        </span>
+                        <button
+                          className="delete-btn"
+                          onClick={() => handleDelete(report._id, i)}
+                          style={{
+                            marginLeft: "10px",
+                            backgroundColor: "#ff4444",
+                            color: "white",
+                            border: "none",
+                            padding: "5px 10px",
+                            borderRadius: "4px",
+                            cursor: "pointer",
+                          }}
+                        >
+                          Delete
+                        </button>
+                        <br />
+                        <br />
+                      </div>
+                      {/* Report Image */}
+                      <div className="report-image">
+                        <Image
+                          src={"/images/broken-streetlights.jpg"}
+                          alt="Report Image"
+                          width={800}
+                          height={500}
+                        />
+                      </div>
                     </div>
-
-                    {/* Report Content */}
-                    <h3 className="report-title">{report.title}</h3>
-                    <p className="report-location">
-                      <i className="fa-solid fa-location-dot"></i> {report.location}
-                    </p>
-                    <p className="report-details">{report.description}</p>
-                    <span className={`report-status ${report.status.toLowerCase().replace(" ", "-")}`}>
-                      {report.status}
-                    </span>
-                    <button 
-                      className="delete-btn" 
-                      onClick={() => handleDelete(report._id, i)}
-                      style={{ 
-                        marginLeft: "10px", 
-                        backgroundColor: "#ff4444", 
-                        color: "white", 
-                        border: "none", 
-                        padding: "5px 10px", 
-                        borderRadius: "4px",
-                        cursor: "pointer"
-                      }}
-                    >
-                      Delete
-                    </button>
-                    <br></br><br></br>
-
-                    {/* Report Image */}
-                    <div className="report-image">
-                      <Image src={"/images/broken-streetlights.jpg"} alt="Report Image" width={800} height={500} />
-                    </div>
-
                     {/* Comments */}
                     <div className="report-comments">
                       <h4>Comments</h4>
