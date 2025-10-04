@@ -1,14 +1,12 @@
-// pages/index.tsx
 "use client";
 
 import { useEffect, useRef, useState } from "react";
 import Head from "next/head";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import "../fixit-css.css";
+import "./user-feed.css";
 import Image from "next/image";
 import { toast } from "react-toastify";
-
 
 interface Report {
   _id: string;
@@ -37,8 +35,8 @@ export default function UserFeedPage() {
   });
 
   const [reports, setReports] = useState<Report[]>([]);
-
   const [searchTerm, setSearchTerm] = useState("");
+  const [menuOpen, setMenuOpen] = useState(false); // <-- NEW for hamburger
 
   const filteredReports = reports.filter((r) =>
     `${r.user} ${r.title} ${r.location} ${r.description}`
@@ -46,7 +44,6 @@ export default function UserFeedPage() {
       .includes(searchTerm.toLowerCase())
   );
 
-  // Custom pin icon
   const customPin = L.icon({
     iconUrl: "/images/pin.png",
     iconSize: [25, 41],
@@ -54,7 +51,6 @@ export default function UserFeedPage() {
     popupAnchor: [1, -34],
   });
 
-  // Modal Map setup
   useEffect(() => {
     if (modalVisible && modalMapRef.current && !modalMap) {
       const map = L.map(modalMapRef.current).setView([14.8292, 120.2828], 13);
@@ -185,10 +181,8 @@ export default function UserFeedPage() {
     formData.append("latitude", reportForm.latitude);
     formData.append("longitude", reportForm.longitude);
 
-    // Get the JWT token from localStorage
     const token = localStorage.getItem('token');
 
-    // Send the report with the Authorization header
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reports`, {
       method: 'POST',
       body: formData,
@@ -215,11 +209,17 @@ export default function UserFeedPage() {
 
       <header>
         <nav>
-          <Image src="/images/Fix-it_logo_2.png" alt="Fixit Logo" className="logo" width={160} height={40} />
-          <ul className="nav-list-user-side">
+          <Image src="/images/Fix-it_logo_3.png" alt="Fixit Logo" className="logo" width={160} height={40} />
+          
+          {/* Hamburger Button */}
+          <button className="hamburger" onClick={() => setMenuOpen(!menuOpen)}>
+            ☰
+          </button>
+
+          <ul className={`nav-list-user-side ${menuOpen ? "open" : ""}`}>
             <li><a href="/user-map">Map</a></li>
             <li><a href="/user-feed">Feed</a></li>
-            <li><a href="user-myreports">My Reports</a></li>
+            <li><a href="/user-myreports">My Reports</a></li>
             <li>
               <a href="/user-profile" className="profile-link">
                 <img
@@ -238,6 +238,9 @@ export default function UserFeedPage() {
         <div className="feed-container">
           <div className="feed-column-1">
             <div className="feed-button-search">
+              <div className="feed-button-search">
+                <button className="report-btn" onClick={() => setModalVisible(true)}>+ Add Report</button>
+              </div>
               <input
                 type="text"
                 placeholder="Search reports..."
@@ -249,6 +252,8 @@ export default function UserFeedPage() {
               {filteredReports.length > 0 ? (
                 filteredReports.map((r) => (
                   <div className="report-card" key={r._id}>
+                    <div className="report-row"> 
+                    <div>
                     <div className="report-header">
                       <img src="/images/sample_avatar.png" className="report-avatar" alt="Avatar" />
                       <span className="report-user">{r.user.fName} {r.user.lName}</span>
@@ -261,9 +266,9 @@ export default function UserFeedPage() {
                     <p className="report-location"><i className="fa-solid fa-location-dot"></i> {r.location}</p>
                     <p className="report-details">{r.description}</p>
                     <span className={`report-status ${r.status.toLowerCase().replace(" ", "-")}`}>{r.status}</span>
-
-                    <div className="report-image"><Image src={"/images/broken-streetlights.jpg"} alt="Report Image" width={600} height={350} /></div>
-
+                    </div>
+                    <div className="report-image"><Image src={"/images/broken-streetlights.jpg"} alt="Report Image" width={450} height={250} /></div>
+                    </div>
                     <div className="report-comments">
                       <h4>Comments</h4>
                       <ul className="comment-list">
@@ -295,15 +300,6 @@ export default function UserFeedPage() {
               ) : (
                 <p style={{ color: "red", marginTop: "10px" }}>No reports found</p>
               )}
-            </div>
-          </div>
-
-          <div className="feed-column-2">
-            <div className="feed-button-search">
-              <button className="report-btn" onClick={() => setModalVisible(true)}>+ Add Report</button>
-            </div>
-            <div className="user-feed-bookmark">
-            <h1>Bookmarks</h1>
             </div>
           </div>
         </div>

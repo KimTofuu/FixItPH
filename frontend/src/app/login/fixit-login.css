@@ -1,0 +1,252 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&display=swap');
+
+* {
+	margin: 0;
+	padding: 0;
+	font-family: 'Inter', sans-serif;
+	box-sizing: border-box;
+}
+
+html {
+	font-size: 16px;
+	scroll-behavior: smooth;
+}
+
+body{
+  overflow-x: hidden;
+  font-family: 'Roboto', sans-serif;
+  background: #F5F5F5;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+#header {
+	background-size: cover;
+	background-position: center;
+    
+}
+
+nav {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	flex-wrap: wrap;
+  background: transparent;
+  height: 6rem;
+}
+
+.nav-list {
+	display: flex;
+	align-items: center;
+	gap: 1.5rem;
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+nav ul li {
+	list-style: none;
+}
+
+nav ul li a {
+	text-decoration: none;
+    color: #1c1c1c;
+    font-size: 1.2rem;
+}
+
+nav ul li:hover, .register-btn:hover {
+	transform: scale(1.05);
+}
+
+.back-btn {
+	background-color: transparent;
+	color: #1c1c1c;
+	padding: 0.625rem 1.25rem;
+	border: none;
+	cursor: pointer;
+	font-size: 1.4rem;
+	border-radius: 0.6rem;
+}
+
+.logo {
+ margin-left: 2rem;
+ width: 160;
+ height: 40;
+}
+
+
+.login-container {
+  padding: 5rem;
+  border-radius: 12px;
+  width: 50rem;
+  text-align: center;
+  margin: 0 auto;
+  margin-top: 5rem;
+}
+
+.login-container h1 {
+  margin-bottom: 2rem;
+  margin-top:-1.5rem;
+  color: #1c1c1c;
+  font-size: 2rem;
+}
+
+.login-container form {
+  display: none; 
+  margin-top: 1rem;
+  color: #F5F5F5;
+}
+
+.login-container form.active {
+  display: block; 
+}
+
+.login-container input {
+  width: 70%;
+  padding: 10px;
+  margin: 8px 0;
+  border: 1px solid #00CCCB;
+  border-radius: 6px;
+  height: 3rem;
+  color: #1c1c1c;
+}
+
+input::placeholder {
+  color: #1c1c1c; 
+  opacity: 1;  
+}
+
+
+.login-container button {
+  width: 40%;
+  padding: 10px;
+  background: #00CCCB;
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  margin-top: 1.5rem;
+  font-size: 1.9rem;;
+	border-radius: 0.6rem;
+	transition: background 0.3s, transform 0.4s;
+}
+
+.login-container button:hover {
+  transform: scale(1.05);
+}
+
+.toggle {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  color: #1c1c1c;
+}
+
+.toggle:hover {
+  text-decoration: underline;
+}
+ 
+.eye-icon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  font-size: 1.2rem;
+}
+
+.password-wrapper {
+  position: relative;
+  width: 70%;
+  margin: 6px auto;
+}
+
+.password-wrapper input {
+  width: 100%;
+  padding-right: 2.5rem;
+}
+
+/* ----------- 1440px and up (large desktops) ----------- */
+@media (min-width: 1440px) {
+  .login-container {
+    width: 60rem;   
+    padding: 6rem;
+  }
+  .login-container h1 {
+    font-size: 2.5rem;
+  }
+  .login-container input {
+    width: 100%;
+    font-size: 1.1rem;
+  }
+  .login-container button {
+    width: 35%;
+    font-size: 2rem;
+  }
+  .password-wrapper {
+    width: 100%;
+  }
+}
+
+/* ----------- 1024px and below (tablets, small desktops) ----------- */
+@media (max-width: 1024px) {
+  .login-container {
+    width: 40rem;
+    padding: 4rem;
+  }
+  .login-container h1 {
+    font-size: 2rem;
+  }
+  .login-container input {
+    width: 100%;
+  }
+  .login-container button {
+    width: 35%;
+    font-size: 1.6rem;
+  }
+  .password-wrapper {
+    width: 100%;
+  }
+}
+
+/* ----------- 768px and below (portrait tablets) ----------- */
+@media (max-width: 768px) {
+
+  .login-container {
+    width: 90%;
+    padding: 2rem;
+  }
+  .login-container input {
+    width: 100%;
+  }
+  .password-wrapper {
+    width: 100%;
+  }
+  .login-container button {
+    width: 40%;
+    font-size: 1.4rem;
+  }
+}
+
+/* ----------- 640px and below (phones) ----------- */
+@media (max-width: 640px) {
+  .login-container {
+    width: 95%;
+    padding: 1.5rem;
+    margin-top: 3rem;
+  }
+  .login-container h1 {
+    font-size: 1.6rem;
+  }
+  .login-container input {
+    width: 100%;
+    font-size: 1rem;
+  }
+  .login-container button {
+    width: 70%;
+    font-size: 1.2rem;
+  }
+  .toggle {
+    font-size: 0.8rem;
+  }
+}
