@@ -26,6 +26,7 @@ export default function ProfilePage() {
   });
 
   const [isEditing, setIsEditing] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false); // 👈 hamburger toggle state
 
   const profilePic = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
 
@@ -45,11 +46,8 @@ export default function ProfilePage() {
   const handleLogout = () => {
     const confirmed = window.confirm("Are you sure you want to log out?");
     if (confirmed) {
-      // Clear any stored user session (localStorage, cookies, etc.)
       localStorage.clear();
       console.log("User logged out");
-
-      // Redirect to login page
       window.location.href = "/login";
     }
   };
@@ -60,7 +58,12 @@ export default function ProfilePage() {
       <header>
         <nav
           className="admin-nav"
-          style={{ width: "100%", background: "white", color: "black" }}
+          style={{
+            width: "100%",
+            background: "white",
+            color: "black",
+            position: "relative",
+          }}
         >
           <Image
             src="/images/Fix-it_logo_3.png"
@@ -69,7 +72,17 @@ export default function ProfilePage() {
             width={160}
             height={40}
           />
-          <ul className="nav-list-user-side">
+
+          {/* HAMBURGER BUTTON */}
+          <button
+            className="hamburger"
+            onClick={() => setMenuOpen((prev) => !prev)}
+          >
+            ☰
+          </button>
+
+          {/* NAVIGATION LINKS */}
+          <ul className={`nav-list-user-side ${menuOpen ? "open" : ""}`}>
             <li>
               <a href="/admin-dashboard">Dashboard</a>
             </li>

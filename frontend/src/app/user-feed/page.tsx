@@ -283,16 +283,6 @@ export default function UserFeedPage() {
                     <span className={`report-status ${r.status.toLowerCase().replace(" ", "-")}`}>{r.status}</span>
                     </div>
                     <div className="report-image">
-                      <Image 
-                        src={r.image || "/images/broken-streetlights.jpg"} // Use actual image URL or fallback
-                        alt="Report Image" 
-                        width={450} 
-                        height={250}
-                        onError={(e) => {
-                          // Fallback if Cloudinary image fails to load
-                          e.currentTarget.src = "/images/broken-streetlights.jpg";
-                        }}
-                      />
                       <ReportImage src={r.image} alt="Report Image" />
                     </div>
                     </div>
