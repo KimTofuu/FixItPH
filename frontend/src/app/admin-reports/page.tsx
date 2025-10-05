@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import "leaflet/dist/leaflet.css";
-import "../fixit-css.css";
+import "./admin-reports.css";
 import Image from "next/image";
 import { toast } from "react-toastify";
 

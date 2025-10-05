@@ -1,0 +1,281 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&display=swap');
+
+* {
+	margin: 0;
+	padding: 0;
+	font-family: 'Inter', sans-serif;
+	box-sizing: border-box;
+}
+
+html {
+	font-size: 16px;
+	scroll-behavior: smooth;
+}
+
+body{
+  overflow: hidden;
+  font-family: 'Roboto', sans-serif;
+  background: #ecf7f7ff;
+}
+
+#header {
+	background-size: cover;
+	background-position: center;
+    
+}
+
+.logo {
+ margin-left: 2rem;
+ width: 160;
+ height: 40;
+}
+
+
+nav {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	flex-wrap: wrap;
+  background-color: transparent;
+  height: 6rem;
+}
+
+.nav-list-user-side {
+  display: flex;           
+  flex-direction: row;    
+  align-items: center;     
+  gap: 1.5rem;             
+  list-style: none;        
+  margin-right: 2rem;
+  padding: 0;
+}
+
+.nav-list-user-side li {
+  display: inline-flex;    
+  align-items: center;
+  margin: 0 0.2rem;
+}
+
+.nav-list-user-side a {
+  text-decoration: none;
+  color: #000000;
+  font-size: 1.2rem;
+  transition: transform 0.2s ease-in-out;
+}
+
+.nav-list-user-side a:hover {
+  transform: scale(1.05);
+}
+
+.profile-pic, .admin-profile-pic {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+
+.admin-nav {
+	display: flex;
+	align-items: center;
+	gap: 1.5rem;
+	list-style: none;
+	padding: 0;
+	margin: 0;
+  height: 4rem;
+}
+
+.admin-nav li {
+	list-style: none;
+}
+
+.admin-nav a {
+	text-decoration: none;
+    color: #000000;
+    font-size: 1.2rem;
+}
+
+.admin-nav li:hover, .register-btn:hover {
+	transform: scale(1.05);
+}
+
+.reports-page {
+  min-height: 100%;
+  font-family: 'Inter', sans-serif;
+  background: #ffffff;
+}
+
+.main-container {
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 2rem 1.5rem;
+  background: transparent;
+}
+
+.content-card {
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+}
+
+.toolbar {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.search-container input {
+  width: 15rem;
+  height: 2rem;
+  border-radius: 0.5rem;
+  padding: 0 0.5rem;
+  border: 2px solid black;
+  background: white;
+}
+
+.toggle-button {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: 0.375rem;
+  transition: all 0.2s ease-in-out;
+  border: 1px solid transparent;
+  cursor: pointer;
+  background-color: white;
+  color: #4b5563; 
+  margin-left: 1rem;
+}
+
+
+.toggle-button.status-pending.active {
+  background-color: #c92a2a; 
+  color: #ffffff;
+  border-color: #c92a2a;
+}
+.toggle-button.status-pending:hover:not(.active) {
+  background-color: #fceaea;
+  color: #c92a2a;
+  border-color: #f8b4b4;
+}
+
+
+.toggle-button.status-in-progress.active {
+  background-color: #c2b82a; 
+  color: #ffffff;
+  border-color: #c2b82a;
+}
+.toggle-button.status-in-progress:hover:not(.active) {
+  background-color: #fcfade;
+  color: #8a821e;
+  border-color: #e6e09f;
+}
+
+
+.toggle-button.status-resolved.active {
+  background-color: #3a9d49; 
+  color: #ffffff;
+  border-color: #3a9d49;
+}
+.toggle-button.status-resolved:hover:not(.active) {
+  background-color: #e8f5e9;
+  color: #286a34;
+  border-color: #a3d3a9;
+}       
+
+.reports-list-section{
+  background: #f0f0f0;
+  padding: 1rem 2rem;
+  border-radius: 1rem;
+}
+.reports-scroll-container {
+  overflow-y: auto;
+  padding-right: 0.5rem;
+  max-height: 60vh;   
+}
+
+.admin-report-card{
+  background: #f0f0f0;
+}
+
+.admin-report-card {
+  background: #ffffff;
+  padding: 1rem;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  margin-bottom: 1rem;
+}
+
+ #admin-reportList {
+  max-height: 28rem;
+  overflow-y: auto;
+  padding-right: 1rem; 
+}
+
+.report-image img {
+  max-width: 100%;
+  border-radius: 8px;
+  margin-top: 0.5rem;
+   margin-bottom: 1rem;
+}
+
+.report-comments {
+  margin-top: 1rem;
+}
+
+.comment-list {
+  padding-left: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.comment-input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+   margin-top: 1rem;
+}
+
+.report-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.report-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 10px;
+  margin-bottom: 1rem;
+}
+
+.report-user {
+  font-weight: bold;
+  color: #333;
+  margin-right: auto;
+  margin-bottom: 1rem;
+}
+
+#reportList::-webkit-scrollbar {
+  width: 8px;
+  color: white;
+}
+
+#reportList::-webkit-scrollbar-thumb {
+  background: white;
+  border-radius: 4px;
+} 
+
+#searchReport {
+  width: 15rem;
+  height: 2.6rem;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  color: black;
+}
