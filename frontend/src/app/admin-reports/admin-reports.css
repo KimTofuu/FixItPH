@@ -16,7 +16,7 @@ html {
 body{
   overflow: hidden;
   font-family: 'Roboto', sans-serif;
-  background: #ecf7f7ff;
+  background: #f1f1f1;
 }
 
 #header {
@@ -103,7 +103,7 @@ nav {
 .reports-page {
   min-height: 100%;
   font-family: 'Inter', sans-serif;
-  background: #ffffff;
+  background: #f1f1f1;
 }
 
 .main-container {
@@ -278,4 +278,154 @@ nav {
   border-radius: 6px;
   font-size: 14px;
   color: black;
+}
+
+.reports-row{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.hamburger {
+  display: none;
+  font-size: 2rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin-right: 1.5rem;
+}
+
+@media (max-width: 1440px) {
+  .toolbar {
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .search-container input {
+    width: 13rem;
+  }
+}
+
+
+@media (max-width: 1024px) {
+  .nav-list-user-side {
+    gap: 1rem;
+  }
+
+  .search-container input {
+    width: 12rem;
+  }
+
+  .admin-report-card {
+    flex-direction: column;
+  }
+
+  .report-image img {
+    height: 200px;
+  }
+
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+
+@media (max-width: 768px) {
+  /* NAVIGATION */
+  .hamburger {
+    display: block;
+    font-size: 1.8rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    margin-right: 1.5rem;
+  }
+
+  .nav-list-user-side {
+    display: none;
+    flex-direction: column;
+    position: absolute;
+    top: 6rem;
+    right: 1rem;
+    background-color: white;
+    width: 200px;
+    padding: 1rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    transition: all 0.3s ease;
+  }
+
+  .nav-list-user-side.open {
+    display: flex;
+  }
+
+  .nav-list-user-side li {
+    margin: 0.5rem 0;
+  }
+
+  .toolbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .search-container input {
+    width: 100%;
+  }
+
+  .admin-report-card {
+    flex-direction: column;
+  }
+
+  .report-image img {
+    width: 100%;
+    height: 180px;
+  }
+}
+
+
+@media (max-width: 640px) {
+
+  .main-container {
+    padding: 0.5rem;
+  }
+  .logo {
+    width: 120px;
+    margin-left: 1rem;
+  }
+
+  .toolbar {
+    gap: 0.75rem;
+  }
+
+  .toggle-button {
+    margin: 0 0.3rem;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.9rem;
+  }
+
+  .search-container input {
+    width: 100%;
+    font-size: 0.7rem;
+  }
+
+  .admin-report-card {
+    padding: 0.8rem;
+  }
+
+  .report-title {
+    font-size: 1rem;
+  }
+
+  .report-details {
+    font-size: 0.9rem;
+  }
+
+  .report-comments h4 {
+    font-size: 1rem;
+  }
+
+  .reports-row {
+    flex-direction: column;
+  }
 }

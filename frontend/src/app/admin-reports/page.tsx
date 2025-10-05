@@ -51,32 +51,31 @@ export default function AdminReportsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [activeStatus, setActiveStatus] = useState<StatusFilter>("pending");
   const [searchTerm, setSearchTerm] = useState("");
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const profilePicUrl =
     "https://cdn-icons-png.flaticon.com/512/149/149071.png";
 
+  // ---------- Fetch Reports ----------
   useEffect(() => {
     const fetchReports = async () => {
       try {
         let endpoint;
-        if (activeStatus === 'resolved') {
-          // Fetch from resolved reports table
+        if (activeStatus === "resolved") {
           endpoint = `${process.env.NEXT_PUBLIC_API_URL}/admin/resolved-reports`;
         } else {
-          // Fetch from regular reports table and filter by status
           endpoint = `${process.env.NEXT_PUBLIC_API_URL}/reports`;
         }
 
         const res = await fetch(endpoint);
         if (res.ok) {
           const data = await res.json();
-          
-          if (activeStatus === 'resolved') {
-            // Set resolved reports directly
+          if (activeStatus === "resolved") {
             setReports(data);
           } else {
-            // Filter regular reports by status
-            const filteredData = data.filter((report: Report) => report.status === activeStatus);
+            const filteredData = data.filter(
+              (report: Report) => report.status === activeStatus
+            );
             setReports(filteredData);
           }
         }
@@ -84,11 +83,12 @@ export default function AdminReportsPage() {
         setIsLoading(false);
       }
     };
-    
+
     setIsLoading(true);
     fetchReports();
-  }, [activeStatus]); 
+  }, [activeStatus]);
 
+  // ---------- Actions ----------
   const toggleBookmark = (id: string) => {
     console.log("Bookmark toggled for:", id);
   };
@@ -97,26 +97,26 @@ export default function AdminReportsPage() {
     console.log(`New comment on ${reportId}: ${text}`);
   };
 
-  // ✅ Function to update report status
   const updateReportStatus = async (reportId: string, newStatus: StatusFilter) => {
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/reports/${reportId}/status`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ status: newStatus }),
-      });
-      
+      const token = localStorage.getItem("token");
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/admin/reports/${reportId}/status`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ status: newStatus }),
+        }
+      );
+
       if (res.ok) {
-        if (newStatus === 'resolved') {
-          // Remove from current reports list
-          setReports((prev) => prev.filter(r => r._id !== reportId));
+        if (newStatus === "resolved") {
+          setReports((prev) => prev.filter((r) => r._id !== reportId));
           toast.success("Report resolved and moved to resolved reports!");
         } else {
-          // Update status normally
           setReports((prev) =>
             prev.map((r) =>
               r._id === reportId ? { ...r, status: newStatus } : r
@@ -132,26 +132,24 @@ export default function AdminReportsPage() {
     }
   };
 
-  // Filter by status + search
+  // ---------- Filtered Reports ----------
   const filteredReports = useMemo(() => {
     let filtered: Report[] = reports ?? [];
-
-    // Only filter by status if not showing resolved reports
-    if (activeStatus !== 'resolved') {
+    if (activeStatus !== "resolved") {
       filtered = filtered.filter(
-        (r) => (r.status ?? '').toLowerCase() === activeStatus.toLowerCase()
+        (r) => (r.status ?? "").toLowerCase() === activeStatus.toLowerCase()
       );
     }
 
-    const term = (searchTerm ?? '').toLowerCase().trim();
-
+    const term = (searchTerm ?? "").toLowerCase().trim();
     return filtered.filter((r) => {
-      const title = (r.title ?? '').toLowerCase();
-      const location = (r.location ?? '').toLowerCase();
+      const title = (r.title ?? "").toLowerCase();
+      const location = (r.location ?? "").toLowerCase();
       return title.includes(term) || location.includes(term);
     });
   }, [reports, activeStatus, searchTerm]);
 
+  // ---------- JSX ----------
   return (
     <>
       {/* Header */}
@@ -167,7 +165,17 @@ export default function AdminReportsPage() {
             width={160}
             height={40}
           />
-          <ul className="nav-list-user-side">
+
+          {/* Hamburger menu button */}
+          <button
+            className="hamburger"
+            onClick={() => setMenuOpen((prev) => !prev)}
+          >
+            ☰
+          </button>
+
+          {/* Nav links */}
+          <ul className={`nav-list-user-side ${menuOpen ? "open" : ""}`}>
             <li>
               <a href="/admin-dashboard">Dashboard</a>
             </li>
@@ -209,7 +217,8 @@ export default function AdminReportsPage() {
                         activeStatus === status ? "active" : ""
                       }`}
                     >
-                      {status.charAt(0).toUpperCase() + status.slice(1).replace("-", " ")}
+                      {status.charAt(0).toUpperCase() +
+                        status.slice(1).replace("-", " ")}
                     </button>
                   )
                 )}
@@ -232,70 +241,88 @@ export default function AdminReportsPage() {
               ) : filteredReports.length > 0 ? (
                 filteredReports.map((r) => (
                   <div className="admin-report-card" key={r._id}>
-                    <div style={{ display:"flex", flexDirection: "row", justifyContent: "space-between"}} > 
-                    <div>
-                    {/* Header */}
-                    <div className="report-header">
-                      <Image
-                        src={r.user?.avatarUrl || "/images/sample_avatar.png"}
-                        className="report-avatar"
-                        alt="Avatar"
-                        width={40}
-                        height={40}
-                      />
-                      <span className="report-user">
-                        {r.user?.fName} {r.user?.lName}
-                      </span>
-                      <button
-                        id={`bookmark-${r._id}`}
-                        className="bookmark-btn"
-                        onClick={() => toggleBookmark(r._id)}
-                      >
-                        <i className="fa-regular fa-bookmark"></i>
-                      </button>
+                    <div className="reports-row">
+                      <div>
+                        <div className="report-header">
+                          <Image
+                            src={
+                              r.user?.avatarUrl || "/images/sample_avatar.png"
+                            }
+                            className="report-avatar"
+                            alt="Avatar"
+                            width={40}
+                            height={40}
+                          />
+                          <span className="report-user">
+                            {r.user?.fName} {r.user?.lName}
+                          </span>
+                          <button
+                            id={`bookmark-${r._id}`}
+                            className="bookmark-btn"
+                            onClick={() => toggleBookmark(r._id)}
+                          >
+                            <i className="fa-regular fa-bookmark"></i>
+                          </button>
+                        </div>
+
+                        <h3 className="report-title">{r.title}</h3>
+                        <p className="report-location">
+                          <i className="fa-solid fa-location-dot"></i>{" "}
+                          {r.location}
+                        </p>
+                        <p className="report-details">{r.description}</p>
+
+                        <div className="status-control">
+                          <label>Status: </label>
+                          <select
+                            value={r.status}
+                            onChange={(e) =>
+                              updateReportStatus(
+                                r._id,
+                                e.target.value as StatusFilter
+                              )
+                            }
+                          >
+                            <option value="pending">Pending</option>
+                            <option value="in-progress">Processing</option>
+                            <option value="resolved">Resolved</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="report-image">
+                        {r.imageUrl || r.image ? (
+                          <img
+                            src={r.imageUrl ?? (r as any).image}
+                            alt="Report Image"
+                            style={{
+                              width: "100%",
+                              maxWidth: 500,
+                              height: 250,
+                              objectFit: "cover",
+                              borderRadius: 6,
+                            }}
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src =
+                                "/images/broken-streetlights.jpg";
+                            }}
+                          />
+                        ) : (
+                          <img
+                            src={"/images/broken-streetlights.jpg"}
+                            alt="Report Image"
+                            style={{
+                              width: "100%",
+                              maxWidth: 500,
+                              height: 250,
+                              objectFit: "cover",
+                              borderRadius: 6,
+                            }}
+                          />
+                        )}
+                      </div>
                     </div>
 
-                    {/* Body */}
-                    <h3 className="report-title">{r.title}</h3>
-                    <p className="report-location">
-                      <i className="fa-solid fa-location-dot"></i> {r.location}
-                    </p>
-                    <p className="report-details">{r.description}</p>
-
-                    {/* ✅ Status Dropdown */}
-                    <div className="status-control">
-                      <label>Status: </label>
-                      <select
-                        value={r.status}
-                        onChange={(e) =>
-                          updateReportStatus(r._id, e.target.value as StatusFilter)
-                        }
-                      >
-                        <option value="pending">Pending</option>
-                        <option value="in-progress">Processing</option>
-                        <option value="resolved">Resolved</option>
-                      </select>
-                    </div>
-                    </div>
-                    {/* Image */}
-                    <div className="report-image">
-                      { (r.imageUrl || r.image) ? (
-                        <img
-                          src={r.imageUrl ?? (r as any).image}
-                          alt="Report Image"
-                          style={{ width: "100%", maxWidth: 500, height: 250, objectFit: "cover", borderRadius: 6 }}
-                          onError={(e) => { (e.target as HTMLImageElement).src = "/images/broken-streetlights.jpg"; }}
-                        />
-                      ) : (
-                        <img
-                          src={"/images/broken-streetlights.jpg"}
-                          alt="Report Image"
-                          style={{ width: "100%", maxWidth: 500, height: 250, objectFit: "cover", borderRadius: 6 }}
-                        />
-                      ) }
-                    </div>
-                    </div>
-                    {/* Comments */}
                     <div className="report-comments">
                       <h4>Comments</h4>
                       <ul className="comment-list">
