@@ -186,7 +186,7 @@ export default function UserMyReportsPage() {
                       {/* Report Image */}
                       <div className="report-image">
                         <Image
-                          src={"/images/broken-streetlights.jpg"}
+                          src={report.image || "/images/broken-streetlights.jpg"}
                           alt="Report Image"
                           width={800}
                           height={500}
