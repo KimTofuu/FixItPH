@@ -89,13 +89,21 @@ export default function AdminReportsPage() {
         },
         body: JSON.stringify({ status: newStatus }),
       });
+      
       if (res.ok) {
-        setReports((prev) =>
-          prev.map((r) =>
-            r._id === reportId ? { ...r, status: newStatus } : r
-          )
-        );
-        toast.success("Report status updated");
+        if (newStatus === 'resolved') {
+          // Remove from current reports list
+          setReports((prev) => prev.filter(r => r._id !== reportId));
+          toast.success("Report resolved and moved to resolved reports!");
+        } else {
+          // Update status normally
+          setReports((prev) =>
+            prev.map((r) =>
+              r._id === reportId ? { ...r, status: newStatus } : r
+            )
+          );
+          toast.success("Report status updated");
+        }
       } else {
         toast.error("Failed to update report status");
       }

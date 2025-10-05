@@ -5,6 +5,8 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "./user-map.css";
 import Image from "next/image";
+import { toast } from "react-toastify";
+import { useRouter } from "next/navigation";
 
 export default function UserMapPage() {
   const [modalOpen, setModalOpen] = useState(false);
@@ -173,28 +175,34 @@ export default function UserMapPage() {
   const handleReportSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const formData = new FormData();
-    formData.append("title", reportForm.title);
-    formData.append("description", reportForm.description);
-    if (reportForm.image) formData.append("image", reportForm.image);
-    formData.append("location", reportForm.address);
-    formData.append("latitude", reportForm.latitude);
-    formData.append("longitude", reportForm.longitude);
+    try {
+      const formData = new FormData();
+      formData.append("title", reportForm.title);
+      formData.append("description", reportForm.description);
+      if (reportForm.image) formData.append("image", reportForm.image);
+      formData.append("location", reportForm.address);
+      formData.append("latitude", reportForm.latitude);
+      formData.append("longitude", reportForm.longitude);
 
-    const token = localStorage.getItem("token");
+      const token = localStorage.getItem("token");
 
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reports`, {
-      method: "POST",
-      body: formData,
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reports`, {
+        method: "POST",
+        body: formData,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-    if (res.ok) {
-      setModalOpen(false);
-    } else {
-      alert("Failed to submit report");
+      if (res.ok) {
+        toast.success("Report submitted successfully!");
+        setModalOpen(false);
+      } else {
+        const data = await res.json();
+        toast.error(data.message || "Failed to submit report");
+      }
+    } catch (error) {
+      toast.error("An error occurred while submitting the report.");
     }
   };
 

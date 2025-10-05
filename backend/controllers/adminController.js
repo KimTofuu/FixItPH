@@ -43,12 +43,44 @@ exports.updateReportStatus = async (req, res) => {
   try {
     const { reportId } = req.params;
     const { status } = req.body;
+    
     const report = await Report.findById(reportId);
     if (!report) return res.status(404).json({ message: "Report not found" });
-    report.status = status;
-    await report.save();
-    res.status(200).json({ message: "Status updated", report });
+
+    // If marking as resolved, transfer to resolvedReports
+    if (status === 'resolved') {
+      // Create resolved report
+      const resolvedReport = new ResolvedReport({
+        originalReportId: report._id,
+        title: report.title,
+        description: report.description,
+        image: report.image,
+        location: report.location,
+        latitude: report.latitude,
+        longitude: report.longitude,
+        user: report.user,
+        comments: report.comments || [],
+        createdAt: report.createdAt,
+        resolvedAt: new Date()
+      });
+
+      await resolvedReport.save();
+      
+      // Remove from original reports table
+      await Report.findByIdAndDelete(reportId);
+      
+      res.status(200).json({ 
+        message: "Report resolved and moved to resolved reports", 
+        resolvedReport 
+      });
+    } else {
+      // Normal status update
+      report.status = status;
+      await report.save();
+      res.status(200).json({ message: "Status updated", report });
+    }
   } catch (err) {
     res.status(500).json({ message: "Server error" });
+    console.error(err);
   }
 };
