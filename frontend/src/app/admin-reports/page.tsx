@@ -57,17 +57,36 @@ export default function AdminReportsPage() {
   useEffect(() => {
     const fetchReports = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reports`);
+        let endpoint;
+        if (activeStatus === 'resolved') {
+          // Fetch from resolved reports table
+          endpoint = `${process.env.NEXT_PUBLIC_API_URL}/admin/resolved-reports`;
+        } else {
+          // Fetch from regular reports table and filter by status
+          endpoint = `${process.env.NEXT_PUBLIC_API_URL}/reports`;
+        }
+
+        const res = await fetch(endpoint);
         if (res.ok) {
           const data = await res.json();
-          setReports(data);
+          
+          if (activeStatus === 'resolved') {
+            // Set resolved reports directly
+            setReports(data);
+          } else {
+            // Filter regular reports by status
+            const filteredData = data.filter((report: Report) => report.status === activeStatus);
+            setReports(filteredData);
+          }
         }
       } finally {
-        setIsLoading(false); // <-- Always set loading to false
+        setIsLoading(false);
       }
     };
+    
+    setIsLoading(true);
     fetchReports();
-  }, []);
+  }, [activeStatus]); 
 
   const toggleBookmark = (id: string) => {
     console.log("Bookmark toggled for:", id);
@@ -114,13 +133,19 @@ export default function AdminReportsPage() {
 
   // Filter by status + search
   const filteredReports = useMemo(() => {
-    return reports
-      .filter((r) => r.status.toLowerCase() === activeStatus.toLowerCase())
-      .filter(
-        (r) =>
-          r.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          r.location.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+    let filtered = reports;
+    
+    // Only filter by status if not showing resolved reports
+    if (activeStatus !== 'resolved') {
+      filtered = filtered.filter((r) => r.status.toLowerCase() === activeStatus.toLowerCase());
+    }
+    
+    // Always apply search filter
+    return filtered.filter(
+      (r) =>
+        r.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        r.location.toLowerCase().includes(searchTerm.toLowerCase())
+    );
   }, [reports, activeStatus, searchTerm]);
 
   return (
