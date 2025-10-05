@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import "../fixit-css.css";
+import "./fixit-register.css";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 
@@ -89,7 +89,7 @@ export default function RegisterPage() {
     <>
       <header>
         <nav>
-          <Image src="/images/Fix-it_logo_2.png" alt="Fixit Logo" className="logo" width={160} height={40} />
+          <Image src="/images/Fix-it_logo_3.png" alt="Fixit Logo" className="logo" width={160} height={40} />
           <ul className="nav-list">
             <li>
               <Link href="/" style={{ marginRight: "2rem" }}>
