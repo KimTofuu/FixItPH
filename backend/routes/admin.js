@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const adminController = require('../controllers/adminController');
+const authenticateToken = require('../middleware/authenticateToken');
 const ResolvedReport = require('../models/ResolvedReport');
 
 router.post('/login', adminController.login);
