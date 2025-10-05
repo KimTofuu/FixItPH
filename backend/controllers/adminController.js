@@ -2,6 +2,7 @@ const bcrypt = require('bcryptjs');
 const Admin = require('../models/Admins');
 const jwt = require('jsonwebtoken');
 const Report = require('../models/Report');
+const ResolvedReport = require('../models/ResolvedReport');
 
 exports.login = async (req, res) => {
   try {
@@ -80,7 +81,7 @@ exports.updateReportStatus = async (req, res) => {
       res.status(200).json({ message: "Status updated", report });
     }
   } catch (err) {
+    console.error('Error updating report status:', err);
     res.status(500).json({ message: "Server error" });
-    console.error(err);
   }
 };
