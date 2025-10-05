@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import "../fixit-css.css";
+import "./admin-profile.css";
 
 interface ProfileData {
   firstName: string;
