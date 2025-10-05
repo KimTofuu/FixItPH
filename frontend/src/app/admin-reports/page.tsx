@@ -134,19 +134,22 @@ export default function AdminReportsPage() {
 
   // Filter by status + search
   const filteredReports = useMemo(() => {
-    let filtered = reports;
-    
+    let filtered: Report[] = reports ?? [];
+
     // Only filter by status if not showing resolved reports
     if (activeStatus !== 'resolved') {
-      filtered = filtered.filter((r) => r.status.toLowerCase() === activeStatus.toLowerCase());
+      filtered = filtered.filter(
+        (r) => (r.status ?? '').toLowerCase() === activeStatus.toLowerCase()
+      );
     }
-    
-    // Always apply search filter
-    return filtered.filter(
-      (r) =>
-        r.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        r.location.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+
+    const term = (searchTerm ?? '').toLowerCase().trim();
+
+    return filtered.filter((r) => {
+      const title = (r.title ?? '').toLowerCase();
+      const location = (r.location ?? '').toLowerCase();
+      return title.includes(term) || location.includes(term);
+    });
   }, [reports, activeStatus, searchTerm]);
 
   return (
