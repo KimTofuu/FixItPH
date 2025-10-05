@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import Head from "next/head";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import "../fixit-css.css";
+import "./admin-dashboard.css";
 import Image from "next/image";
 
 interface Report {
