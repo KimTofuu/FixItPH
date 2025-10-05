@@ -92,6 +92,7 @@ export default function UserFeedPage() {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reports`);
       if (res.ok) {
         const data = await res.json();
+        console.log('Reports with images:', data); // Debug to see image URLs
         setReports(data);
       }
     };
@@ -168,6 +169,20 @@ export default function UserFeedPage() {
         )
       );
     }
+  };
+
+  const ReportImage = ({ src, alt }: { src: string; alt: string }) => {
+    const [imgSrc, setImgSrc] = useState(src || "/images/broken-streetlights.jpg");
+
+    return (
+      <Image
+        src={imgSrc}
+        alt={alt}
+        width={450}
+        height={250}
+        onError={() => setImgSrc("/images/broken-streetlights.jpg")}
+      />
+    );
   };
 
   const handleReportSubmit = async (e: React.FormEvent) => {
@@ -267,7 +282,19 @@ export default function UserFeedPage() {
                     <p className="report-details">{r.description}</p>
                     <span className={`report-status ${r.status.toLowerCase().replace(" ", "-")}`}>{r.status}</span>
                     </div>
-                    <div className="report-image"><Image src={"/images/broken-streetlights.jpg"} alt="Report Image" width={450} height={250} /></div>
+                    <div className="report-image">
+                      <Image 
+                        src={r.image || "/images/broken-streetlights.jpg"} // Use actual image URL or fallback
+                        alt="Report Image" 
+                        width={450} 
+                        height={250}
+                        onError={(e) => {
+                          // Fallback if Cloudinary image fails to load
+                          e.currentTarget.src = "/images/broken-streetlights.jpg";
+                        }}
+                      />
+                      <ReportImage src={r.image} alt="Report Image" />
+                    </div>
                     </div>
                     <div className="report-comments">
                       <h4>Comments</h4>
@@ -335,7 +362,25 @@ export default function UserFeedPage() {
                     id="imageUpload"
                     name="image"
                     accept="image/*"
-                    onChange={e => setReportForm({ ...reportForm, image: e.target.files?.[0] || null })}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        setReportForm({ ...reportForm, image: file });
+                        
+                        // Show local preview before upload
+                        const reader = new FileReader();
+                        reader.onload = (event) => {
+                          const preview = document.getElementById('imagePreview') as HTMLElement;
+                          if (preview && event.target?.result) {
+                            preview.innerHTML = `
+                              <img src="${event.target.result}" style="width: 100%; height: 150px; object-fit: cover; border-radius: 4px;" />
+                              <button type="button" onclick="this.parentElement.innerHTML=''" class="remove-btn">✖</button>
+                            `;
+                          }
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
                   />
                   <div id="imagePreview" className="image-preview">
                     <a href="#" id="imageLink" target="_blank"></a>
