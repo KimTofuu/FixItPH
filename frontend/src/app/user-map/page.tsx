@@ -163,13 +163,31 @@ export default function UserMapPage() {
     }
   }
 
+  const ReportImage = ({ src, alt }: { src: string; alt: string }) => {
+      const [imgSrc, setImgSrc] = useState(src || "/images/broken-streetlights.jpg");
+  
+      return (
+        <Image
+          src={imgSrc}
+          alt={alt}
+          width={450}
+          height={250}
+          onError={() => setImgSrc("/images/broken-streetlights.jpg")}
+        />
+      );
+    };
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) setUploadedFile(file);
+    if (file) {
+      setUploadedFile(file);
+      setReportForm({ ...reportForm, image: file }); // <-- Add this line
+    }
   };
 
   const removeImage = () => {
     setUploadedFile(null);
+    setReportForm({ ...reportForm, image: null }); // <-- Add this line
   };
 
   const handleReportSubmit = async (e: React.FormEvent) => {
@@ -344,12 +362,7 @@ export default function UserMapPage() {
                     id="imageUpload"
                     name="image"
                     accept="image/*"
-                    onChange={(e) =>
-                      setReportForm({
-                        ...reportForm,
-                        image: e.target.files?.[0] || null,
-                      })
-                    }
+                    onChange={handleImageChange}
                   />
                   {uploadedFile && (
                     <div id="imagePreview" className="image-preview">

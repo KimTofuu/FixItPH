@@ -1,26 +1,43 @@
 const Report = require('../models/Report');
 const User = require('../models/Users');
+const cloudinary = require('../config/cloudinary');
 
 // Create a new report
 exports.createReport = async (req, res) => {
   try {
     const { title, description, location, latitude, longitude } = req.body;
-    const image = req.file ? req.file.filename : null;
-    const user = req.user.userId;
+    const userId = req.user.userId;
+
+    let imageUrl = null;
+    
+    // Upload image to Cloudinary if provided
+    if (req.file) {
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: 'fixit-reports', // Optional: organize in folders
+        transformation: [
+          { width: 800, height: 600, crop: 'limit' }, // Resize image
+          { quality: 'auto' } // Auto optimize quality
+        ]
+      });
+      imageUrl = result.secure_url;
+    }
+
     const newReport = new Report({
       title,
       description,
-      image,
+      image: imageUrl, // Store Cloudinary URL instead of local path
       location,
-      latitude, 
-      longitude,  
-      user,
+      latitude,
+      longitude,
+      user: userId,
+      status: 'pending',
     });
+
     await newReport.save();
-    res.status(201).json({ message: 'Report submitted successfully' });
+    res.status(201).json({ message: 'Report created successfully', report: newReport });
   } catch (err) {
-    res.status(500).json({ message: 'Server error' });
     console.error(err);
+    res.status(500).json({ message: 'Server error' });
   }
 };
 
