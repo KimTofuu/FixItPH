@@ -27,6 +27,7 @@ interface Report {
   timestamp: string;
   description: string;
   imageUrl?: string;
+  image?: string;
   user?: User;
   comments?: Comment[];
 }
@@ -275,12 +276,20 @@ export default function AdminReportsPage() {
                     </div>
                     {/* Image */}
                     <div className="report-image">
-                      <img
-                        src={"/images/broken-streetlights.jpg"}
-                        alt="Report Image"
-                        width={500}
-                        height={250}
-                      />
+                      { (r.imageUrl || r.image) ? (
+                        <img
+                          src={r.imageUrl ?? (r as any).image}
+                          alt="Report Image"
+                          style={{ width: "100%", maxWidth: 500, height: 250, objectFit: "cover", borderRadius: 6 }}
+                          onError={(e) => { (e.target as HTMLImageElement).src = "/images/broken-streetlights.jpg"; }}
+                        />
+                      ) : (
+                        <img
+                          src={"/images/broken-streetlights.jpg"}
+                          alt="Report Image"
+                          style={{ width: "100%", maxWidth: 500, height: 250, objectFit: "cover", borderRadius: 6 }}
+                        />
+                      ) }
                     </div>
                     </div>
                     {/* Comments */}
