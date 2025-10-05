@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import "../fixit-css.css";
+import "./user-profile.css";
 
 interface ProfileData {
   firstName: string;
@@ -27,6 +27,7 @@ export default function ProfilePage() {
   });
 
   const [isEditing, setIsEditing] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false); // <-- hamburger state
 
   const profilePic =
     "https://cdn-icons-png.flaticon.com/512/149/149071.png";
@@ -45,11 +46,8 @@ export default function ProfilePage() {
   const handleLogout = () => {
     const confirmed = window.confirm("Are you sure you want to log out?");
     if (confirmed) {
-      // Clear any stored user session (localStorage, cookies, etc.)
       localStorage.clear();
       console.log("User logged out");
-
-      // Redirect to login page
       window.location.href = "/login";
     }
   };
@@ -59,13 +57,25 @@ export default function ProfilePage() {
       {/* HEADER */}
       <header>
         <nav>
-          <Image src="/images/Fix-it_logo_2.png" alt="Fixit Logo" className="logo" width={160} height={40} />
-          <ul className="nav-list-user-side">
+          <Image
+            src="/images/Fix-it_logo_3.png"
+            alt="Fixit Logo"
+            className="logo"
+            width={160}
+            height={40}
+          />
+
+          {/* Hamburger Button */}
+          <button className="hamburger" onClick={() => setMenuOpen(!menuOpen)}>
+            ☰
+          </button>
+
+          <ul className={`nav-list-user-side ${menuOpen ? "open" : ""}`}>
             <li><Link href="/user-map">Map</Link></li>
             <li><Link href="/user-feed">Feed</Link></li>
             <li><Link href="/user-myreports">My Reports</Link></li>
             <li>
-              <Link href="/user-profile">
+              <Link style={{ color: "#aeaeaeff" }} href="/user-profile">
                 <Image src={profilePic} alt="User Profile" width={40} height={40} />
               </Link>
             </li>
@@ -76,7 +86,6 @@ export default function ProfilePage() {
       {/* PROFILE FORM */}
       <div id="profile-page">
         <div className="profile-container">
-
           <div className="profile-field">
             <input
               name="firstName"
@@ -149,7 +158,10 @@ export default function ProfilePage() {
           </div>
 
           {/* Buttons always visible */}
-          <div className="profile-actions" style={{ marginTop: "15px", gap: "10px", display: "flex" }}>
+          <div
+            className="profile-actions"
+            style={{ marginTop: "15px", gap: "10px", display: "flex" }}
+          >
             <button type="button" onClick={() => setIsEditing(true)} className="edit-btn">
               Edit
             </button>

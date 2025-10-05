@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import Head from "next/head";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import "../fixit-css.css";
+import "./user-map.css";
 import Image from "next/image";
 
 export default function UserMapPage() {
@@ -12,6 +12,7 @@ export default function UserMapPage() {
   const [profilePic] = useState(
     "https://cdn-icons-png.flaticon.com/512/149/149071.png"
   );
+  const [menuOpen, setMenuOpen] = useState(false); // for hamburger menu
 
   const feedMapRef = useRef<L.Map | null>(null);
   const modalMapRef = useRef<L.Map | null>(null);
@@ -19,11 +20,11 @@ export default function UserMapPage() {
 
   // Custom pin icon
   const customPin = L.icon({
-    iconUrl: "/images/pin.png", // your custom pin
+    iconUrl: "/images/pin.png",
     iconSize: [25, 41],
     iconAnchor: [12, 41],
     popupAnchor: [1, -34],
-    shadowUrl: "/images/marker-shadow.png", // optional shadow, can remove if not used
+    shadowUrl: "/images/marker-shadow.png",
     shadowSize: [41, 41],
   });
 
@@ -40,7 +41,7 @@ export default function UserMapPage() {
 
   useEffect(() => {
     const fetchReports = async () => {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reports`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reports`);
       if (res.ok) {
         const data = await res.json();
         setReports(data);
@@ -56,7 +57,8 @@ export default function UserMapPage() {
     feedMapRef.current = feedMap;
 
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>',
+      attribution:
+        '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>',
     }).addTo(feedMap);
   }, []);
 
@@ -64,8 +66,7 @@ export default function UserMapPage() {
     const feedMap = feedMapRef.current;
     if (!feedMap) return;
 
-    // Remove existing markers (optional, for updates)
-    feedMap.eachLayer(layer => {
+    feedMap.eachLayer((layer) => {
       if (layer instanceof L.Marker) {
         feedMap.removeLayer(layer);
       }
@@ -73,7 +74,9 @@ export default function UserMapPage() {
 
     reports.forEach((r) => {
       if (r.latitude && r.longitude) {
-        const m = L.marker([parseFloat(r.latitude), parseFloat(r.longitude)], { icon: customPin }).addTo(feedMap);
+        const m = L.marker([parseFloat(r.latitude), parseFloat(r.longitude)], {
+          icon: customPin,
+        }).addTo(feedMap);
         m.bindPopup(`
           <b>${r.title}</b><br>
           <b>Status:</b> ${r.status}<br>
@@ -82,7 +85,7 @@ export default function UserMapPage() {
       }
     });
   }, [reports, customPin]);
-  
+
   useEffect(() => {
     if (!modalOpen || modalMapRef.current) return;
 
@@ -99,18 +102,21 @@ export default function UserMapPage() {
       if (modalMarkerRef.current) {
         modalMarkerRef.current.setLatLng([lat, lng]);
       } else {
-        modalMarkerRef.current = L.marker([lat, lng], { icon: customPin }).addTo(modalMap);
+        modalMarkerRef.current = L.marker([lat, lng], {
+          icon: customPin,
+        }).addTo(modalMap);
       }
 
-      (document.getElementById("latitude") as HTMLInputElement).value = lat.toString();
-      (document.getElementById("longitude") as HTMLInputElement).value = lng.toString();
+      (document.getElementById("latitude") as HTMLInputElement).value =
+        lat.toString();
+      (document.getElementById("longitude") as HTMLInputElement).value =
+        lng.toString();
 
       const address = await getAddressFromCoords(lat, lng);
       (document.getElementById("address") as HTMLInputElement).value =
         address || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
 
-      // Update React state so the form submits correct values!
-      setReportForm(prev => ({
+      setReportForm((prev) => ({
         ...prev,
         address: address || `${lat.toFixed(5)}, ${lng.toFixed(5)}`,
         latitude: lat.toString(),
@@ -121,7 +127,10 @@ export default function UserMapPage() {
     setTimeout(() => modalMap.invalidateSize(), 200);
   }, [modalOpen]);
 
-  async function getAddressFromCoords(lat: number, lng: number): Promise<string | null> {
+  async function getAddressFromCoords(
+    lat: number,
+    lng: number
+  ): Promise<string | null> {
     try {
       const res = await fetch(
         `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`
@@ -133,10 +142,14 @@ export default function UserMapPage() {
     }
   }
 
-  async function getCoordsFromAddress(address: string): Promise<{ lat: number; lng: number } | null> {
+  async function getCoordsFromAddress(
+    address: string
+  ): Promise<{ lat: number; lng: number } | null> {
     try {
       const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+          address
+        )}`
       );
       const data = await res.json();
       if (data.length > 0) {
@@ -157,22 +170,6 @@ export default function UserMapPage() {
     setUploadedFile(null);
   };
 
-  const handleAddressChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const address = e.target.value;
-    const coords = await getCoordsFromAddress(address);
-    if (coords && modalMapRef.current) {
-      if (modalMarkerRef.current) {
-        modalMarkerRef.current.setLatLng([coords.lat, coords.lng]);
-      } else {
-        modalMarkerRef.current = L.marker([coords.lat, coords.lng], { icon: customPin }).addTo(modalMapRef.current);
-      }
-      modalMapRef.current.setView([coords.lat, coords.lng], 16);
-
-      (document.getElementById("latitude") as HTMLInputElement).value = coords.lat.toString();
-      (document.getElementById("longitude") as HTMLInputElement).value = coords.lng.toString();
-    }
-  };
-
   const handleReportSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -184,12 +181,10 @@ export default function UserMapPage() {
     formData.append("latitude", reportForm.latitude);
     formData.append("longitude", reportForm.longitude);
 
-    // Get the JWT token from localStorage
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
 
-    // Send the report with the Authorization header
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reports`, {
-      method: 'POST',
+      method: "POST",
       body: formData,
       headers: {
         Authorization: `Bearer ${token}`,
@@ -197,7 +192,6 @@ export default function UserMapPage() {
     });
 
     if (res.ok) {
-      // Optionally refresh the reports list
       setModalOpen(false);
     } else {
       alert("Failed to submit report");
@@ -208,7 +202,10 @@ export default function UserMapPage() {
     <>
       <Head>
         <title>FixIt PH - Community Reports</title>
-        <link href="https://fonts.googleapis.com/css?family=Inter" rel="stylesheet" />
+        <link
+          href="https://fonts.googleapis.com/css?family=Inter"
+          rel="stylesheet"
+        />
         <script
           src="https://kit.fontawesome.com/830b39c5c0.js"
           crossOrigin="anonymous"
@@ -223,18 +220,44 @@ export default function UserMapPage() {
             top: 0,
             left: 0,
             width: "100%",
-            background: "linear-gradient(to bottom, rgba(0,0,0,0.8), rgba(0,0,0,0))",
+            background:
+              "linear-gradient(to bottom, rgba(255, 255, 255, 0.8), rgba(0,0,0,0))",
             zIndex: 1000,
           }}
         >
-          <Image src="/images/Fix-it_logo_2.png" alt="Fixit Logo" className="logo" width={160} height={40} />
-          <ul className="nav-list-user-side">
-            <li><a href="/user-map">Map</a></li>
-            <li><a href="/user-feed">Feed</a></li>
-            <li><a href="/user-myreports">My Reports</a></li>
+          <Image
+            src="/images/Fix-it_logo_3.png"
+            alt="Fixit Logo"
+            className="logo"
+            width={160}
+            height={40}
+          />
+
+          {/* Hamburger button */}
+          <button className="hamburger" onClick={() => setMenuOpen(!menuOpen)}>
+            ☰
+          </button>
+
+          <ul
+            className={`nav-list-user-side ${menuOpen ? "open" : ""}`}
+            onClick={() => setMenuOpen(false)}
+          >
+            <li>
+              <a href="/user-map">Map</a>
+            </li>
+            <li>
+              <a href="/user-feed">Feed</a>
+            </li>
+            <li>
+              <a href="/user-myreports">My Reports</a>
+            </li>
             <li>
               <a href="/user-profile" className="profile-link">
-                <img src={profilePic} alt="User Profile" className="profile-pic" />
+                <img
+                  src={profilePic}
+                  alt="User Profile"
+                  className="profile-pic"
+                />
               </a>
             </li>
           </ul>
@@ -246,34 +269,33 @@ export default function UserMapPage() {
           <div className="map-row-2" style={{ position: "relative" }}>
             <div
               id="map"
-              style={{ width: "100%", height: "42rem", borderRadius: "0rem" }}
+              style={{ width: "100%", height: "40rem", borderRadius: "0rem" }}
             ></div>
 
-          <button
-            className="report-btn"
-            onClick={() => setModalOpen(true)}
-            style={{
-              padding: "0.7rem 1rem",
-              border: "none",
-              borderRadius: "6px",
-              fontSize: "1rem",
-              cursor: "pointer",
-              position: "absolute",
-              bottom: "6rem",
-              left: "2rem",
-              zIndex: 1000,
-              boxShadow: "0px 2px 6px rgba(0,0,0,0.2)",
-              display: "flex",          // make content horizontal
-              alignItems: "center",     // vertical centering
-              gap: "0.5rem", 
-            }}
-          >
+            <button
+              className="report-btn"
+              onClick={() => setModalOpen(true)}
+              style={{
+                padding: "0.7rem 1rem",
+                border: "none",
+                borderRadius: "6px",
+                fontSize: "1rem",
+                cursor: "pointer",
+                position: "absolute",
+                bottom: "6rem",
+                left: "2rem",
+                zIndex: 1000,
+                boxShadow: "0px 2px 6px rgba(0,0,0,0.2)",
+                display: "flex",
+                alignItems: "center",
+                gap: "0.5rem",
+              }}
+            >
               Add Report
             </button>
           </div>
         </div>
       </div>
-
 
       {modalOpen && (
         <div id="reportModal" className="modal" style={{ display: "flex" }}>
@@ -290,14 +312,21 @@ export default function UserMapPage() {
                   name="title"
                   placeholder="Report Title"
                   value={reportForm.title}
-                  onChange={e => setReportForm({ ...reportForm, title: e.target.value })}
+                  onChange={(e) =>
+                    setReportForm({ ...reportForm, title: e.target.value })
+                  }
                   required
                 />
                 <textarea
                   name="description"
                   placeholder="Describe the issue..."
                   value={reportForm.description}
-                  onChange={e => setReportForm({ ...reportForm, description: e.target.value })}
+                  onChange={(e) =>
+                    setReportForm({
+                      ...reportForm,
+                      description: e.target.value,
+                    })
+                  }
                   required
                 />
                 <label htmlFor="imageUpload">Upload Image</label>
@@ -307,7 +336,12 @@ export default function UserMapPage() {
                     id="imageUpload"
                     name="image"
                     accept="image/*"
-                    onChange={e => setReportForm({ ...reportForm, image: e.target.files?.[0] || null })}
+                    onChange={(e) =>
+                      setReportForm({
+                        ...reportForm,
+                        image: e.target.files?.[0] || null,
+                      })
+                    }
                   />
                   {uploadedFile && (
                     <div id="imagePreview" className="image-preview">
@@ -318,7 +352,11 @@ export default function UserMapPage() {
                       >
                         {uploadedFile.name}
                       </a>
-                      <button type="button" onClick={removeImage} className="remove-btn">
+                      <button
+                        type="button"
+                        onClick={removeImage}
+                        className="remove-btn"
+                      >
                         ✖
                       </button>
                     </div>
@@ -334,17 +372,26 @@ export default function UserMapPage() {
                   name="address"
                   placeholder="Search or click on map"
                   value={reportForm.address}
-                  onChange={e => setReportForm({ ...reportForm, address: e.target.value })}
+                  onChange={(e) =>
+                    setReportForm({ ...reportForm, address: e.target.value })
+                  }
                   required
                 />
                 <input type="hidden" id="latitude" name="latitude" />
                 <input type="hidden" id="longitude" name="longitude" />
                 <div
                   id="modal-map"
-                  style={{ width: "100%", height: "18rem", margin: "10px 0", borderRadius: "6px" }}
+                  style={{
+                    width: "100%",
+                    height: "18rem",
+                    margin: "10px 0",
+                    borderRadius: "6px",
+                  }}
                 ></div>
               </div>
-              <button type="submit" className="submit-btn">Submit Report</button>
+              <button type="submit" className="submit-btn">
+                Submit Report
+              </button>
             </form>
           </div>
         </div>

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import "../fixit-css.css";
+import "./fixit-login.css";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 
@@ -94,7 +94,7 @@ export default function LoginPage() {
       <header>
         <nav>
           <Image
-            src="/images/Fix-it_logo_2.png"
+            src="/images/Fix-it_logo_3.png"
             alt="Fixit Logo"
             className="logo"
             width={160}

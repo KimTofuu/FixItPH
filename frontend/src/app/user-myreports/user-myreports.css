@@ -1,0 +1,237 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&display=swap');
+
+* {
+	margin: 0;
+	padding: 0;
+	font-family: 'Inter', sans-serif;
+	box-sizing: border-box;
+}
+
+html {
+	font-size: 16px;
+	scroll-behavior: smooth;
+}
+
+body{
+  overflow: hidden;
+  font-family: 'Roboto', sans-serif;
+  background: #ecf7f7ff;
+}
+
+#header {
+	background-size: cover;
+	background-position: center;
+    
+}
+
+.logo {
+ margin-left: 2rem;
+ width: 160;
+ height: 40;
+}
+
+nav {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	flex-wrap: wrap;
+  background-color: transparent;
+  height: 6rem;
+}
+
+.nav-list-user-side {
+  display: flex;           
+  flex-direction: row;    
+  align-items: center;     
+  gap: 1.5rem;             
+  list-style: none;        
+  margin-right: 2rem;
+  padding: 0;
+}
+
+.nav-list-user-side li {
+  display: inline-flex;    
+  align-items: center;
+  margin: 0 0.2rem;
+}
+
+.nav-list-user-side a {
+  text-decoration: none;
+  color: #000000;
+  font-size: 1.2rem;
+  transition: transform 0.2s ease-in-out;
+}
+
+.nav-list-user-side a:hover {
+  transform: scale(1.05);
+}
+
+.profile-pic, .admin-profile-pic {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+
+#user-myreports {
+  margin: 1rem auto;
+  padding: 1rem;
+  max-width: 90rem;
+}
+
+.myreports-container {
+  display: flex;
+  gap: 2rem;                
+  align-items: flex-start; 
+  margin: 1rem;  
+  margin-top: -2rem;
+}
+
+
+.myreports-column-1 {
+  flex: 2;                  
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.myreports-search {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  width: 25%;
+}
+
+.myreports-search input {
+  flex: 1;
+  padding: 0.6rem 1rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+}
+
+
+.report-card, .admin-report-card {
+  background: #fff;
+  padding: 1rem;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  margin-bottom: 1rem;
+}
+
+.report-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.report-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 10px;
+  margin-bottom: 1rem;
+}
+
+.report-user {
+  font-weight: bold;
+  color: #333;
+  margin-right: auto;
+  margin-bottom: 1rem;
+}
+
+.report-status {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: bold;
+  margin-top: 0.5rem;
+   margin-bottom: 1rem;
+}
+
+.report-status.pending {
+  background: #ffeeba;
+  color: #856404;
+}
+
+.report-status.in-progress {
+  background: #bee5eb;
+  color: #0c5460;
+}
+
+.report-status.resolved {
+  background: #c3e6cb;
+  color: #155724;
+}
+
+.report-image img {
+  max-width: 100%;
+  border-radius: 8px;
+  margin-top: 0.5rem;
+   margin-bottom: 1rem;
+}
+
+.report-comments {
+  margin-top: 1rem;
+}
+
+.comment-list {
+  padding-left: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.comment-input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+   margin-top: 1rem;
+}
+
+.report-row {
+  display: flex; 
+  flex-direction: row; 
+  justify-content: space-between;
+}
+
+.hamburger {
+  display: none;
+  font-size: 2rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin-right: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .hamburger {
+    display: block;
+    margin-left: auto;
+  }
+
+  .nav-list-user-side {
+    display: none;
+    flex-direction: column;
+    gap: 1rem;
+    position: absolute;
+    top: 60px;
+    right: 10px;
+    background: white;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  }
+
+  .nav-list-user-side.open {
+    display: flex;
+  }
+}
+
+@media (max-width: 640px) {
+.report-row{
+  flex-direction: column;
+}
+}
