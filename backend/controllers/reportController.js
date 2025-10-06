@@ -1,4 +1,5 @@
 const Report = require('../models/Report');
+const ResolvedReport = require('../models/ResolvedReport');
 const User = require('../models/Users');
 const cloudinary = require('../config/cloudinary');
 
@@ -78,6 +79,28 @@ exports.getAllResolvedReports = async (req, res) => {
     res.json(reports);
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// return all resolved reports (from ResolvedReport collection)
+exports.getResolvedReports = async (req, res) => {
+  try {
+    const resolved = await ResolvedReport.find().lean();
+    return res.json(resolved);
+  } catch (err) {
+    console.error('getResolvedReport error', err);
+    return res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// return count of resolved reports (fast)
+exports.getResolvedReportsCount = async (req, res) => {
+  try {
+    const count = await ResolvedReport.countDocuments();
+    return res.json({ count });
+  } catch (err) {
+    console.error('getResolvedReportsCount error', err);
+    return res.status(500).json({ message: 'Server error' });
   }
 };
 

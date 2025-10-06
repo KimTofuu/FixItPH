@@ -11,6 +11,11 @@ router.get('/getAllReports', reportController.getAllReports);
 router.get('/getAllPendingReports', reportController.getAllPendingReports);
 router.get('/getAllInProgressReports', reportController.getAllInProgressReports);
 router.get('/getAllResolvedReports', reportController.getAllResolvedReports);
+
+// new endpoints used by frontend
+router.get('/resolvedReports', reportController.getResolvedReports);
+router.get('/resolvedReports/count', reportController.getResolvedReportsCount);
+
 router.post('/getReport', reportController.getReport);
 router.post('/getReportByUser', reportController.getReportByUser);
 router.get('/my', authenticateToken, reportController.getMyReports);
