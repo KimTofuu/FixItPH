@@ -156,7 +156,7 @@ export default function LoginPage() {
             <button className="login-btn" type="submit">Log in</button>
 
             {/* 🔹 Google Auth Button */}
-            <button
+            {/* <button
               type="button"
               className="google-signin-btn"
               onClick={handleGoogleAuth}
@@ -168,7 +168,7 @@ export default function LoginPage() {
                 height={18}
               />
               <span>Continue with Google</span>
-            </button>
+            </button> */}
           </form>
 
           {/* Admin Login */}
@@ -203,7 +203,7 @@ export default function LoginPage() {
             <button className="login-btn" type="submit">Log in</button>
 
             {/* 🔹 Google Auth Button */}
-            <button
+            {/* <button
               type="button"
               className="google-signin-btn"
               onClick={handleGoogleAuth}
@@ -215,7 +215,7 @@ export default function LoginPage() {
                 height={18}
               />
               <span>Continue with Google</span>
-            </button>
+            </button> */}
           </form>
         </div>
       </div>
