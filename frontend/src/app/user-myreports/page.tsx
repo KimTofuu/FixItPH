@@ -188,8 +188,8 @@ export default function UserMyReportsPage() {
                         <Image
                           src={report.image || "/images/broken-streetlights.jpg"}
                           alt="Report Image"
-                          width={800}
-                          height={500}
+                          width={500}
+                          height={250}
                         />
                       </div>
                     </div>
