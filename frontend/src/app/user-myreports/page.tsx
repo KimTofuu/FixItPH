@@ -79,9 +79,12 @@ export default function UserMyReportsPage() {
     })();
   }, []);
 
-  // Initialize map when edit modal opens
+  // Initialize map when edit modal opens (robust: place initial marker from editForm coords and cleanup)
   useEffect(() => {
-    if (editModalVisible && editMapRef.current && !editMap && LRef) {
+    if (!LRef) return;
+
+    // open modal -> create map
+    if (editModalVisible && editMapRef.current && !editMap) {
       const L = LRef;
       const map = L.map(editMapRef.current).setView([14.8292, 120.2828], 13);
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -96,6 +99,7 @@ export default function UserMyReportsPage() {
         popupAnchor: [1, -34],
       });
 
+      // place marker on map click
       map.on("click", async (e: any) => {
         const { lat, lng } = e.latlng;
 
@@ -106,7 +110,6 @@ export default function UserMyReportsPage() {
           setEditMarker(marker);
         }
 
-        // update form fields
         const address = await getAddressFromCoords(lat, lng);
         setEditForm((prev) => ({
           ...prev,
@@ -115,21 +118,61 @@ export default function UserMyReportsPage() {
           longitude: lng,
         }));
       });
-    }
-    // cleanup when modal closes: remove map & marker
-    return () => {
-      if (!editModalVisible && editMap) {
-        try {
-          editMap.remove();
-        } catch (e) {
-          // ignore
-        }
-        setEditMap(null);
-        setEditMarker(null);
+
+      // if editForm already has coords, place initial marker
+      const latNum = Number(editForm.latitude);
+      const lngNum = Number(editForm.longitude);
+      if (Number.isFinite(latNum) && Number.isFinite(lngNum)) {
+        map.setView([latNum, lngNum], 14);
+        const marker = L.marker([latNum, lngNum], { icon: customPin }).addTo(map);
+        setEditMarker(marker);
       }
-    };
+    }
+
+    // cleanup when modal closes
+    if (!editModalVisible && editMap) {
+      try {
+        editMap.remove();
+      } catch (e) {}
+      setEditMap(null);
+      setEditMarker(null);
+    }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editModalVisible, LRef]);
+
+  // keep marker in sync when editForm coords change (e.g., user types coordinates)
+  useEffect(() => {
+    if (!editMap || !LRef) return;
+
+    const lat = Number(editForm.latitude);
+    const lng = Number(editForm.longitude);
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+
+    const L = LRef;
+    const customPin = L.icon({
+      iconUrl: "/images/pin.png",
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+    });
+
+    editMap.setView([lat, lng], 14);
+
+    if (editMarker) {
+      try {
+        editMarker.setLatLng([lat, lng]);
+      } catch (e) {
+        // if old marker invalid, create new
+        const marker = L.marker([lat, lng], { icon: customPin }).addTo(editMap);
+        setEditMarker(marker);
+      }
+    } else {
+      const marker = L.marker([lat, lng], { icon: customPin }).addTo(editMap);
+      setEditMarker(marker);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editForm.latitude, editForm.longitude, editMap, LRef]);
 
   const getAddressFromCoords = async (lat: number, lng: number) => {
     try {
