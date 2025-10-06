@@ -117,7 +117,7 @@ export default function LoginPage() {
           </h1>
 
           {/* Resident Login */}
-          <form
+          <form autoComplete="off"
             id="resident-form"
             className={isResident ? "active" : ""}
             onSubmit={handleSubmit}
@@ -152,7 +152,7 @@ export default function LoginPage() {
           </form>
 
           {/* Admin Login */}
-          <form 
+          <form autoComplete="off"
             id="admin-form" 
             className={!isResident ? "active" : ""}
             onSubmit={handleAdminSubmit}

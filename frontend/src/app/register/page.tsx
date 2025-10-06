@@ -103,7 +103,7 @@ export default function RegisterPage() {
       <div className="register">
         <div className="register-container">
           <h1 id="form-title">Register</h1>
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} autoComplete="off">
             <input name="fName" type="text" placeholder="First Name" value={form.fName} onChange={handleChange} required />
             <input name="lName" type="text" placeholder="Last Name" value={form.lName} onChange={handleChange} required />
             <input name="email" type="email" placeholder="Email" value={form.email} onChange={handleChange} required />
