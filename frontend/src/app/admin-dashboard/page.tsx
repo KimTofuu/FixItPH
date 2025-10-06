@@ -11,14 +11,15 @@ interface Report {
   title: string;
   status: "Reported" | "Processing" | "Resolved";
   location: string;
-  latitude: string;
-  longitude: string;
+  latitude?: string;
+  longitude?: string;
 }
 
 type StatusFilter = "Reported" | "Processing" | "Resolved" | "All";
 
 export default function AdminDashboardPage() {
   const [reports, setReports] = useState<Report[]>([]);
+  const [resolvedReports, setResolvedReports] = useState<Report[]>([]); // <-- new
   const [stats, setStats] = useState({
     reported: 0,
     processing: 0,
@@ -45,19 +46,68 @@ export default function AdminDashboardPage() {
     const fetchReports = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reports`);
-        if (!res.ok) {
+        const [resAll, resResolved] = await Promise.allSettled([
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/reports`),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/reports/resolvedReports`),
+        ]);
+
+        if (resAll.status !== "fulfilled" || !resAll.value.ok) {
           throw new Error("Failed to fetch reports from API");
         }
-        const data: Report[] = await res.json();
-        setReports(data);
 
-        const newStats = {
-          reported: data.filter((r) => r.status === "Reported").length,
-          processing: data.filter((r) => r.status === "Processing").length,
-          resolved: data.filter((r) => r.status === "Resolved").length,
+        const data: any[] = await resAll.value.json();
+
+        const normalizeStatus = (s?: string) => {
+          if (!s) return "Reported";
+          const lower = s.toLowerCase();
+          if (lower === "pending" || lower === "reported") return "Reported";
+          if (lower === "in-progress" || lower === "processing") return "Processing";
+          if (lower === "resolved") return "Resolved";
+          return lower.charAt(0).toUpperCase() + lower.slice(1);
         };
-        setStats(newStats);
+
+        const transformed: Report[] = data.map((r) => ({
+          id: r._id || r.id,
+          title: r.title || r.subject || "No title",
+          status: normalizeStatus((r as any).status) as Report["status"],
+          location: r.location || r.address || "",
+          latitude: r.latitude?.toString?.() || r.lat?.toString?.() || "",
+          longitude: r.longitude?.toString?.() || r.lng?.toString?.() || "",
+        }));
+
+        setReports(transformed);
+
+        // handle resolved list
+        let resolvedCount = 0;
+        if (resResolved.status === "fulfilled" && resResolved.value.ok) {
+          try {
+            const resolvedData = await resResolved.value.json();
+            const resolvedTransformed: Report[] = Array.isArray(resolvedData)
+              ? resolvedData.map((r: any) => ({
+                  id: r._id || r.id,
+                  title: r.title || r.subject || "No title",
+                  status: "Resolved",
+                  location: r.location || r.address || "",
+                  latitude: r.latitude?.toString?.() || r.lat?.toString?.() || "",
+                  longitude: r.longitude?.toString?.() || r.lng?.toString?.() || "",
+                }))
+              : [];
+            setResolvedReports(resolvedTransformed);
+            resolvedCount = resolvedTransformed.length;
+          } catch {
+            setResolvedReports([]);
+            resolvedCount = transformed.filter((r) => r.status === "Resolved").length;
+          }
+        } else {
+          setResolvedReports([]);
+          resolvedCount = transformed.filter((r) => r.status === "Resolved").length;
+        }
+
+        setStats({
+          reported: transformed.filter((r) => r.status === "Reported").length,
+          processing: transformed.filter((r) => r.status === "Processing").length,
+          resolved: resolvedCount,
+        });
       } catch (error) {
         console.error("Error fetching reports:", error);
       } finally {
@@ -77,6 +127,7 @@ export default function AdminDashboardPage() {
     }).addTo(map);
   }, []);
 
+  // map markers: use resolvedReports when showing Resolved; when All, merge reports + resolvedReports
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
@@ -87,17 +138,24 @@ export default function AdminDashboardPage() {
       }
     });
 
-    const reportsToShow =
-      filterStatus === "All"
-        ? reports
-        : reports.filter((report) => report.status === filterStatus);
+    let reportsToShow: Report[] = [];
+    if (filterStatus === "Resolved") {
+      reportsToShow = resolvedReports;
+    } else if (filterStatus === "All") {
+      // combine reports (non-resolved) with resolvedReports (separate collection)
+      const nonResolved = reports.filter((r) => r.status !== "Resolved");
+      reportsToShow = [...nonResolved, ...resolvedReports];
+    } else {
+      reportsToShow = reports.filter((report) => report.status === filterStatus);
+    }
 
     reportsToShow.forEach((report: Report) => {
       if (report.latitude && report.longitude) {
-        const marker = L.marker(
-          [parseFloat(report.latitude), parseFloat(report.longitude)],
-          { icon: customPin }
-        ).addTo(map);
+        const lat = parseFloat(report.latitude as string);
+        const lng = parseFloat(report.longitude as string);
+        if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+
+        const marker = L.marker([lat, lng], { icon: customPin }).addTo(map);
         marker.bindPopup(`
           <b>${report.title}</b><br>
           <b>Status:</b> ${report.status}<br>
@@ -105,7 +163,7 @@ export default function AdminDashboardPage() {
         `);
       }
     });
-  }, [reports, filterStatus, customPin]);
+  }, [reports, resolvedReports, filterStatus, customPin]);
 
   const handleFilterClick = (status: StatusFilter) => {
     setFilterStatus((prevStatus) => (prevStatus === status ? "All" : status));

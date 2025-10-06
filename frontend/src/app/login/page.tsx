@@ -39,7 +39,7 @@ export default function LoginPage() {
     
     const formData = new FormData(e.target as HTMLFormElement);
     const adminData = {
-      username: formData.get("username") as string,
+      officialEmail: formData.get("officialEmail") as string,
       password: formData.get("password") as string,
     };
 

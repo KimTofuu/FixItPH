@@ -6,8 +6,8 @@ const ResolvedReport = require('../models/ResolvedReport');
 
 exports.login = async (req, res) => {
   try {
-    const { email, password } = req.body;
-    const admin = await Admin.findOne({ officialEmail: email });
+    const { officialEmail, password } = req.body;
+    const admin = await Admin.findOne({ officialEmail });
     if (!admin) {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
