@@ -178,7 +178,7 @@ export default function RegisterPage() {
 
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
               <input name="email" type="email" placeholder="Email" value={form.email} onChange={(e) => { setForm({ ...form, email: e.target.value }); setEmailVerified(false); setOtpSent(false); }} required />
-              <button type="button" onClick={sendOtp} disabled={sendingOtp || emailVerified}>
+              <button className="otp-btn" type="button" onClick={sendOtp} disabled={sendingOtp || emailVerified}>
                 {sendingOtp ? "Sending..." : emailVerified ? "Verified" : "Send OTP"}
               </button>
             </div>
@@ -186,7 +186,7 @@ export default function RegisterPage() {
             {otpSent && !emailVerified && (
               <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
                 <input placeholder="Enter OTP" value={otp} onChange={(e) => setOtp(e.target.value)} />
-                <button type="button" onClick={verifyOtp} disabled={verifyingOtp}>
+                <button className="otp-btn" type="button" onClick={verifyOtp} disabled={verifyingOtp}>
                   {verifyingOtp ? "Verifying..." : "Verify OTP"}
                 </button>
               </div>

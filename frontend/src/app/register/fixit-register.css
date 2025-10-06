@@ -215,6 +215,14 @@ input::placeholder {
 }
 
 
+.otp-btn{
+  background: #00CCCB;
+  color: #ffffff;
+  border: none;
+  padding: 0.2rem 0.2rem;
+  border-radius: 0.5rem;
+}
+
 /* ================== MEDIA QUERIES ================== */
 
 
