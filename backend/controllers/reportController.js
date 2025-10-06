@@ -2,6 +2,7 @@ const Report = require('../models/Report');
 const ResolvedReport = require('../models/ResolvedReport');
 const User = require('../models/Users');
 const cloudinary = require('../config/cloudinary');
+const fs = require('fs');
 
 // Create a new report
 exports.createReport = async (req, res) => {
@@ -194,5 +195,66 @@ exports.deleteReport = async (req, res) => {
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
     console.error(err);
+  }
+};
+
+// update report (PATCH /reports/:id)
+exports.updateReport = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const userId = req.userId;
+
+    const report = await Report.findById(id);
+    if (!report) return res.status(404).json({ error: 'Not found' });
+
+    if (userId && report.user && report.user.toString() !== userId) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+
+    const { title, description, location, latitude, longitude, removeImage } = req.body;
+    if (title !== undefined) report.title = title;
+    if (description !== undefined) report.description = description;
+    if (location !== undefined) report.location = location;
+    if (latitude !== undefined) report.latitude = latitude;
+    if (longitude !== undefined) report.longitude = longitude;
+
+    // handle file upload -> Cloudinary
+    if (req.file) {
+      try {
+        const result = await cloudinary.uploader.upload(req.file.path, {
+          folder: 'fixit-reports',
+          transformation: [
+            { width: 800, height: 600, crop: 'limit' },
+            { quality: 'auto' },
+          ],
+        });
+
+        // set image url from Cloudinary
+        report.image = result.secure_url;
+
+        // optional: store public_id for future deletion (uncomment if model has cloudinaryId)
+        // report.cloudinaryId = result.public_id;
+      } catch (uploadErr) {
+        console.error('Cloudinary upload error:', uploadErr);
+        return res.status(500).json({ error: 'Failed to upload image' });
+      } finally {
+        // remove temp file saved by multer
+        if (req.file && req.file.path) {
+          fs.unlink(req.file.path, (err) => {
+            if (err) console.warn('Failed to remove temp file:', err);
+          });
+        }
+      }
+    } else if (removeImage === 'true' || removeImage === true) {
+      report.image = null;
+      // optional: destroy previous Cloudinary asset if you stored public_id
+      // if (report.cloudinaryId) { await cloudinary.uploader.destroy(report.cloudinaryId); report.cloudinaryId = undefined; }
+    }
+
+    await report.save();
+    return res.json(report);
+  } catch (err) {
+    console.error('updateReport error', err);
+    return res.status(500).json({ error: 'Server error' });
   }
 };
