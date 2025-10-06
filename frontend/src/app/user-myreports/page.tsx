@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import "./user-myreports.css";
-import "./user-myreports.css"; // modal/form/map styles reused
 import { toast } from "react-toastify";
 
 interface Report {
@@ -28,7 +27,7 @@ export default function UserMyReportsPage() {
   const [reports, setReports] = useState<Report[]>([]);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  // Edit modal state
+  
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editForm, setEditForm] = useState({
     _id: "",
@@ -42,7 +41,7 @@ export default function UserMyReportsPage() {
     removeImage: false,
   });
 
-  // Leaflet refs for edit modal
+ 
   const editMapRef = useRef<HTMLDivElement | null>(null);
   const [LRef, setLRef] = useState<any>(null);
   const [editMap, setEditMap] = useState<any>(null);
@@ -68,7 +67,7 @@ export default function UserMyReportsPage() {
     fetchReports();
   }, []);
 
-  // Dynamically import Leaflet only on client
+ 
   useEffect(() => {
     (async () => {
       if (typeof window !== "undefined") {
@@ -79,69 +78,75 @@ export default function UserMyReportsPage() {
     })();
   }, []);
 
-  // Initialize map when edit modal opens (robust: place initial marker from editForm coords and cleanup)
-  useEffect(() => {
-    if (!LRef) return;
+ 
+  // Initialize and handle Edit Report modal map
+useEffect(() => {
+  if (!LRef) return;
 
-    // open modal -> create map
-    if (editModalVisible && editMapRef.current && !editMap) {
-      const L = LRef;
-      const map = L.map(editMapRef.current).setView([14.8292, 120.2828], 13);
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: "&copy; OpenStreetMap contributors",
-      }).addTo(map);
-      setEditMap(map);
+  // When modal opens
+  if (editModalVisible && editMapRef.current) {
+    const L = LRef;
 
-      const customPin = L.icon({
-        iconUrl: "/images/pin.png",
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
-        popupAnchor: [1, -34],
-      });
-
-      // place marker on map click
-      map.on("click", async (e: any) => {
-        const { lat, lng } = e.latlng;
-
-        if (editMarker) {
-          editMarker.setLatLng([lat, lng]);
-        } else {
-          const marker = L.marker([lat, lng], { icon: customPin }).addTo(map);
-          setEditMarker(marker);
-        }
-
-        const address = await getAddressFromCoords(lat, lng);
-        setEditForm((prev) => ({
-          ...prev,
-          location: address || `${lat.toFixed(5)}, ${lng.toFixed(5)}`,
-          latitude: lat,
-          longitude: lng,
-        }));
-      });
-
-      // if editForm already has coords, place initial marker
-      const latNum = Number(editForm.latitude);
-      const lngNum = Number(editForm.longitude);
-      if (Number.isFinite(latNum) && Number.isFinite(lngNum)) {
-        map.setView([latNum, lngNum], 14);
-        const marker = L.marker([latNum, lngNum], { icon: customPin }).addTo(map);
-        setEditMarker(marker);
-      }
+    // Clean up any existing map in container to prevent "already initialized" issues
+    if (editMapRef.current.innerHTML !== "") {
+      editMapRef.current.innerHTML = "";
     }
 
-    // cleanup when modal closes
-    if (!editModalVisible && editMap) {
-      try {
-        editMap.remove();
-      } catch (e) {}
-      setEditMap(null);
-      setEditMarker(null);
-    }
+    // Default to report’s coordinates, or Olongapo City if missing
+    const lat = Number(editForm.latitude) || 14.8292;
+    const lng = Number(editForm.longitude) || 120.2828;
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [editModalVisible, LRef]);
+    // Initialize map
+    const map = L.map(editMapRef.current).setView([lat, lng], 14);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "&copy; OpenStreetMap contributors",
+    }).addTo(map);
+    setEditMap(map);
 
-  // keep marker in sync when editForm coords change (e.g., user types coordinates)
+    // Create the pin icon
+    const customPin = L.icon({
+      iconUrl: "/images/pin.png",
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+    });
+
+    // Place the existing marker (the one from the report)
+    let marker = L.marker([lat, lng], { icon: customPin }).addTo(map);
+    setEditMarker(marker);
+
+    // On map click: move marker and update form
+    map.on("click", async (e: any) => {
+      const { lat, lng } = e.latlng;
+
+      // Move the existing marker instead of creating a new one
+      marker.setLatLng([lat, lng]);
+
+      // Reverse geocode for address
+      const address = await getAddressFromCoords(lat, lng);
+      setEditForm((prev) => ({
+        ...prev,
+        location: address || `${lat.toFixed(5)}, ${lng.toFixed(5)}`,
+        latitude: lat,
+        longitude: lng,
+      }));
+    });
+
+  
+    setTimeout(() => map.invalidateSize(), 200);
+  }
+
+  
+  if (!editModalVisible && editMap) {
+    try {
+      editMap.remove();
+    } catch (e) {}
+    setEditMap(null);
+    setEditMarker(null);
+  }
+}, [editModalVisible, LRef]);
+
+  
   useEffect(() => {
     if (!editMap || !LRef) return;
 
@@ -163,7 +168,7 @@ export default function UserMyReportsPage() {
       try {
         editMarker.setLatLng([lat, lng]);
       } catch (e) {
-        // if old marker invalid, create new
+        
         const marker = L.marker([lat, lng], { icon: customPin }).addTo(editMap);
         setEditMarker(marker);
       }
@@ -171,7 +176,7 @@ export default function UserMyReportsPage() {
       const marker = L.marker([lat, lng], { icon: customPin }).addTo(editMap);
       setEditMarker(marker);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
   }, [editForm.latitude, editForm.longitude, editMap, LRef]);
 
   const getAddressFromCoords = async (lat: number, lng: number) => {
@@ -216,7 +221,7 @@ export default function UserMyReportsPage() {
     }
   };
 
-  // Open edit modal and prefill form
+  
   const handleEditClick = (report: Report) => {
     setEditForm({
   _id: report._id,
@@ -232,11 +237,10 @@ export default function UserMyReportsPage() {
 
     setEditModalVisible(true);
 
-    // set marker when map initializes (use effect will place marker if map exists)
-    // We try to set marker if LRef & editMap exist already:
+    
     setTimeout(() => {
       if (LRef && editMapRef.current) {
-        // try to center map and place marker once editMap is ready
+        
         tryPlaceMarker(report);
       }
     }, 250);
@@ -244,7 +248,7 @@ export default function UserMyReportsPage() {
 
   const tryPlaceMarker = (report: Report) => {
     if (!LRef) return;
-    // if editMap is already created, place marker immediately
+    
     if (editMap) {
       const L = LRef;
       const lat = Number(report.latitude) || 14.8292;
@@ -265,7 +269,7 @@ export default function UserMyReportsPage() {
     }
   };
 
-  // Handle file select in edit modal
+  
   const onEditImageChange = (file?: File | null) => {
     if (file) {
       setEditForm((prev) => ({
@@ -278,7 +282,7 @@ export default function UserMyReportsPage() {
   };
 
   const handleRemoveImage = () => {
-    // if there was a preview from server, we mark removeImage true so backend can remove it
+    
     setEditForm((prev) => ({
       ...prev,
       imageFile: null,
@@ -303,7 +307,7 @@ export default function UserMyReportsPage() {
     if (editForm.imageFile) {
       formData.append("image", editForm.imageFile);
     }
-    // indicate removal to backend if requested
+    
     if (editForm.removeImage) {
       formData.append("removeImage", "true");
     }
@@ -312,7 +316,7 @@ export default function UserMyReportsPage() {
 
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reports/${editForm._id}`, {
-        method: "PATCH", // frontend uses PATCH; backend can also accept PUT if they prefer
+        method: "PATCH", 
         body: formData,
         headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       });
@@ -323,7 +327,7 @@ export default function UserMyReportsPage() {
         toast.success("Report updated successfully!");
         setEditModalVisible(false);
 
-        // cleanup created object URLs
+        
         if (editForm.imagePreview && editForm.imageFile) {
           URL.revokeObjectURL(editForm.imagePreview);
         }
