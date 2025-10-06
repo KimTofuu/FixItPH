@@ -50,6 +50,9 @@ export default function RegisterPage() {
   const [sendingOtp, setSendingOtp] = useState(false);
   const [verifyingOtp, setVerifyingOtp] = useState(false);
 
+  // modal control
+  const [showOtpModal, setShowOtpModal] = useState(false);
+
   const conditions = [
     { key: "length", text: "At least 8 characters", valid: form.password.length >= 8 },
     { key: "uppercase", text: "At least one uppercase letter", valid: /[A-Z]/.test(form.password) },
@@ -84,6 +87,7 @@ export default function RegisterPage() {
       const data = await res.json();
       if (res.ok) {
         setOtpSent(true);
+        setShowOtpModal(true);
         toast.success("OTP sent to your email");
       } else {
         toast.error(data.message || "Failed to send OTP");
@@ -106,6 +110,7 @@ export default function RegisterPage() {
       const data = await res.json();
       if (res.ok) {
         setEmailVerified(true);
+        setShowOtpModal(false);
         toast.success("Email verified");
       } else {
         toast.error(data.message || "Invalid OTP");
@@ -141,13 +146,6 @@ export default function RegisterPage() {
     }
   };
 
-  // 🔹 Google Authentication handler
-  const handleGoogleAuth = async () => {
-    toast.info("Redirecting to Google...");
-    // Example placeholder — connect your real Google auth here
-    // e.g. router.push("/api/auth/google") or Firebase logic
-  };
-
   return (
     <>
       <header>
@@ -173,26 +171,28 @@ export default function RegisterPage() {
       <div className="register">
         <div className="register-container">
           <form onSubmit={handleSubmit} autoComplete="off">
-            <input name="fName" type="text" placeholder="First Name" value={form.fName} onChange={(e) => setForm({ ...form, fName: e.target.value })} required />
-            <input name="lName" type="text" placeholder="Last Name" value={form.lName} onChange={(e) => setForm({ ...form, lName: e.target.value })} required />
+            <input name="fName" type="text" placeholder="First Name" value={form.fName} onChange={handleChange} required />
+            <input name="lName" type="text" placeholder="Last Name" value={form.lName} onChange={handleChange} required />
 
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-              <input name="email" type="email" placeholder="Email" value={form.email} onChange={(e) => { setForm({ ...form, email: e.target.value }); setEmailVerified(false); setOtpSent(false); }} required />
+              <input
+                name="email"
+                type="email"
+                placeholder="Email"
+                value={form.email}
+                onChange={(e) => {
+                  setForm({ ...form, email: e.target.value });
+                  setEmailVerified(false);
+                  setOtpSent(false);
+                }}
+                required
+              />
               <button className="otp-btn" type="button" onClick={sendOtp} disabled={sendingOtp || emailVerified}>
                 {sendingOtp ? "Sending..." : emailVerified ? "Verified" : "Send OTP"}
               </button>
             </div>
 
-            {otpSent && !emailVerified && (
-              <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
-                <input placeholder="Enter OTP" value={otp} onChange={(e) => setOtp(e.target.value)} />
-                <button className="otp-btn" type="button" onClick={verifyOtp} disabled={verifyingOtp}>
-                  {verifyingOtp ? "Verifying..." : "Verify OTP"}
-                </button>
-              </div>
-            )}
-
-            {/* Password input */}
+            {/* Password inputs */}
             <div className="password-wrapper">
               <input
                 name="password"
@@ -210,18 +210,15 @@ export default function RegisterPage() {
 
               {showConditions && (
                 <div className="password-conditions">
-                  {conditions
-                    .filter((c) => !c.valid)
-                    .map((c) => (
-                      <div key={c.key} className="condition-card">
-                        {c.text}
-                      </div>
-                    ))}
+                  {conditions.filter((c) => !c.valid).map((c) => (
+                    <div key={c.key} className="condition-card">
+                      {c.text}
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
 
-            {/* Confirm password */}
             <div className="password-wrapper">
               <input
                 name="confirmPassword"
@@ -243,27 +240,35 @@ export default function RegisterPage() {
             <input name="municipality" type="text" placeholder="Municipality" value={form.municipality} onChange={handleChange} required />
             <input type="tel" id="contact" name="contact" placeholder="Enter contact number" pattern="[0-9]{10,15}" value={form.contact} onChange={handleChange} required />
 
-            {/* <button className="register-btn" type="submit">Register</button> */}
-
-            {/* 🔹 Continue with Google button */}
-            {/* 🔹 Continue with Google button */}
-            <button
-            type="button"
-            className="google-signin-btn"
-            onClick={handleGoogleAuth}
-            >
-            <Image
-            src="/images/google-icon.png"
-            alt="Google Icon"
-            width={18}
-            height={18}
-            />
-              <span>Continue with Google</span>
+            <button className="register-btn" type="submit" disabled={!emailVerified}>
+              Register
             </button>
-            <button className="register-btn" type="submit" disabled={!emailVerified}>Register</button>
           </form>
         </div>
-      </div>  
+      </div>
+
+      {/* ✅ OTP Modal */}
+      {showOtpModal && (
+        <div className="otp-modal-overlay">
+          <div className="otp-modal">
+            <h2>Verify OTP</h2>
+            <p>Enter the 6-digit code sent to <b>{form.email}</b></p>
+            <input
+              type="text"
+              placeholder="Enter OTP"
+              value={otp}
+              onChange={(e) => setOtp(e.target.value)}
+              maxLength={6}
+            />
+            <div className="otp-modal-buttons">
+              <button onClick={verifyOtp} disabled={verifyingOtp}>
+                {verifyingOtp ? "Verifying..." : "Verify"}
+              </button>
+              <button onClick={() => setShowOtpModal(false)}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

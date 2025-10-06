@@ -72,51 +72,70 @@ export default function UserFeedPage() {
   }, []);
 
   // Initialize map when modal opens
-  useEffect(() => {
-    if (modalVisible && modalMapRef.current && !modalMap && LRef) {
-      const L = LRef;
-      const map = L.map(modalMapRef.current).setView([14.8292, 120.2828], 13);
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: "&copy; OpenStreetMap contributors",
-      }).addTo(map);
-      setModalMap(map);
+// Initialize Add Report modal map (only one pin where clicked)
+useEffect(() => {
+  if (!modalVisible || !LRef) return;
 
-      const customPin = L.icon({
-        iconUrl: "/images/pin.png",
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
-        popupAnchor: [1, -34],
-      });
+  // Wait a bit for modal to render fully before attaching map
+  setTimeout(() => {
+    const mapContainer = document.getElementById("modal-map");
+    if (!mapContainer) return;
 
-      map.on("click", async (e: any) => {
-        const { lat, lng } = e.latlng;
-
-        if (modalMarker) {
-          modalMarker.setLatLng([lat, lng]);
-        } else {
-          const marker = L.marker([lat, lng], { icon: customPin }).addTo(map);
-          setModalMarker(marker);
-        }
-
-        const addressInput = document.getElementById("address") as HTMLInputElement;
-        const latInput = document.getElementById("latitude") as HTMLInputElement;
-        const lngInput = document.getElementById("longitude") as HTMLInputElement;
-
-        latInput.value = lat.toString();
-        lngInput.value = lng.toString();
-
-        const address = await getAddressFromCoords(lat, lng);
-        addressInput.value = address || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
-
-        setReportForm((prev) => ({
-          ...prev,
-          address: addressInput.value,
-          latitude: lat.toString(),
-          longitude: lng.toString(),
-        }));
-      });
+    // Clear any previous map instance (important when reopening modal)
+    if (mapContainer.innerHTML !== "") {
+      mapContainer.innerHTML = "";
     }
-  }, [modalVisible, modalMap, modalMarker, LRef]);
+
+    const L = LRef;
+    const map = L.map(mapContainer).setView([14.8292, 120.2828], 13);
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "&copy; OpenStreetMap contributors",
+    }).addTo(map);
+
+    const customPin = L.icon({
+      iconUrl: "/images/pin.png",
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+    });
+
+    let marker: any = null;
+
+    // Add marker on click, update its position if already added
+    map.on("click", async (e: any) => {
+      const { lat, lng } = e.latlng;
+
+      if (marker) {
+        marker.setLatLng([lat, lng]);
+      } else {
+        marker = L.marker([lat, lng], { icon: customPin }).addTo(map);
+      }
+
+      const addressInput = document.getElementById("address") as HTMLInputElement;
+      const latInput = document.getElementById("latitude") as HTMLInputElement;
+      const lngInput = document.getElementById("longitude") as HTMLInputElement;
+
+      latInput.value = lat.toString();
+      lngInput.value = lng.toString();
+
+      const address = await getAddressFromCoords(lat, lng);
+      addressInput.value = address || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+
+      setReportForm((prev) => ({
+        ...prev,
+        address: addressInput.value,
+        latitude: lat.toString(),
+        longitude: lng.toString(),
+      }));
+    });
+
+    // Fix map resizing inside modal
+    setTimeout(() => map.invalidateSize(), 200);
+  }, 100);
+}, [modalVisible, LRef]);
+
+
 
   const getAddressFromCoords = async (lat: number, lng: number) => {
     try {

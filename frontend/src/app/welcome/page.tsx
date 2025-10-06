@@ -9,15 +9,20 @@ export default function WelcomePage() {
     <>
       <header>
         <nav>
-          <Image src="/images/Fix-it_logo_2.png" alt="Fixit Logo" className="logo" width={160} height={40} />
+          <Image src="/images/Fix-it_logo_3.png" alt="Fixit Logo" className="logo" width={160} height={40} />
         </nav>
       </header>
 
       <div className="welcome">
         <div className="welcome-container">
           <h1>Welcome, Resident!</h1>
-          <p>You have successfully logged in.</p>
-          <p>This is your dashboard page.</p>
+          <p>With FixItPH, you can: <br/>
+            <span>
+              Report local issues like potholes, flooding, and broken streetlights<br/>
+              Track the status of your reports<br/>
+              View community updates and resolutions
+            </span>
+          </p>
           <Link href="/user-map">
                 <button className="continue-btn">Continue</button>
           </Link>
