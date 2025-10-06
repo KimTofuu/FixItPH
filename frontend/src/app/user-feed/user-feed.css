@@ -404,6 +404,9 @@ nav {
   margin-right: 1.5rem;
 }
 
+.report-details{
+  margin-top: 2rem;
+}
 /* mobile view */
 @media (max-width: 768px) {
   .hamburger {
