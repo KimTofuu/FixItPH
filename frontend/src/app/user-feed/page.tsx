@@ -2,15 +2,14 @@
 
 import { useEffect, useRef, useState } from "react";
 import Head from "next/head";
-import L from "leaflet";
-import "leaflet/dist/leaflet.css";
+import dynamic from "next/dynamic";
 import "./user-feed.css";
 import Image from "next/image";
 import { toast } from "react-toastify";
 
 interface Report {
   _id: string;
-  user: { fName: string; lName: string; email: string };
+  user: { fName: string; lName: string; email: string } | null;
   title: string;
   description: string;
   status: string;
@@ -22,8 +21,9 @@ interface Report {
 export default function UserFeedPage() {
   const modalMapRef = useRef<HTMLDivElement>(null);
   const [modalVisible, setModalVisible] = useState(false);
-  const [modalMarker, setModalMarker] = useState<L.Marker | null>(null);
-  const [modalMap, setModalMap] = useState<L.Map | null>(null);
+  const [modalMarker, setModalMarker] = useState<any>(null);
+  const [modalMap, setModalMap] = useState<any>(null);
+  const [LRef, setLRef] = useState<any>(null);
 
   const [reportForm, setReportForm] = useState({
     title: "",
@@ -36,30 +36,59 @@ export default function UserFeedPage() {
 
   const [reports, setReports] = useState<Report[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [menuOpen, setMenuOpen] = useState(false); // <-- NEW for hamburger
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const filteredReports = reports.filter((r) =>
-    `${r.user} ${r.title} ${r.location} ${r.description}`
+    `${r.user?.fName ?? ""} ${r.user?.lName ?? ""} ${r.title} ${r.location} ${r.description}`
       .toLowerCase()
       .includes(searchTerm.toLowerCase())
   );
 
-  const customPin = L.icon({
-    iconUrl: "/images/pin.png",
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-    popupAnchor: [1, -34],
-  });
-
+  // Fetch reports
   useEffect(() => {
-    if (modalVisible && modalMapRef.current && !modalMap) {
+    const fetchReports = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reports`);
+        if (res.ok) {
+          const data = await res.json();
+          setReports(data);
+        }
+      } catch (err) {
+        console.error("Failed to load reports", err);
+      }
+    };
+    fetchReports();
+  }, []);
+
+  // Dynamically import Leaflet only on client
+  useEffect(() => {
+    (async () => {
+      if (typeof window !== "undefined") {
+        const leaflet = await import("leaflet");
+        await import("leaflet/dist/leaflet.css");
+        setLRef(leaflet);
+      }
+    })();
+  }, []);
+
+  // Initialize map when modal opens
+  useEffect(() => {
+    if (modalVisible && modalMapRef.current && !modalMap && LRef) {
+      const L = LRef;
       const map = L.map(modalMapRef.current).setView([14.8292, 120.2828], 13);
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: '&copy; OpenStreetMap contributors',
+        attribution: "&copy; OpenStreetMap contributors",
       }).addTo(map);
       setModalMap(map);
 
-      map.on("click", async (e: L.LeafletMouseEvent) => {
+      const customPin = L.icon({
+        iconUrl: "/images/pin.png",
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+      });
+
+      map.on("click", async (e: any) => {
         const { lat, lng } = e.latlng;
 
         if (modalMarker) {
@@ -69,15 +98,17 @@ export default function UserFeedPage() {
           setModalMarker(marker);
         }
 
+        const addressInput = document.getElementById("address") as HTMLInputElement;
         const latInput = document.getElementById("latitude") as HTMLInputElement;
         const lngInput = document.getElementById("longitude") as HTMLInputElement;
+
         latInput.value = lat.toString();
         lngInput.value = lng.toString();
 
-        const addressInput = document.getElementById("address") as HTMLInputElement;
         const address = await getAddressFromCoords(lat, lng);
         addressInput.value = address || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
-        setReportForm(prev => ({
+
+        setReportForm((prev) => ({
           ...prev,
           address: addressInput.value,
           latitude: lat.toString(),
@@ -85,19 +116,7 @@ export default function UserFeedPage() {
         }));
       });
     }
-  }, [modalVisible, modalMap, modalMarker]);
-
-  useEffect(() => {
-    const fetchReports = async () => {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reports`);
-      if (res.ok) {
-        const data = await res.json();
-        console.log('Reports with images:', data); // Debug to see image URLs
-        setReports(data);
-      }
-    };
-    fetchReports();
-  }, []);
+  }, [modalVisible, modalMap, modalMarker, LRef]);
 
   const getAddressFromCoords = async (lat: number, lng: number) => {
     try {
@@ -111,38 +130,6 @@ export default function UserFeedPage() {
     }
   };
 
-  const getCoordsFromAddress = async (address: string) => {
-    try {
-      const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`
-      );
-      const data = await res.json();
-      if (data.length > 0) return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
-      return null;
-    } catch {
-      return null;
-    }
-  };
-
-  const handleAddressChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const address = e.target.value;
-    const coords = await getCoordsFromAddress(address);
-    if (coords && modalMap) {
-      if (modalMarker) {
-        modalMarker.setLatLng([coords.lat, coords.lng]);
-      } else {
-        const marker = L.marker([coords.lat, coords.lng], { icon: customPin }).addTo(modalMap);
-        setModalMarker(marker);
-      }
-      modalMap.setView([coords.lat, coords.lng], 16);
-
-      const latInput = document.getElementById("latitude") as HTMLInputElement;
-      const lngInput = document.getElementById("longitude") as HTMLInputElement;
-      latInput.value = coords.lat.toString();
-      lngInput.value = coords.lng.toString();
-    }
-  };
-
   const toggleBookmark = (reportId: string) => {
     const btn = document.querySelector(`#bookmark-${reportId} i`);
     if (btn) {
@@ -152,15 +139,18 @@ export default function UserFeedPage() {
   };
 
   const addComment = async (reportId: string, text: string) => {
-    const token = localStorage.getItem('token');
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reports/${reportId}/comment`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ text }),
-    });
+    const token = localStorage.getItem("token");
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/reports/${reportId}/comment`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ text }),
+      }
+    );
     if (res.ok) {
       const updatedComments = await res.json();
       setReports((prev) =>
@@ -196,10 +186,10 @@ export default function UserFeedPage() {
     formData.append("latitude", reportForm.latitude);
     formData.append("longitude", reportForm.longitude);
 
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
 
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reports`, {
-      method: 'POST',
+      method: "POST",
       body: formData,
       headers: {
         Authorization: `Bearer ${token}`,
@@ -224,8 +214,14 @@ export default function UserFeedPage() {
 
       <header>
         <nav>
-          <Image src="/images/Fix-it_logo_3.png" alt="Fixit Logo" className="logo" width={160} height={40} />
-          
+          <Image
+            src="/images/Fix-it_logo_3.png"
+            alt="Fixit Logo"
+            className="logo"
+            width={160}
+            height={40}
+          />
+
           {/* Hamburger Button */}
           <button className="hamburger" onClick={() => setMenuOpen(!menuOpen)}>
             ☰
@@ -263,29 +259,44 @@ export default function UserFeedPage() {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
+
             <div id="reportList">
               {filteredReports.length > 0 ? (
                 filteredReports.map((r) => (
                   <div className="report-card" key={r._id}>
-                    <div className="report-row"> 
-                    <div>
-                    <div className="report-header">
-                      <img src="/images/sample_avatar.png" className="report-avatar" alt="Avatar" />
-                      <span className="report-user">{r.user.fName} {r.user.lName}</span>
-                      <button id={`bookmark-${r._id}`} className="bookmark-btn" onClick={() => toggleBookmark(r._id)}>
-                        <i className="fa-regular fa-bookmark"></i>
-                      </button>
+                    <div className="report-row">
+                      <div>
+                        <div className="report-header">
+                          <img src="/images/sample_avatar.png" className="report-avatar" alt="Avatar" />
+                          <span className="report-user">
+                            {r.user ? `${r.user.fName} ${r.user.lName}` : "Unknown User"}
+                          </span>
+                          <button
+                            id={`bookmark-${r._id}`}
+                            className="bookmark-btn"
+                            onClick={() => toggleBookmark(r._id)}
+                          >
+                            <i className="fa-regular fa-bookmark"></i>
+                          </button>
+                        </div>
+
+                        <h3 className="report-title">{r.title}</h3>
+                        <p className="report-location">
+                          <i className="fa-solid fa-location-dot"></i> {r.location}
+                        </p>
+                        <span
+                          className={`report-status ${r.status.toLowerCase().replace(" ", "-")}`}
+                        >
+                          {r.status}
+                        </span>
+                        <p className="report-details">{r.description}</p>
+                      </div>
+
+                      <div className="report-image">
+                        <ReportImage src={r.image} alt="Report Image" />
+                      </div>
                     </div>
 
-                    <h3 className="report-title">{r.title}</h3>
-                    <p className="report-location"><i className="fa-solid fa-location-dot"></i> {r.location}</p>
-                    <p className="report-details">{r.description}</p>
-                    <span className={`report-status ${r.status.toLowerCase().replace(" ", "-")}`}>{r.status}</span>
-                    </div>
-                    <div className="report-image">
-                      <ReportImage src={r.image} alt="Report Image" />
-                    </div>
-                    </div>
                     <div className="report-comments">
                       <h4>Comments</h4>
                       <ul className="comment-list">
@@ -293,7 +304,13 @@ export default function UserFeedPage() {
                           <li key={idx}>
                             <b>{c.user}:</b> {c.text}
                             {c.createdAt && (
-                              <span style={{ color: "#888", marginLeft: 8, fontSize: "0.9em" }}>
+                              <span
+                                style={{
+                                  color: "#888",
+                                  marginLeft: 8,
+                                  fontSize: "0.9em",
+                                }}
+                              >
                                 {new Date(c.createdAt).toLocaleString()}
                               </span>
                             )}
@@ -336,13 +353,13 @@ export default function UserFeedPage() {
                   name="title"
                   placeholder="Report Title"
                   value={reportForm.title}
-                  onChange={e => setReportForm({ ...reportForm, title: e.target.value })}
+                  onChange={(e) => setReportForm({ ...reportForm, title: e.target.value })}
                 />
                 <textarea
                   name="description"
                   placeholder="Describe the issue..."
                   value={reportForm.description}
-                  onChange={e => setReportForm({ ...reportForm, description: e.target.value })}
+                  onChange={(e) => setReportForm({ ...reportForm, description: e.target.value })}
                 />
 
                 <label htmlFor="imageUpload">Upload Image</label>
@@ -356,11 +373,9 @@ export default function UserFeedPage() {
                       const file = e.target.files?.[0];
                       if (file) {
                         setReportForm({ ...reportForm, image: file });
-                        
-                        // Show local preview before upload
                         const reader = new FileReader();
                         reader.onload = (event) => {
-                          const preview = document.getElementById('imagePreview') as HTMLElement;
+                          const preview = document.getElementById("imagePreview") as HTMLElement;
                           if (preview && event.target?.result) {
                             preview.innerHTML = `
                               <img src="${event.target.result}" style="width: 100%; height: 150px; object-fit: cover; border-radius: 4px;" />
@@ -374,7 +389,9 @@ export default function UserFeedPage() {
                   />
                   <div id="imagePreview" className="image-preview">
                     <a href="#" id="imageLink" target="_blank"></a>
-                    <button type="button" id="removeImage" className="remove-btn">✖</button>
+                    <button type="button" id="removeImage" className="remove-btn">
+                      ✖
+                    </button>
                   </div>
                 </div>
               </div>
@@ -387,7 +404,7 @@ export default function UserFeedPage() {
                   name="address"
                   placeholder="Search or click on map"
                   value={reportForm.address}
-                  onChange={e => setReportForm({ ...reportForm, address: e.target.value })}
+                  onChange={(e) => setReportForm({ ...reportForm, address: e.target.value })}
                 />
                 <input type="hidden" id="latitude" name="latitude" />
                 <input type="hidden" id="longitude" name="longitude" />
@@ -395,10 +412,17 @@ export default function UserFeedPage() {
                 <div
                   id="modal-map"
                   ref={modalMapRef}
-                  style={{ width: "100%", height: "18rem", margin: "10px 0", borderRadius: "6px" }}
+                  style={{
+                    width: "100%",
+                    height: "18rem",
+                    margin: "10px 0",
+                    borderRadius: "6px",
+                  }}
                 ></div>
               </div>
-              <button type="submit" className="submit-btn">Submit Report</button>
+              <button type="submit" className="submit-btn">
+                Submit Report
+              </button>
             </form>
           </div>
         </div>
