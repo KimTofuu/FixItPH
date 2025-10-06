@@ -81,6 +81,22 @@ nav {
   max-width: 90rem;
 }
 
+#reportList, #admin-reportList {
+  max-height: 28rem;
+  overflow-y: auto;
+  padding-right: 1rem; 
+}
+
+#reportList::-webkit-scrollbar {
+  width: 8px;
+  color: white;
+}
+
+#reportList::-webkit-scrollbar-thumb {
+  background: white;
+  border-radius: 4px;
+} 
+
 .myreports-container {
   display: flex;
   gap: 2rem;                
