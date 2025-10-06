@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import '../fixit-css.css';
+import './welcome.css';
 
 export default function WelcomePage() {
   return (
