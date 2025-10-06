@@ -55,9 +55,7 @@ export default function LoginPage() {
       if (result.token) {
         localStorage.setItem("adminToken", result.token);
         toast.success("Admin login successful! Redirecting...");
-        setTimeout(() => {
-          router.push("/admin-dashboard");
-        }, 1000);
+        setTimeout(() => router.push("/admin-dashboard"), 1000);
       } else {
         toast.error(result.message || "Admin login failed");
       }
@@ -74,9 +72,7 @@ export default function LoginPage() {
       if (result.token) {
         localStorage.setItem("token", result.token);
         toast.success("Login successful! Redirecting...");
-        setTimeout(() => {
-          router.push("/user-feed");
-        }, 1000); // Small delay to show the toast
+        setTimeout(() => router.push("/user-feed"), 1000);
       } else {
         toast.error(result.message || "Login failed");
       }
@@ -85,8 +81,12 @@ export default function LoginPage() {
     }
   };
 
-  const toggleForm = () => {
-    setIsResident(!isResident);
+  const toggleForm = () => setIsResident(!isResident);
+
+  // 🔹 Google Auth handler (placeholder)
+  const handleGoogleAuth = async () => {
+    toast.info("Redirecting to Google...");
+    // e.g., router.push("/api/auth/google") or your Firebase sign-in logic
   };
 
   return (
@@ -116,8 +116,13 @@ export default function LoginPage() {
             {isResident ? "Resident Login" : "Admin Login"}
           </h1>
 
+          <div className="toggle" onClick={toggleForm}>
+            {isResident ? "Switch to Admin Login" : "Switch to Resident Login"}
+          </div>
+
           {/* Resident Login */}
-          <form autoComplete="off"
+          <form
+            autoComplete="off"
             id="resident-form"
             className={isResident ? "active" : ""}
             onSubmit={handleSubmit}
@@ -148,12 +153,28 @@ export default function LoginPage() {
               </span>
             </div>
 
-            <button type="submit">Log in</button>
+            <button className="login-btn" type="submit">Log in</button>
+
+            {/* 🔹 Google Auth Button */}
+            <button
+              type="button"
+              className="google-signin-btn"
+              onClick={handleGoogleAuth}
+            >
+              <Image
+                src="/images/google-icon.png"
+                alt="Google Icon"
+                width={18}
+                height={18}
+              />
+              <span>Continue with Google</span>
+            </button>
           </form>
 
           {/* Admin Login */}
-          <form autoComplete="off"
-            id="admin-form" 
+          <form
+            autoComplete="off"
+            id="admin-form"
             className={!isResident ? "active" : ""}
             onSubmit={handleAdminSubmit}
           >
@@ -179,12 +200,23 @@ export default function LoginPage() {
               </span>
             </div>
 
-            <button type="submit">Log in</button>
-          </form>
+            <button className="login-btn" type="submit">Log in</button>
 
-          <div className="toggle" onClick={toggleForm}>
-            {isResident ? "Switch to Admin Login" : "Switch to Resident Login"}
-          </div>
+            {/* 🔹 Google Auth Button */}
+            <button
+              type="button"
+              className="google-signin-btn"
+              onClick={handleGoogleAuth}
+            >
+              <Image
+                src="/images/google-icon.png"
+                alt="Google Icon"
+                width={18}
+                height={18}
+              />
+              <span>Continue with Google</span>
+            </button>
+          </form>
         </div>
       </div>
     </>

@@ -26,8 +26,8 @@ async function registerUser(formData: {
 }
 
 export default function RegisterPage() {
-  const router = useRouter(); 
-  
+  const router = useRouter();
+
   const [form, setForm] = useState({
     fName: "",
     lName: "",
@@ -42,7 +42,7 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [showConditions, setShowConditions] = useState(false);
-  const [passwordError, setPasswordError] = useState(""); // store password mismatch error
+  const [passwordError, setPasswordError] = useState("");
 
   const conditions = [
     { key: "length", text: "At least 8 characters", valid: form.password.length >= 8 },
@@ -52,11 +52,7 @@ export default function RegisterPage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
-
-    // Clear mismatch error while typing
-    if (e.target.name === "confirmPassword") {
-      setPasswordError("");
-    }
+    if (e.target.name === "confirmPassword") setPasswordError("");
   };
 
   const handleConfirmBlur = () => {
@@ -69,27 +65,39 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       const result = await registerUser(form);
       if (result.success) {
         toast.success("Registration successful! Please log in.");
-        setTimeout(() => {
-          router.push("/login"); // <-- This redirects to login
-        }, 1000); // Small delay to show the toast
+        setTimeout(() => router.push("/login"), 1000);
       } else {
         toast.error(result.message || "Registration failed");
       }
     } catch (error) {
       toast.error("Network error. Please try again.");
     }
-};
+  };
+
+  // 🔹 Google Authentication handler
+  const handleGoogleAuth = async () => {
+    toast.info("Redirecting to Google...");
+    // Example placeholder — connect your real Google auth here
+    // e.g. router.push("/api/auth/google") or Firebase logic
+  };
 
   return (
     <>
       <header>
         <nav>
-          <Image src="/images/Fix-it_logo_3.png" alt="Fixit Logo" className="logo" width={160} height={40} />
+          <Image
+            src="/images/Fix-it_logo_3.png"
+            alt="Fixit Logo"
+            className="logo"
+            width={160}
+            height={40}
+          />
+          <h1 id="form-title">Register</h1>
           <ul className="nav-list">
             <li>
               <Link href="/" style={{ marginRight: "2rem" }}>
@@ -102,7 +110,6 @@ export default function RegisterPage() {
 
       <div className="register">
         <div className="register-container">
-          <h1 id="form-title">Register</h1>
           <form onSubmit={handleSubmit} autoComplete="off">
             <input name="fName" type="text" placeholder="First Name" value={form.fName} onChange={handleChange} required />
             <input name="lName" type="text" placeholder="Last Name" value={form.lName} onChange={handleChange} required />
@@ -145,7 +152,7 @@ export default function RegisterPage() {
                 placeholder="Confirm Password"
                 value={form.confirmPassword}
                 onChange={handleChange}
-                onBlur={handleConfirmBlur} // check mismatch when leaving field
+                onBlur={handleConfirmBlur}
                 required
               />
               <span className="eye-icon" onClick={() => setShowConfirm(!showConfirm)}>
@@ -153,14 +160,30 @@ export default function RegisterPage() {
               </span>
             </div>
 
-            {/* Inline error under confirm password */}
             {passwordError && <p className="error-text">{passwordError}</p>}
 
             <input name="barangay" type="text" placeholder="Barangay" value={form.barangay} onChange={handleChange} required />
             <input name="municipality" type="text" placeholder="Municipality" value={form.municipality} onChange={handleChange} required />
             <input type="tel" id="contact" name="contact" placeholder="Enter contact number" pattern="[0-9]{10,15}" value={form.contact} onChange={handleChange} required />
 
-            <button type="submit">Register</button>
+            <button className="register-btn" type="submit">Register</button>
+
+            {/* 🔹 Continue with Google button */}
+            {/* 🔹 Continue with Google button */}
+            <button
+            type="button"
+            className="google-signin-btn"
+            onClick={handleGoogleAuth}
+            >
+            <Image
+            src="/images/google-icon.png"
+            alt="Google Icon"
+            width={18}
+            height={18}
+            />
+              <span>Continue with Google</span>
+            </button>
+
           </form>
         </div>
       </div>
