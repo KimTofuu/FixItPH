@@ -4,6 +4,7 @@ const userController = require('../controllers/userController');
 const jwt = require('jsonwebtoken');
 const upload = require("../config/multer");
 const { uploadProfilePic } = require("../controllers/userController");
+const otpController = require('../controllers/otpController');
 
 // JWT authentication middleware
 function authenticateToken(req, res, next) {
@@ -26,5 +27,7 @@ router.get('/getAllUsers', userController.getAllUsers);
 router.post('/getUser', userController.getUser);
 router.post('/logout', userController.logout);
 router.get('/protected', authenticateToken, userController.protected);
+router.post('/request-otp', otpController.requestOtp);
+router.post('/verify-otp', otpController.verifyOtp);
 
 module.exports = router;
