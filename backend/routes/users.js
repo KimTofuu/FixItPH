@@ -30,4 +30,8 @@ router.get('/protected', authenticateToken, userController.protected);
 router.post('/request-otp', otpController.requestOtp);
 router.post('/verify-otp', otpController.verifyOtp);
 
+// new endpoints for current user
+router.get('/profile', authenticateToken, userController.getProfile);
+router.patch('/profile', authenticateToken, userController.updateProfile);
+
 module.exports = router;
