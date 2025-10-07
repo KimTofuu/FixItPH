@@ -81,3 +81,45 @@ exports.logout = (req, res) => {
 exports.protected = (req, res) => {
   res.json({ message: 'This is a protected route', user: req.user });
 };
+
+// Get current logged-in user
+exports.getProfile = async (req, res) => {
+  try {
+    const userId = req.user?.userId;
+    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+
+    const user = await User.findById(userId, '-password');
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    return res.status(200).json(user);
+  } catch (err) {
+    console.error('getMe error', err);
+    return res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Update current logged-in user
+exports.updateProfile = async (req, res) => {
+  try {
+    const userId = req.user?.userId;
+    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+
+    const updates = {};
+    // Remove 'password' from allowed fields
+    const allowed = ['fName','lName','email','contact','barangay','municipality'];
+
+    for (const key of allowed) {
+      if (req.body[key] !== undefined) updates[key] = req.body[key];
+    }
+
+    // Remove password hashing logic since password updates not allowed here
+    
+    const updated = await User.findByIdAndUpdate(userId, updates, { new: true, select: '-password' });
+    if (!updated) return res.status(404).json({ message: 'User not found' });
+
+    return res.status(200).json(updated);
+  } catch (err) {
+    console.error('updateMe error', err);
+    return res.status(500).json({ message: 'Server error' });
+  }
+};

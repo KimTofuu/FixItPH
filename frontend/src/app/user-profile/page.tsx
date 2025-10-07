@@ -1,56 +1,107 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import "./user-profile.css";
+import { toast } from "react-toastify";
 
 interface ProfileData {
-  firstName: string;
-  lastName: string;
+  _id: string;
+  fName: string;
+  lName: string;
   email: string;
-  password: string;
-  barangay: string;
-  municipality: string;
-  contact: string;
+  barangay?: string;
+  municipality?: string;
+  contact?: string;
+  // removed password from interface
 }
 
 export default function ProfilePage() {
-  const [profile, setProfile] = useState<ProfileData>({
-    firstName: "Juan",
-    lastName: "Dela Cruz",
-    email: "juan.delacruz@email.com",
-    password: "",
-    barangay: "San Isidro",
-    municipality: "Quezon City",
-    contact: "09123456789",
-  });
-
+  const [profile, setProfile] = useState<ProfileData | null>(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false); // <-- hamburger state
+  const [menuOpen, setMenuOpen] = useState(false);
 
-  const profilePic =
-    "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+  const profilePic = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+  const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const token =
+          typeof window !== "undefined"
+            ? localStorage.getItem("token")
+            : null;
+        const res = await fetch(`${API}/users/profile`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        });
+        if (!res.ok) {
+          console.warn("Failed to load profile:", res.status);
+          return;
+        }
+        const data = await res.json();
+        setProfile({
+          _id: data._id || data.id,
+          fName: data.fName || "",
+          lName: data.lName || "",
+          email: data.email || "",
+          barangay: data.barangay || "",
+          municipality: data.municipality || "",
+          contact: data.contact || "",
+        });
+      } catch (err) {
+        console.error("Error fetching profile:", err);
+      }
+    };
+
+    fetchProfile();
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!profile) return;
     const { name, value } = e.target;
-    setProfile((prev) => ({ ...prev, [name]: value }));
+    setProfile((prev) => (prev ? { ...prev, [name]: value } : prev));
   };
 
-  const handleSave = () => {
-    setIsEditing(false);
-    alert("Profile updated successfully!\n\n" + JSON.stringify(profile, null, 2));
-    console.log("Saved profile:", profile);
+  const handleSave = async () => {
+    if (!profile) return;
+    try {
+      const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("token")
+          : null;
+      const res = await fetch(`${API}/users/profile`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token ? `Bearer ${token}` : "",
+        },
+        body: JSON.stringify(profile),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        toast.error(err.message || "Update failed");
+        return;
+      }
+      const updated = await res.json();
+      setProfile(updated);
+      setIsEditing(false);
+      toast.success("Profile updated");
+    } catch (err) {
+      console.error("Save profile error:", err);
+      toast.error("Network error");
+    }
   };
 
   const handleLogout = () => {
     const confirmed = window.confirm("Are you sure you want to log out?");
     if (confirmed) {
       localStorage.clear();
-      console.log("User logged out");
       window.location.href = "/login";
     }
   };
+
+  if (!profile) return <div>Loading profile...</div>;
 
   return (
     <div>
@@ -88,9 +139,9 @@ export default function ProfilePage() {
         <div className="profile-container">
           <div className="profile-field">
             <input
-              name="firstName"
+              name="fName"
               type="text"
-              value={profile.firstName}
+              value={profile.fName}
               disabled={!isEditing}
               onChange={handleChange}
             />
@@ -98,9 +149,9 @@ export default function ProfilePage() {
 
           <div className="profile-field">
             <input
-              name="lastName"
+              name="lName"
               type="text"
-              value={profile.lastName}
+              value={profile.lName}
               disabled={!isEditing}
               onChange={handleChange}
             />
@@ -118,20 +169,9 @@ export default function ProfilePage() {
 
           <div className="profile-field">
             <input
-              name="password"
-              type="password"
-              value={profile.password}
-              disabled={!isEditing}
-              onChange={handleChange}
-              placeholder="••••••••"
-            />
-          </div>
-
-          <div className="profile-field">
-            <input
               name="barangay"
               type="text"
-              value={profile.barangay}
+              value={profile.barangay || ""}
               disabled={!isEditing}
               onChange={handleChange}
             />
@@ -141,7 +181,7 @@ export default function ProfilePage() {
             <input
               name="municipality"
               type="text"
-              value={profile.municipality}
+              value={profile.municipality || ""}
               disabled={!isEditing}
               onChange={handleChange}
             />
@@ -151,7 +191,7 @@ export default function ProfilePage() {
             <input
               name="contact"
               type="tel"
-              value={profile.contact}
+              value={profile.contact || ""}
               disabled={!isEditing}
               onChange={handleChange}
             />
@@ -168,6 +208,24 @@ export default function ProfilePage() {
             <button type="button" onClick={handleSave} className="save-btn">
               Save
             </button>
+
+            <Link href="/change-password">
+              <button
+                type="button"
+                className="change-password-btn"
+                style={{
+                  padding: "10px 20px",
+                  backgroundColor: "#007bff",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "4px",
+                  cursor: "pointer"
+                }}
+              >
+                Change Password
+              </button>
+            </Link>
+
             <button type="button" onClick={handleLogout} className="logout-btn">
               Log Out
             </button>
