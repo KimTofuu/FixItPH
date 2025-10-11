@@ -25,6 +25,7 @@ app.use(cookieParser());
 app.use('/users', usersRouter);
 app.use('/reports', reportsRouter);
 app.use('/admin', adminRouter);
+app.use('/auth', require('./routes/auth'));
 
 // 404 handler
 app.use((req, res, next) => {
