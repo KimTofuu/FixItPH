@@ -20,6 +20,8 @@ async function loginUser(formData: {
 }
 
 export default function LoginPage() {
+  const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+
   const [form, setForm] = useState({
     email: "",
     password: "",
@@ -155,7 +157,7 @@ export default function LoginPage() {
 
             <button className="login-btn" type="submit">Log in</button>
 
-            {/* 🔹 Google Auth Button */}
+            
             {/* <button
               type="button"
               className="google-signin-btn"
@@ -168,7 +170,12 @@ export default function LoginPage() {
                 height={18}
               />
               <span>Continue with Google</span>
-            </button> */}
+            </button>  */}
+            <div>
+              <a href={`${API}/auth/google`} className="google-btn">
+                Sign in with Google
+              </a>
+            </div>
           </form>
 
           {/* Admin Login */}
