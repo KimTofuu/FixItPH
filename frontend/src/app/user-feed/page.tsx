@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Head from "next/head";
 import dynamic from "next/dynamic";
-import "./user-feed.css";
+import styles from "./user-feed.module.css";
 import Image from "next/image";
 import { toast } from "react-toastify";
 
@@ -72,70 +72,67 @@ export default function UserFeedPage() {
   }, []);
 
   // Initialize map when modal opens
-// Initialize Add Report modal map (only one pin where clicked)
-useEffect(() => {
-  if (!modalVisible || !LRef) return;
+  useEffect(() => {
+    if (!modalVisible || !LRef) return;
 
-  // Wait a bit for modal to render fully before attaching map
-  setTimeout(() => {
-    const mapContainer = document.getElementById("modal-map");
-    if (!mapContainer) return;
+    // Wait a bit for modal to render fully before attaching map
+    setTimeout(() => {
+      const mapContainer = document.getElementById("modal-map");
+      if (!mapContainer) return;
 
-    // Clear any previous map instance (important when reopening modal)
-    if (mapContainer.innerHTML !== "") {
-      mapContainer.innerHTML = "";
-    }
-
-    const L = LRef;
-    const map = L.map(mapContainer).setView([14.8292, 120.2828], 13);
-
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: "&copy; OpenStreetMap contributors",
-    }).addTo(map);
-
-    const customPin = L.icon({
-      iconUrl: "/images/pin.png",
-      iconSize: [25, 41],
-      iconAnchor: [12, 41],
-      popupAnchor: [1, -34],
-    });
-
-    let marker: any = null;
-
-    // Add marker on click, update its position if already added
-    map.on("click", async (e: any) => {
-      const { lat, lng } = e.latlng;
-
-      if (marker) {
-        marker.setLatLng([lat, lng]);
-      } else {
-        marker = L.marker([lat, lng], { icon: customPin }).addTo(map);
+      // Clear any previous map instance (important when reopening modal)
+      if (mapContainer.innerHTML !== "") {
+        mapContainer.innerHTML = "";
       }
 
-      const addressInput = document.getElementById("address") as HTMLInputElement;
-      const latInput = document.getElementById("latitude") as HTMLInputElement;
-      const lngInput = document.getElementById("longitude") as HTMLInputElement;
+      const L = LRef;
+      const map = L.map(mapContainer).setView([14.8292, 120.2828], 13);
 
-      latInput.value = lat.toString();
-      lngInput.value = lng.toString();
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "&copy; OpenStreetMap contributors",
+      }).addTo(map);
 
-      const address = await getAddressFromCoords(lat, lng);
-      addressInput.value = address || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+      const customPin = L.icon({
+        iconUrl: "/images/pin.png",
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+      });
 
-      setReportForm((prev) => ({
-        ...prev,
-        address: addressInput.value,
-        latitude: lat.toString(),
-        longitude: lng.toString(),
-      }));
-    });
+      let marker: any = null;
 
-    // Fix map resizing inside modal
-    setTimeout(() => map.invalidateSize(), 200);
-  }, 100);
-}, [modalVisible, LRef]);
+      // Add marker on click, update its position if already added
+      map.on("click", async (e: any) => {
+        const { lat, lng } = e.latlng;
 
+        if (marker) {
+          marker.setLatLng([lat, lng]);
+        } else {
+          marker = L.marker([lat, lng], { icon: customPin }).addTo(map);
+        }
 
+        const addressInput = document.getElementById("address") as HTMLInputElement;
+        const latInput = document.getElementById("latitude") as HTMLInputElement;
+        const lngInput = document.getElementById("longitude") as HTMLInputElement;
+
+        latInput.value = lat.toString();
+        lngInput.value = lng.toString();
+
+        const address = await getAddressFromCoords(lat, lng);
+        addressInput.value = address || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+
+        setReportForm((prev) => ({
+          ...prev,
+          address: addressInput.value,
+          latitude: lat.toString(),
+          longitude: lng.toString(),
+        }));
+      });
+
+      // Fix map resizing inside modal
+      setTimeout(() => map.invalidateSize(), 200);
+    }, 100);
+  }, [modalVisible, LRef]);
 
   const getAddressFromCoords = async (lat: number, lng: number) => {
     try {
@@ -227,109 +224,142 @@ useEffect(() => {
     <>
       <Head>
         <title>FixIt PH - Community Reports</title>
-        <link href="https://fonts.googleapis.com/css?family=Inter" rel="stylesheet" />
-        <script src="https://kit.fontawesome.com/830b39c5c0.js" crossOrigin="anonymous"></script>
+        <link
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@300;400;600;700&display=swap"
+          rel="stylesheet"
+        />
+        <script
+          src="https://kit.fontawesome.com/830b39c5c0.js"
+          crossOrigin="anonymous"
+          defer
+        ></script>
       </Head>
 
-      <header>
-        <nav>
-          <Image
-            src="/images/Fix-it_logo_3.png"
-            alt="Fixit Logo"
-            className="logo"
-            width={160}
-            height={40}
-          />
+      <header className={styles.headerWrap}>
+        <nav className={styles.nav}>
+          <div className={styles.brand}>
+            <Image
+              src="/images/Fix-it_logo_3.png"
+              alt="Fixit Logo"
+              className={styles.logo}
+              width={160}
+              height={40}
+            />
+          </div>
 
-          {/* Hamburger Button */}
-          <button className="hamburger" onClick={() => setMenuOpen(!menuOpen)}>
+          <button
+            className={styles.hamburger}
+            onClick={() => setMenuOpen(!menuOpen)}
+            aria-label="Toggle menu"
+          >
             ☰
           </button>
 
-          <ul className={`nav-list-user-side ${menuOpen ? "open" : ""}`}>
-            <li><a href="/user-map">Map</a></li>
-            <li><a href="/user-feed">Feed</a></li>
-            <li><a href="/user-myreports">My Reports</a></li>
+          <ul className={`${styles.navList} ${menuOpen ? styles.open : ""}`}>
             <li>
-              <a href="/user-profile" className="profile-link">
+              <a className={styles.navLink} href="/user-map">
+                Map
+              </a>
+            </li>
+            <li>
+              <a className={styles.navLink} href="/user-feed">
+                Feed
+              </a>
+            </li>
+            <li>
+              <a className={styles.navLink} href="/user-myreports">
+                My Reports
+              </a>
+            </li>
+            <li>
+              <a className={styles.profileLink} href="/user-profile">
                 <img
                   id="profilePic"
                   src="https://cdn-icons-png.flaticon.com/512/149/149071.png"
                   alt="User Profile"
-                  className="profile-pic"
+                  className={styles.profilePic}
                 />
               </a>
             </li>
           </ul>
         </nav>
+
+        <div className={styles.toolbar} role="toolbar" aria-label="Reports toolbar">
+          <div className={styles.toolbarInner}>
+            <button
+              className={styles.reportBtn}
+              onClick={() => setModalVisible(true)}
+            >
+              + Add Report
+            </button>
+
+            <input
+              type="text"
+              className={styles.searchInput}
+              placeholder="Search reports..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+        </div>
       </header>
 
-      <div id="user-feed">
-        <div className="feed-container">
-          <div className="feed-column-1">
-            <div className="feed-button-search">
-              <div className="feed-button-search">
-                <button className="report-btn" onClick={() => setModalVisible(true)}>+ Add Report</button>
-              </div>
-              <input
-                type="text"
-                placeholder="Search reports..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
+      <main className={styles.pageWrap}>
+        <div className={styles.feedContainer}>
+          <aside className={styles.feedSidebar}>
+            {/* reserved space or additional widgets */}
+          </aside>
 
-            <div id="reportList">
+          <section className={styles.feedMain}>
+            <section id="reportList" className={styles.feedList}>
               {filteredReports.length > 0 ? (
                 filteredReports.map((r) => (
-                  <div className="report-card" key={r._id}>
-                    <div className="report-row">
+                  <article className={styles.reportCard} key={r._id}>
+                    <div className={styles.reportRow}>
                       <div>
-                        <div className="report-header">
-                          <img src="/images/sample_avatar.png" className="report-avatar" alt="Avatar" />
-                          <span className="report-user">
+                        <div className={styles.reportHeader}>
+                          <img
+                            src="/images/sample_avatar.png"
+                            className={styles.reportAvatar}
+                            alt="Avatar"
+                          />
+                          <span className={styles.reportUser}>
                             {r.user ? `${r.user.fName} ${r.user.lName}` : "Unknown User"}
                           </span>
                           <button
                             id={`bookmark-${r._id}`}
-                            className="bookmark-btn"
+                            className={styles.bookmarkBtn}
                             onClick={() => toggleBookmark(r._id)}
                           >
                             <i className="fa-regular fa-bookmark"></i>
                           </button>
                         </div>
 
-                        <h3 className="report-title">{r.title}</h3>
-                        <p className="report-location">
+                        <h3 className={styles.reportTitle}>{r.title}</h3>
+                        <p className={styles.reportLocation}>
                           <i className="fa-solid fa-location-dot"></i> {r.location}
                         </p>
                         <span
-                          className={`report-status ${r.status.toLowerCase().replace(" ", "-")}`}
+                          className={`${styles.reportStatus} ${styles[r.status.toLowerCase().replace(" ", "-")]}`}
                         >
                           {r.status}
                         </span>
-                        <p className="report-details">{r.description}</p>
+                        <p className={styles.reportDetails}>{r.description}</p>
                       </div>
 
-                      <div className="report-image">
+                      <div className={styles.reportImage}>
                         <ReportImage src={r.image} alt="Report Image" />
                       </div>
                     </div>
 
-                    <div className="report-comments">
+                    <div className={styles.reportComments}>
                       <h4>Comments</h4>
-                      <ul className="comment-list">
+                      <ul className={styles.commentList}>
                         {(r.comments ?? []).map((c, idx) => (
                           <li key={idx}>
                             <b>{c.user}:</b> {c.text}
                             {c.createdAt && (
-                              <span
-                                style={{
-                                  color: "#888",
-                                  marginLeft: 8,
-                                  fontSize: "0.9em",
-                                }}
-                              >
+                              <span className={styles.commentDate}>
                                 {new Date(c.createdAt).toLocaleString()}
                               </span>
                             )}
@@ -338,7 +368,7 @@ useEffect(() => {
                       </ul>
                       <input
                         type="text"
-                        className="comment-input"
+                        className={styles.commentInput}
                         placeholder="Add a comment..."
                         onKeyDown={(e) => {
                           if (e.key === "Enter" && e.currentTarget.value.trim() !== "") {
@@ -348,26 +378,33 @@ useEffect(() => {
                         }}
                       />
                     </div>
-                  </div>
+                  </article>
                 ))
               ) : (
-                <p style={{ color: "red", marginTop: "10px" }}>No reports found</p>
+                <p className={styles.noReports}>No reports found</p>
               )}
-            </div>
-          </div>
+            </section>
+          </section>
         </div>
-      </div>
+      </main>
 
       {/* Modal */}
       {modalVisible && (
-        <div className="modal" style={{ display: "flex" }}>
-          <div className="modal-content">
-            <span className="close" onClick={() => setModalVisible(false)}>&times;</span>
-            <h2>Add Report</h2>
+        <div id="feedModal" className={styles.modal} role="dialog" aria-modal="true">
+          <div className={styles.modalContent}>
+            <button
+              className={styles.close}
+              onClick={() => setModalVisible(false)}
+              aria-label="Close"
+            >
+              &times;
+            </button>
+            <h2 className={styles.modalTitle}>Add Report</h2>
 
-            <form className="form-grid" onSubmit={handleReportSubmit}>
-              <div className="form-left">
+            <form className={styles.formGrid} onSubmit={handleReportSubmit}>
+              <div className={styles.formLeft}>
                 <input
+                  className={styles.input}
                   type="text"
                   name="title"
                   placeholder="Report Title"
@@ -375,15 +412,17 @@ useEffect(() => {
                   onChange={(e) => setReportForm({ ...reportForm, title: e.target.value })}
                 />
                 <textarea
+                  className={styles.textarea}
                   name="description"
                   placeholder="Describe the issue..."
                   value={reportForm.description}
                   onChange={(e) => setReportForm({ ...reportForm, description: e.target.value })}
                 />
 
-                <label htmlFor="imageUpload">Upload Image</label>
-                <div className="upload-wrapper">
+                <label className={styles.inputLabel} htmlFor="imageUpload">Upload Image</label>
+                <div className={styles.uploadWrapper}>
                   <input
+                    className={styles.fileInput}
                     type="file"
                     id="imageUpload"
                     name="image"
@@ -398,7 +437,7 @@ useEffect(() => {
                           if (preview && event.target?.result) {
                             preview.innerHTML = `
                               <img src="${event.target.result}" style="width: 100%; height: 150px; object-fit: cover; border-radius: 4px;" />
-                              <button type="button" onclick="this.parentElement.innerHTML=''" class="remove-btn">✖</button>
+                              <button type="button" onclick="this.parentElement.innerHTML=''" class="${styles.removeBtn}">✖</button>
                             `;
                           }
                         };
@@ -406,18 +445,17 @@ useEffect(() => {
                       }
                     }}
                   />
-                  <div id="imagePreview" className="image-preview">
-                    <a href="#" id="imageLink" target="_blank"></a>
-                    <button type="button" id="removeImage" className="remove-btn">
-                      ✖
-                    </button>
+                  <div id="imagePreview" className={styles.imagePreview}>
+                    <a href="#" id="imageLink" target="_blank" className={styles.previewLink}></a>
+                    <button type="button" id="removeImage" className={styles.removeBtn}>✖</button>
                   </div>
                 </div>
               </div>
 
-              <div className="form-right">
-                <label htmlFor="address">Location</label>
+              <div className={styles.formRight}>
+                <label className={styles.inputLabel} htmlFor="address">Location</label>
                 <input
+                  className={styles.input}
                   type="text"
                   id="address"
                   name="address"
@@ -428,20 +466,12 @@ useEffect(() => {
                 <input type="hidden" id="latitude" name="latitude" />
                 <input type="hidden" id="longitude" name="longitude" />
 
-                <div
-                  id="modal-map"
-                  ref={modalMapRef}
-                  style={{
-                    width: "100%",
-                    height: "18rem",
-                    margin: "10px 0",
-                    borderRadius: "6px",
-                  }}
-                ></div>
+                <div id="modal-map" ref={modalMapRef} className={styles.modalMap}></div>
               </div>
-              <button type="submit" className="submit-btn">
-                Submit Report
-              </button>
+
+              <div className={styles.submitRow}>
+                <button type="submit" className={styles.submitBtn}>Submit Report</button>
+              </div>
             </form>
           </div>
         </div>

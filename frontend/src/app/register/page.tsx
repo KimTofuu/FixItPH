@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import "./fixit-register.css";
+import styles from "./RegisterPage.module.css";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 
@@ -146,72 +146,101 @@ export default function RegisterPage() {
     }
   };
 
+  useEffect(() => {
+    // add unique body class while this page is mounted
+    document.body.classList.add("register-page-bg");
+    return () => {
+      document.body.classList.remove("register-page-bg");
+    };
+  }, []);
+
   return (
     <>
-      <header>
-        <nav>
+      <header className={styles.header}>
+        <nav className={styles.nav}>
           <Image
             src="/images/Fix-it_logo_3.png"
             alt="Fixit Logo"
-            className="logo"
+            className={styles.logo}
             width={160}
             height={40}
           />
-          <h1 id="form-title">Register</h1>
-          <ul className="nav-list">
+          <ul className={styles.navList}>
             <li>
-              <Link href="/" style={{ marginRight: "2rem" }}>
-                <button className="back-btn">Back</button>
+              <Link href="/" aria-label="Back to home">
+                <button className={styles.backBtn}>Back</button>
               </Link>
             </li>
           </ul>
         </nav>
       </header>
 
-      <div className="register">
-        <div className="register-container">
-          <form onSubmit={handleSubmit} autoComplete="off">
-            <input name="fName" type="text" placeholder="First Name" value={form.fName} onChange={handleChange} required />
-            <input name="lName" type="text" placeholder="Last Name" value={form.lName} onChange={handleChange} required />
+      <main className={styles.register}>
+        <div className={`${styles.registerContainer} ${styles.enter}`}>
+          <form onSubmit={handleSubmit} autoComplete="off" className={styles.form} noValidate>
+            <div className={styles.row}>
+              <div className={styles.field}>
+                <label className={styles.floatingLabel}>
+                  <input name="fName" type="text" placeholder=" " value={form.fName} onChange={handleChange} required className={styles.input} />
+                  <span className={styles.labelText}>First Name</span>
+                </label>
+              </div>
+              <div className={styles.field}>
+                <label className={styles.floatingLabel}>
+                  <input name="lName" type="text" placeholder=" " value={form.lName} onChange={handleChange} required className={styles.input} />
+                  <span className={styles.labelText}>Last Name</span>
+                </label>
+              </div>
+            </div>
 
-            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-              <input
-                name="email"
-                type="email"
-                placeholder="Email"
-                value={form.email}
-                onChange={(e) => {
-                  setForm({ ...form, email: e.target.value });
-                  setEmailVerified(false);
-                  setOtpSent(false);
-                }}
-                required
-              />
-              <button className="otp-btn" type="button" onClick={sendOtp} disabled={sendingOtp || emailVerified}>
+            <div className={styles.rowInline}>
+              <label className={styles.floatingLabel} style={{ flex: 1 }}>
+                <input
+                  name="email"
+                  type="email"
+                  placeholder=" "
+                  value={form.email}
+                  onChange={(e) => {
+                    setForm({ ...form, email: e.target.value });
+                    setEmailVerified(false);
+                    setOtpSent(false);
+                  }}
+                  required
+                  className={styles.input}
+                />
+                <span className={styles.labelText}>Email</span>
+              </label>
+
+              <button className={styles.otpBtn} type="button" onClick={sendOtp} disabled={sendingOtp || emailVerified}>
                 {sendingOtp ? "Sending..." : emailVerified ? "Verified" : "Send OTP"}
               </button>
             </div>
 
-            {/* Password inputs */}
-            <div className="password-wrapper">
-              <input
-                name="password"
-                type={showPassword ? "text" : "password"}
-                placeholder="Password"
-                value={form.password}
-                onFocus={() => setShowConditions(true)}
-                onBlur={() => setTimeout(() => setShowConditions(false), 200)}
-                onChange={handleChange}
-                required
-              />
-              <span className="eye-icon" onClick={() => setShowPassword(!showPassword)}>
+            <div className={styles.passwordWrapper}>
+              <label className={styles.floatingLabel} style={{ flex: 1 }}>
+                <input
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder=" "
+                  value={form.password}
+                  onFocus={() => setShowConditions(true)}
+                  onBlur={() => setTimeout(() => setShowConditions(false), 200)}
+                  onChange={handleChange}
+                  required
+                  className={styles.input}
+                />
+                <span className={styles.labelText}>Password</span>
+              </label>
+
+              <button type="button" className={styles.eyeIcon} onClick={() => setShowPassword(!showPassword)} aria-label="toggle password visibility">
                 {showPassword ? "👁️" : "🙈"}
-              </span>
+              </button>
 
               {showConditions && (
-                <div className="password-conditions">
-                  {conditions.filter((c) => !c.valid).map((c) => (
-                    <div key={c.key} className="condition-card">
+                <div className={styles.passwordConditions}>
+                  {conditions.map((c) => (
+                    <div key={c.key} className={styles.conditionCard}>
+                      <span className={c.valid ? styles.okDot : styles.badDot} />
                       {c.text}
                     </div>
                   ))}
@@ -219,38 +248,57 @@ export default function RegisterPage() {
               )}
             </div>
 
-            <div className="password-wrapper">
-              <input
-                name="confirmPassword"
-                type={showConfirm ? "text" : "password"}
-                placeholder="Confirm Password"
-                value={form.confirmPassword}
-                onChange={handleChange}
-                onBlur={handleConfirmBlur}
-                required
-              />
-              <span className="eye-icon" onClick={() => setShowConfirm(!showConfirm)}>
+            <div className={styles.passwordWrapper}>
+              <label className={styles.floatingLabel} style={{ flex: 1 }}>
+                <input
+                  name="confirmPassword"
+                  type={showConfirm ? "text" : "password"}
+                  placeholder=" "
+                  value={form.confirmPassword}
+                  onChange={handleChange}
+                  onBlur={handleConfirmBlur}
+                  required
+                  className={styles.input}
+                />
+                <span className={styles.labelText}>Confirm Password</span>
+              </label>
+              <button type="button" className={styles.eyeIcon} onClick={() => setShowConfirm(!showConfirm)} aria-label="toggle confirm visibility">
                 {showConfirm ? "👁️" : "🙈"}
-              </span>
+              </button>
             </div>
 
-            {passwordError && <p className="error-text">{passwordError}</p>}
+            {passwordError && <p className={styles.errorText}>{passwordError}</p>}
 
-            <input name="barangay" type="text" placeholder="Barangay" value={form.barangay} onChange={handleChange} required />
-            <input name="municipality" type="text" placeholder="Municipality" value={form.municipality} onChange={handleChange} required />
-            <input type="tel" id="contact" name="contact" placeholder="Enter contact number" pattern="[0-9]{10,15}" value={form.contact} onChange={handleChange} required />
+            <div className={styles.row}>
+              <div className={styles.field}>
+                <label className={styles.floatingLabel}>
+                  <input name="barangay" type="text" placeholder=" " value={form.barangay} onChange={handleChange} required className={styles.input} />
+                  <span className={styles.labelText}>Barangay</span>
+                </label>
+              </div>
+              <div className={styles.field}>
+                <label className={styles.floatingLabel}>
+                  <input name="municipality" type="text" placeholder=" " value={form.municipality} onChange={handleChange} required className={styles.input} />
+                  <span className={styles.labelText}>Municipality</span>
+                </label>
+              </div>
+            </div>
 
-            <button className="register-btn" type="submit" disabled={!emailVerified}>
+            <label className={styles.floatingLabel}>
+              <input type="tel" id="contact" name="contact" placeholder=" " pattern="[0-9]{10,15}" value={form.contact} onChange={handleChange} required className={styles.input} />
+              <span className={styles.labelText}>Contact number</span>
+            </label>
+
+            <button className={styles.registerBtn} type="submit" disabled={!emailVerified}>
               Register
             </button>
           </form>
         </div>
-      </div>
+      </main>
 
-      {/* ✅ OTP Modal */}
       {showOtpModal && (
-        <div className="otp-modal-overlay">
-          <div className="otp-modal">
+        <div className={styles.otpModalOverlay}>
+          <div className={styles.otpModal} role="dialog" aria-modal="true">
             <h2>Verify OTP</h2>
             <p>Enter the 6-digit code sent to <b>{form.email}</b></p>
             <input
@@ -259,12 +307,13 @@ export default function RegisterPage() {
               value={otp}
               onChange={(e) => setOtp(e.target.value)}
               maxLength={6}
+              className={styles.input}
             />
-            <div className="otp-modal-buttons">
-              <button onClick={verifyOtp} disabled={verifyingOtp}>
+            <div className={styles.otpModalButtons}>
+              <button onClick={verifyOtp} disabled={verifyingOtp} className={styles.primaryBtn}>
                 {verifyingOtp ? "Verifying..." : "Verify"}
               </button>
-              <button onClick={() => setShowOtpModal(false)}>Cancel</button>
+              <button onClick={() => setShowOtpModal(false)} className={styles.secondaryBtn}>Cancel</button>
             </div>
           </div>
         </div>

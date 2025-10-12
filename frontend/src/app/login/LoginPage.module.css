@@ -1,0 +1,268 @@
+/* LoginPage.module.css
+   Modern font pairing: Inter (UI) + Poppins (headings)
+   Fonts imported locally here and applied only to this page via scoped classes.
+*/
+
+/* Import fonts (Google) */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@600;700&display=swap');
+
+/* Page-level font variables (scoped to the wrapper to avoid leaking) */
+.login {
+  /* fallback stack included */
+  --ui-font: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --heading-font: 'Poppins', var(--ui-font);
+  font-family: var(--ui-font);
+  color: #07122a;
+}
+
+/* Page header and nav (scoped) */
+.header {
+  padding: 1rem 1.5rem;
+  z-index: 20;
+  font-family: var(--ui-font);
+}
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.logo {
+  width: 160px;
+  height: auto;
+  display: block;
+  filter: drop-shadow(0 6px 18px rgba(0,0,0,0.06));
+}
+.navList {
+  display: flex;
+  gap: 1rem;
+  list-style: none;
+}
+.backBtn {
+  background: rgba(255,255,255,0.95);
+  border: 1px solid rgba(2,6,23,0.06);
+  padding: 0.45rem 0.9rem;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+.backBtn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(3,10,28,0.06);
+}
+
+/* Page wrapper (scoped fallback background) */
+.login {
+  min-height: calc(100vh - 96px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  background: radial-gradient(circle at bottom right, rgba(0,204,203,0.04), transparent 35%);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Card */
+.loginContainer {
+  width: 640px;
+  max-width: calc(100% - 2rem);
+  background: linear-gradient(180deg,#ffffff,#fbfdff);
+  border-radius: 14px;
+  padding: 2rem;
+  box-shadow: 0 18px 50px rgba(3,10,28,0.08);
+  transform-origin: center;
+  opacity: 0;
+  transform: translateY(10px) scale(.995);
+  transition: transform 420ms cubic-bezier(.2,.9,.2,1), opacity 420ms ease;
+  border: 1px solid rgba(2,6,23,0.03);
+  font-family: var(--ui-font);
+}
+
+/* entrance helper */
+.container.enter,
+.loginContainer.enter {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* Title and toggle */
+.formTitle {
+  text-align: center;
+  font-size: 1.25rem;
+  color: #07122a;
+  font-family: var(--heading-font);
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+  letter-spacing: -0.01em;
+}
+.toggle {
+  text-align: center;
+  font-size: 0.92rem;
+  color: #2563eb;
+  cursor: pointer;
+  padding: 0.5rem 0;
+  margin-bottom: 1rem;
+  user-select: none;
+  transition: color 140ms ease, transform 140ms ease;
+  font-family: var(--ui-font);
+  font-weight: 500;
+}
+.toggle:hover { transform: translateY(-2px); }
+
+/* Forms */
+.form {
+  display: none;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+.form.active {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Floating label implementation */
+.floatingLabel {
+  position: relative;
+  display: block;
+  width: 100%;
+  font-family: var(--ui-font);
+}
+.labelText {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6b7280;
+  font-size: 0.95rem;
+  pointer-events: none;
+  transition: transform 160ms ease, font-size 160ms ease, top 160ms ease, color 160ms ease;
+  padding: 0 6px;
+  background: transparent;
+}
+.floatingLabel .input:focus + .labelText,
+.floatingLabel .input:not(:placeholder-shown) + .labelText {
+  top: -10px;
+  transform: translateY(0);
+  font-size: 0.78rem;
+  color: #2563eb;
+}
+
+/* Inputs */
+.input {
+  width: 100%;
+  padding: 0.95rem 1rem;
+  border-radius: 10px;
+  border: 1px solid #e6eef2;
+  background: linear-gradient(180deg,#fff,#fbfdff);
+  font-size: 1rem;
+  color: #07122a;
+  outline: none;
+  transition: box-shadow 160ms ease, border-color 160ms ease, transform 160ms ease;
+  font-family: var(--ui-font);
+  font-weight: 400;
+}
+.input::placeholder { color: transparent; }
+.input:focus {
+  box-shadow: 0 10px 28px rgba(3,10,28,0.06);
+  border-color: rgba(37,99,235,0.16);
+  transform: translateY(-1px);
+}
+
+/* password wrapper & eye icon */
+.passwordWrapper {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  position: relative;
+}
+.eyeIcon {
+  background: rgba(255,255,255,0.98);
+  border: 1px solid rgba(2,6,23,0.06);
+  border-radius: 8px;
+  padding: 0.45rem;
+  cursor: pointer;
+  transition: transform 140ms ease;
+}
+.eyeIcon:hover { transform: translateY(-2px); }
+
+/* login button */
+.loginBtn {
+  margin-top: 0.5rem;
+  width: 100%;
+  padding: 0.9rem 1rem;
+  border-radius: 12px;
+  border: none;;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 140ms ease, box-shadow 140ms ease;
+  box-shadow: 0 12px 32px rgba(2,6,23,0.12);
+  font-family: var(--heading-font);
+  font-weight: 600;
+  letter-spacing: 0.2px;
+
+  background: linear-gradient(180deg,#00CCCB,#00A9A8);
+  color: #fff;
+  white-space: nowrap;
+}
+.loginBtn:hover { transform: translateY(-3px); }
+
+/* subtle helper for small labels */
+.smallNote {
+  font-size: 0.9rem;
+  color: #556272;
+  font-family: var(--ui-font);
+  margin-top: 0.25rem;
+}
+
+/* focus styles targeted to local classes only */
+.backBtn:focus,
+.eyeIcon:focus,
+.loginBtn:focus,
+.input:focus {
+  outline: 3px solid rgba(37,99,235,0.12);
+  outline-offset: 3px;
+}
+
+/* responsive adjustments */
+@media (min-width: 1440px) {
+  .loginContainer { width: 960px; padding: 6rem; }
+  .formTitle { font-size: 2.5rem; }
+  .input { font-size: 1.1rem; }
+  .loginBtn { font-size: 2rem; width: 35%; }
+  .passwordWrapper { width: 100%; }
+}
+
+@media (max-width: 1024px) {
+  .loginContainer { width: 640px; padding: 4rem; }
+  .formTitle { font-size: 2rem; }
+  .input { width: 100%; }
+  .loginBtn { width: 35%; font-size: 1.6rem; }
+  .passwordWrapper { width: 100%; }
+}
+
+@media (max-width: 768px) {
+  .loginContainer { width: 90%; padding: 2rem; }
+  .input { width: 100%; }
+  .passwordWrapper { width: 100%; }
+  .loginBtn { width: 40%; font-size: 1.4rem; }
+}
+
+@media (max-width: 640px) {
+  .loginContainer { width: 95%; padding: 1.5rem; margin-top: 3rem; }
+  .formTitle { font-size: 1.6rem; }
+  .input { width: 100%; font-size: 1rem; }
+  .loginBtn { width: 70%; font-size: 1.2rem; }
+  .toggle { font-size: 0.8rem; }
+}
+
+/* micro entrance animation for container */
+@keyframes floatIn {
+  from { transform: translateY(10px) scale(.995); opacity: 0; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
+}
+.container.enter .loginContainer {
+  animation: floatIn 420ms cubic-bezier(.2,.9,.2,1);
+}

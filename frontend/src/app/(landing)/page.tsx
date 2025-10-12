@@ -1,111 +1,98 @@
-import Image from 'next/image';
-import Link from 'next/link';
-import './fixit-css.css';
+"use client";
+import { useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import styles from "./LandingPage.module.css"; 
 
 export default function Home() {
+  const [menuOpen, setMenuOpen] = useState(false);
+
   return (
-    <>
+    <div className={styles.landingPage}>
       <header>
-        <nav>
+        <nav className={styles.nav}>
           <Image 
             src="/images/Fix-it_logo_3.png" 
             alt="Fixit Logo"
-            className="logo"
+            className={styles.logo}
             width={160} 
             height={40} 
           />
-          <ul className="nav-list">
-            <li><a href="#about">About</a></li>
-            <li><a href="#services">Services</a></li>
+
+          {/* Burger Icon */}
+          <div 
+            className={`${styles.burger} ${menuOpen ? styles.open : ""}`} 
+            onClick={() => setMenuOpen(!menuOpen)}
+          >
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+
+          {/* Nav List */}
+          <ul className={`${styles.navList} ${menuOpen ? styles.active : ""}`}>
+            <li><a href="#about" onClick={() => setMenuOpen(false)}>About</a></li>
+            <li><a href="#services" onClick={() => setMenuOpen(false)}>Services</a></li>
             <li>
-              <Link href="/login" style={{ marginRight: '2rem' }}>
-                <button className="login-btn">Log In</button>
+              <Link href="/login" onClick={() => setMenuOpen(false)}>
+                <button className={styles.loginBtn}>Log In</button>
               </Link>
             </li>
           </ul>
         </nav>
       </header>
       
-      <div id="header-text">
-        <div className="container">
-          <div className="row">
-              <h1>Empowering citizens, <br /> improving communities.</h1>
-              <p>The app for citizens to report local issues, track repairs, and improve communities together.</p>
-              {/* This button is now correctly linked to the register page */}
-              <Link href="/register">
-                <button className="register-btn">Register</button>
-              </Link>
-          </div>
+      <section id="hero" className={styles.hero}>
+        <div className={styles.heroContent}>
+          <h1>Empowering citizens, <br /> improving communities.</h1>
+          <p>The app for citizens to report local issues, track repairs, and improve communities together.</p>
+          <Link href="/register">
+            <button className={styles.registerBtn}>Register</button>
+          </Link>
         </div>
-      </div>
+      </section>
 
-
-      <div id="about">
+      <section id="about" className={styles.about}>
         <h1> About FixitPH </h1>
-        <div className='about_row'>
-          <p> FixitPH is a community-driven platform that empowers citizens to take an active role in improving their neighborhoods. 
+        <div className={styles.aboutRow}>
+          <p>
+            FixitPH is a community-driven platform that empowers citizens to take an active role in improving their neighborhoods. 
             Through the app, users can easily report local issues such as potholes, broken streetlights, flooding, or other public concerns. 
-            Each report is tracked until resolution, allowing residents to stay updated on repair progress. <br /> <br/>
-
+            Each report is tracked until resolution, allowing residents to stay updated on repair progress. <br /><br/>
             By connecting citizens with local authorities, FixitPH promotes transparency, faster response times, and stronger collaboration. 
-            Together, we can build safer, cleaner, and more sustainable communities.</p>
+            Together, we can build safer, cleaner, and more sustainable communities.
+          </p>
           <Image
             src="/images/mockup-laptop.png"
             alt="FixitPH Laptop Mockup"
             width={800}    
             height={600}   
-            className="laptop"
+            className={styles.laptop}
           />
         </div>
-      </div>
+      </section>
 
-
-      <div id="services">
+      <section id="services" className={styles.services}>
         <h1> Services </h1>
-        <div className='services_row1'> 
-          <div className='services_card'>
-            <Image
-              src="/images/report_icon.png"
-              alt="FixitPH Report Icon"
-              width={190}    
-              height={190}   
-              className="service_image"
-            />
+        <div className={styles.servicesRow}>
+          <div className={styles.servicesCard}>
+            <Image src="/images/report_icon.png" alt="Report" width={120} height={120} className={styles.serviceImage}/>
             <p>Issue Reporting</p>
           </div>
-          <div className='services_card'>
-            <Image
-              src="/images/tracking-icon.png"
-              alt="FixitPH Track Icon"
-              width={190}    
-              height={190}   
-              className="service_image"
-            />
+          <div className={styles.servicesCard}>
+            <Image src="/images/tracking-icon.png" alt="Tracking" width={120} height={120} className={styles.serviceImage}/>
             <p>Real-Time Tracking</p>
           </div>
-          <div className='services_card'>
-            <Image
-              src="/images/community-icon.png"
-              alt="FixitPH Community Engagement Icon"
-              width={190}    
-              height={190}   
-              className="service_image"
-            />
+          <div className={styles.servicesCard}>
+            <Image src="/images/community-icon.png" alt="Community" width={120} height={120} className={styles.serviceImage}/>
             <p>Community Engagement</p>
           </div>
-          <div className='services_card'>
-            <Image
-              src="/images/notification-icon.png"
-              alt="FixitPH Notification and Alerts Icon"
-              width={190}    
-              height={190}   
-              className="service_image"
-            />
+          <div className={styles.servicesCard}>
+            <Image src="/images/notification-icon.png" alt="Notifications" width={120} height={120} className={styles.serviceImage}/>
             <p>Notifications & Alerts</p>
           </div>
         </div>
-      </div>
-  
-    </>
+      </section>
+    </div>
   );
 }

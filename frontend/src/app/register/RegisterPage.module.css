@@ -1,0 +1,455 @@
+/* RegisterPage.module.css
+   Fully scoped register page styles.
+   Modern font pairing: Inter for UI, Poppins for headings (imported here).
+   No global pure selectors; body visuals should be placed in globals.css if needed.
+*/
+
+/* Import fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@600;700&display=swap');
+
+/* Page-level font variables (scoped via wrapper) */
+.register {
+  --ui-font: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --heading-font: 'Poppins', var(--ui-font);
+
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 3rem 1rem 6rem;
+  min-height: calc(100vh - 96px);
+  gap: 1.5rem;
+  background: transparent; /* body provides visual via globals.css */
+  font-family: var(--ui-font);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: #0f1724;
+}
+
+/* Page header / nav */
+.header {
+  padding: 1rem 1.5rem;
+  position: relative;
+  z-index: 20;
+  font-family: var(--ui-font);
+}
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.logo {
+  width: 160px;
+  height: auto;
+  display: block;
+  filter: drop-shadow(0 4px 10px rgba(0,0,0,0.08));
+}
+.formTitle {
+  flex: 1;
+  text-align: center;
+  font-size: 1.25rem;
+  color: #0f1724;
+  font-weight: 700;
+  margin: 0;
+  font-family: var(--heading-font);
+  letter-spacing: -0.01em;
+}
+
+/* nav list and back button */
+.navList {
+  display: flex;
+  gap: 1rem;
+  list-style: none;
+  align-items: center;
+}
+.backBtn {
+  background: rgba(255,255,255,0.98);
+  color: #0f1724;
+  border: 1px solid rgba(15,23,36,0.06);
+  padding: 0.5rem 0.95rem;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: transform 180ms cubic-bezier(.2,.9,.2,1), box-shadow 180ms ease, background 160ms ease;
+  box-shadow: 0 6px 18px rgba(3,10,28,0.06);
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  will-change: transform;
+}
+.backBtn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 36px rgba(3,10,28,0.10);
+  background: linear-gradient(180deg, rgba(255,255,255,1), rgba(245,247,250,1));
+}
+.backBtn:active {
+  transform: translateY(-1px) scale(.998);
+}
+
+/* card */
+.registerContainer {
+  width: 720px;
+  max-width: calc(100% - 2rem);
+  background: linear-gradient(180deg, rgba(255,255,255,0.98), #ffffff);
+  border-radius: 16px;
+  box-shadow: 0 12px 40px rgba(3,10,28,0.08);
+  padding: 2.25rem;
+  transform-origin: center;
+  transition: transform 420ms cubic-bezier(.2,.9,.2,1), opacity 420ms ease;
+  opacity: 0;
+  transform: translateY(8px) scale(0.995);
+  border: 1px solid rgba(2,6,23,0.03);
+  font-family: var(--ui-font);
+  margin-top: -6rem;
+  margin-bottom: -6rem;
+}
+
+/* entrance */
+.enter {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* form */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  font-family: var(--ui-font);
+}
+.field { width: 100%; }
+.floatingLabel {
+  position: relative;
+  display: block;
+  width: 100%;
+  cursor: text;
+}
+.labelText {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #7c8592;
+  font-size: 0.95rem;
+  pointer-events: none;
+  transition: transform 160ms ease, font-size 160ms ease, top 160ms ease, color 160ms ease;
+  padding: 0 6px;
+  background: transparent;
+  font-family: var(--ui-font);
+}
+.floatingLabel .input:focus + .labelText,
+.floatingLabel .input:not(:placeholder-shown) + .labelText {
+  top: -10px;
+  transform: translateY(0);
+  font-size: 0.78rem;
+  color: #0070f3;
+}
+
+/* inputs */
+.input {
+  width: 100%;
+  padding: 1.05rem 1rem;
+  border-radius: 12px;
+  border: 1px solid #e6eef2;
+  background: linear-gradient(180deg,#ffffff,#fbfdff);
+  font-size: 1rem;
+  color: #0f1724;
+  outline: none;
+  transition: box-shadow 180ms ease, border-color 180ms ease, transform 180ms ease;
+  font-family: var(--ui-font);
+  font-weight: 400;
+}
+.input::placeholder { color: transparent; }
+.input:focus {
+  box-shadow: 0 12px 28px rgba(3,10,28,0.06), inset 0 0 0 1px rgba(0,112,243,0.06);
+  border-color: rgba(0,112,243,0.16);
+  transform: translateY(-1px);
+}
+
+/* layout helpers */
+.row { display: flex; gap: 1rem; }
+.rowInline { display: flex; gap: 0.75rem; align-items: center; }
+
+/* otp button */
+.otpBtn {
+  background: linear-gradient(180deg,#00CCCB,#00A9A8);
+  color: #fff;
+  border: none;
+  padding: 0.6rem 0.9rem;
+  border-radius: 10px;
+  cursor: pointer;
+  white-space: nowrap;
+  font-size: 0.95rem;
+  transition: transform 160ms ease, box-shadow 160ms ease;
+  box-shadow: 0 8px 18px rgba(0,204,203,0.14);
+  font-family: var(--ui-font);
+  font-weight: 600;
+}
+.otpBtn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+.otpBtn:hover:not(:disabled) { transform: translateY(-3px); }
+
+/* password area */
+.passwordWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.passwordWrapper .input { padding-right: 3rem; }
+.eyeIcon {
+  background: rgba(255,255,255,0.98);
+  border: 1px solid rgba(3,10,28,0.06);
+  border-radius: 8px;
+  padding: 0.45rem;
+  cursor: pointer;
+  transition: transform 140ms ease;
+  font-family: var(--ui-font);
+}
+.eyeIcon:hover { transform: translateY(-2px); }
+
+/* conditions tooltip */
+.passwordConditions {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  background: #fff;
+  color: #111;
+  padding: 0.5rem;
+  border-radius: 10px;
+  box-shadow: 0 12px 30px rgba(3,10,28,0.08);
+  width: max-content;
+  min-width: 240px;
+  z-index: 40;
+}
+.conditionCard {
+  font-size: 0.95rem;
+  padding: 0.25rem 0.4rem;
+  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: var(--ui-font);
+}
+.okDot, .badDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.okDot { background: #16a34a; } .badDot { background: #ef4444; }
+
+/* errors & submit */
+.errorText { color: #ef4444; font-size: 0.95rem; font-family: var(--ui-font); }
+.registerBtn {
+  margin-top: 0.5rem;
+  border: none;
+  padding: 0.95rem 1rem;
+  border-radius: 12px;
+  font-size: 1.02rem;
+  cursor: pointer;
+  transition: transform 160ms ease, box-shadow 160ms ease;
+  box-shadow: 0 12px 30px rgba(2,6,23,0.12);
+  font-family: var(--heading-font);
+  font-weight: 600;
+  letter-spacing: 0.2px;
+
+  background: linear-gradient(180deg,#00CCCB,#00A9A8);
+  color: #fff;
+  white-space: nowrap;
+  transition: transform 160ms ease, box-shadow 160ms ease;
+  box-shadow: 0 8px 18px rgba(0,204,203,0.14);
+
+}
+.registerBtn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* otp modal overlay and card (styled, matching fonts) */
+.otpModalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(2,6,23,0.52);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3000;
+  padding: 1.25rem;
+  backdrop-filter: blur(4px);
+}
+
+.otpModal {
+  width: 420px;
+  max-width: 100%;
+  background: linear-gradient(180deg,#ffffff,#fbfdff);
+  border-radius: 14px;
+  padding: 1.25rem 1.5rem;
+  box-shadow: 0 28px 80px rgba(2,6,23,0.22);
+  text-align: left;
+  animation: popIn 240ms cubic-bezier(.2,.9,.2,1);
+  color: #07122a;
+  border: 1px solid rgba(2,6,23,0.05);
+  font-family: var(--ui-font);
+}
+
+/* modal header & content */
+.otpModal h2 {
+  margin: 0 0 0.25rem 0;
+  font-weight: 600;
+  font-size: 1.1rem;
+  letter-spacing: -0.01em;
+  font-family: var(--ui-font);
+}
+.otpModal p {
+  margin: 0 0 0.75rem 0;
+  color: #475569;
+  font-size: 0.95rem;
+  font-family: var(--ui-font);
+}
+
+/* OTP input */
+.otpModal input {
+  width: 100%;
+  padding: 0.85rem 1rem;
+  border-radius: 10px;
+  border: 1px solid #e6eef2;
+  background: #fff;
+  font-size: 1rem;
+  color: #07122a;
+  outline: none;
+  transition: box-shadow 160ms ease, border-color 160ms ease;
+  margin-top: 0.5rem;
+}
+
+/* Buttons row */
+.otpModalButtons {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 1rem;
+  justify-content: flex-end;
+}
+.primaryBtn {
+  background: linear-gradient(180deg,#006ef6,#0056d6);
+  color: #fff;
+  padding: 0.6rem 0.95rem;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-family: var(--ui-font);
+  font-weight: 600;
+  box-shadow: 0 10px 30px rgba(2,86,214,0.16);
+  transition: transform 140ms ease, box-shadow 140ms ease;
+}
+.primaryBtn:hover { transform: translateY(-3px); box-shadow: 0 18px 48px rgba(2,86,214,0.20); }
+.secondaryBtn {
+  background: transparent;
+  color: #0f1724;
+  padding: 0.56rem 0.9rem;
+  border-radius: 10px;
+  border: 1px solid rgba(2,6,23,0.06);
+  cursor: pointer;
+  font-family: var(--ui-font);
+  font-weight: 600;
+  transition: transform 120ms ease, background 120ms ease;
+}
+.secondaryBtn:hover { background: rgba(2,6,23,0.03); transform: translateY(-2px); }
+
+/* small helper text inside modal */
+.otpModal .smallNote {
+  font-size: 0.9rem;
+  color: #64748b;
+  margin-top: 0.5rem;
+  font-family: var(--ui-font);
+}
+
+/* focus outlines for local controls only */
+.backBtn:focus,
+.otpBtn:focus,
+.registerBtn:focus,
+.primaryBtn:focus,
+.secondaryBtn:focus,
+.eyeIcon:focus,
+.input:focus,
+.otpModal input:focus {
+  outline: 3px solid rgba(37,99,235,0.12);
+  outline-offset: 4px;
+}
+
+
+.otpModal,
+.otpModal h2,
+.otpModal p,
+.otpModal input,
+.otpModal .smallNote,
+.otpModalButtons button {
+  font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+.otpModal h2 {
+  font-family: 'Poppins', 'Inter', sans-serif;
+  font-weight: 600;
+}
+
+
+/* responsive breakpoints (all common sizes) */
+/* ≥1920 */
+@media (min-width: 1920px) {
+  .registerContainer { width: 920px; padding: 2.75rem; }
+  .formTitle { font-size: 1.5rem; }
+}
+/* 1440–1919 */
+@media (min-width: 1440px) and (max-width: 1919px) {
+  .registerContainer { width: 820px; padding: 2.25rem; }
+}
+/* 1200–1439 */
+@media (min-width: 1200px) and (max-width: 1439px) {
+  .registerContainer { width: 760px; }
+}
+/* 1024–1199 */
+@media (min-width: 1024px) and (max-width: 1199px) {
+  .registerContainer { width: 700px; }
+  .row { gap: 0.75rem; }
+}
+/* 768–1023 */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .registerContainer { width: 640px; padding: 1.75rem; margin-top: -2rem; }
+  .row { flex-direction: column; }
+  .rowInline { flex-direction: column; align-items: stretch; gap: 0.5rem; }
+  .formTitle { font-size: 1.1rem; }
+  .input { font-size: 0.98rem; }
+  
+}
+/* 640–767 */
+@media (min-width: 640px) and (max-width: 767px) {
+  .registerContainer { width: calc(100% - 2rem); padding: 1.5rem; margin-top: -2rem; }
+  .row { flex-direction: column; }
+  .rowInline { flex-direction: column; align-items: stretch; gap: 0.5rem; }
+  .formTitle { font-size: 1.05rem; }
+  .input { font-size: 0.96rem; padding: 0.75rem 0.9rem; }
+  .otpBtn { font-size: 0.95rem; padding: 0.6rem 0.9rem; }
+}
+/* 425–639 */
+@media (min-width: 425px) and (max-width: 639px) {
+  .registerContainer { padding: 1.25rem; width: calc(100% - 2rem); margin-top: -2rem; }
+  .formTitle { font-size: 1rem; }
+  .input { padding: 0.7rem 0.9rem; }
+  .registerBtn { font-size: 1rem; padding: 0.75rem 0.9rem; }
+}
+/* 375–424 */
+@media (min-width: 375px) and (max-width: 424px) {
+  .registerContainer { padding: 1rem; margin-top: 0rem; }
+  .formTitle { font-size: 0.98rem; }
+  .input { padding: 0.65rem 0.85rem; font-size: 0.95rem; }
+  .otpBtn { padding: 0.5rem 0.75rem; font-size: 0.9rem; }
+}
+/* ≤374 */
+@media (max-width: 374px) {
+  .registerContainer { padding: 0.9rem; border-radius: 10px; }
+  .formTitle { font-size: 0.92rem; }
+  .input { padding: 0.6rem 0.8rem; font-size: 0.92rem; }
+  .otpModal { width: 320px; padding: 1rem; }
+  .registerBtn { padding: 0.7rem; font-size: 0.95rem; }
+}
+
+/* modal popIn animation */
+@keyframes popIn {
+  from { transform: translateY(8px) scale(.985); opacity: 0; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
+}
