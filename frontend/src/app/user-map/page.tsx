@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import Head from "next/head";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import "./user-map.css";
+import styles from "./user-map.module.css";
 import Image from "next/image";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
@@ -164,30 +164,30 @@ export default function UserMapPage() {
   }
 
   const ReportImage = ({ src, alt }: { src: string; alt: string }) => {
-      const [imgSrc, setImgSrc] = useState(src || "/images/broken-streetlights.jpg");
-  
-      return (
-        <Image
-          src={imgSrc}
-          alt={alt}
-          width={450}
-          height={250}
-          onError={() => setImgSrc("/images/broken-streetlights.jpg")}
-        />
-      );
-    };
+    const [imgSrc, setImgSrc] = useState(src || "/images/broken-streetlights.jpg");
+
+    return (
+      <Image
+        src={imgSrc}
+        alt={alt}
+        width={450}
+        height={250}
+        onError={() => setImgSrc("/images/broken-streetlights.jpg")}
+      />
+    );
+  };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setUploadedFile(file);
-      setReportForm({ ...reportForm, image: file }); // <-- Add this line
+      setReportForm({ ...reportForm, image: file });
     }
   };
 
   const removeImage = () => {
     setUploadedFile(null);
-    setReportForm({ ...reportForm, image: null }); // <-- Add this line
+    setReportForm({ ...reportForm, image: null });
   };
 
   const handleReportSubmit = async (e: React.FormEvent) => {
@@ -229,7 +229,7 @@ export default function UserMapPage() {
       <Head>
         <title>FixIt PH - Community Reports</title>
         <link
-          href="https://fonts.googleapis.com/css?family=Inter"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@300;400;600;700&display=swap"
           rel="stylesheet"
         />
         <script
@@ -239,50 +239,51 @@ export default function UserMapPage() {
         ></script>
       </Head>
 
-      <header>
-        <nav
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            width: "100%",
-            background:
-              "linear-gradient(to bottom, rgba(255, 255, 255, 0.8), rgba(0,0,0,0))",
-            zIndex: 1000,
-          }}
-        >
-          <Image
-            src="/images/Fix-it_logo_3.png"
-            alt="Fixit Logo"
-            className="logo"
-            width={160}
-            height={40}
-          />
+      <header className={styles.overlayNav}>
+        <nav className={styles.nav}>
+          <div className={styles.brand}>
+            <Image
+              src="/images/Fix-it_logo_3.png"
+              alt="Fixit Logo"
+              className={styles.logo}
+              width={160}
+              height={40}
+            />
+          </div>
 
-          {/* Hamburger button */}
-          <button className="hamburger" onClick={() => setMenuOpen(!menuOpen)}>
+          <button
+            className={styles.hamburger}
+            onClick={() => setMenuOpen(!menuOpen)}
+            aria-label="Toggle menu"
+          >
             ☰
           </button>
 
           <ul
-            className={`nav-list-user-side ${menuOpen ? "open" : ""}`}
+            className={`${styles.navList} ${menuOpen ? styles.open : ""}`}
             onClick={() => setMenuOpen(false)}
           >
             <li>
-              <a href="/user-map">Map</a>
+              <a className={styles.navLink} href="/user-map">
+                Map
+              </a>
             </li>
             <li>
-              <a href="/user-feed">Feed</a>
+              <a className={styles.navLink} href="/user-feed">
+                Feed
+              </a>
             </li>
             <li>
-              <a href="/user-myreports">My Reports</a>
+              <a className={styles.navLink} href="/user-myreports">
+                My Reports
+              </a>
             </li>
             <li>
-              <a href="/user-profile" className="profile-link">
+              <a className={styles.profileLink} href="/user-profile">
                 <img
                   src={profilePic}
                   alt="User Profile"
-                  className="profile-pic"
+                  className={styles.profilePic}
                 />
               </a>
             </li>
@@ -290,50 +291,34 @@ export default function UserMapPage() {
         </nav>
       </header>
 
-      <div id="user-map">
-        <div className="map-container">
-          <div className="map-row-2" style={{ position: "relative" }}>
-            <div
-              id="map"
-              style={{ width: "100%", height: "40rem", borderRadius: "0rem" }}
-            ></div>
+      <main className={styles.fullMapWrap}>
+        <div id="map" className={styles.fullMap} aria-label="Community map"></div>
 
-            <button
-              className="report-btn"
-              onClick={() => setModalOpen(true)}
-              style={{
-                padding: "0.7rem 1rem",
-                border: "none",
-                borderRadius: "6px",
-                fontSize: "1rem",
-                cursor: "pointer",
-                position: "absolute",
-                bottom: "6rem",
-                left: "2rem",
-                zIndex: 1000,
-                boxShadow: "0px 2px 6px rgba(0,0,0,0.2)",
-                display: "flex",
-                alignItems: "center",
-                gap: "0.5rem",
-              }}
-            >
-              Add Report
-            </button>
-          </div>
-        </div>
-      </div>
+        <button
+          className={styles.reportBtn}
+          onClick={() => setModalOpen(true)}
+          aria-label="Add report"
+        >
+          Add Report
+        </button>
+      </main>
 
       {modalOpen && (
-        <div id="reportModal" className="modal" style={{ display: "flex" }}>
-          <div className="modal-content">
-            <span className="close" onClick={() => setModalOpen(false)}>
+        <div id="reportModal" className={styles.modal} role="dialog" aria-modal="true">
+          <div className={styles.modalContent}>
+            <button
+              className={styles.close}
+              onClick={() => setModalOpen(false)}
+              aria-label="Close"
+            >
               &times;
-            </span>
-            <h2>Add Report</h2>
+            </button>
+            <h2 className={styles.modalTitle}>Add Report</h2>
 
-            <form className="form-grid" onSubmit={handleReportSubmit}>
-              <div className="form-left">
+            <form className={styles.formGrid} onSubmit={handleReportSubmit}>
+              <div className={styles.formLeft}>
                 <input
+                  className={styles.input}
                   type="text"
                   name="title"
                   placeholder="Report Title"
@@ -344,6 +329,7 @@ export default function UserMapPage() {
                   required
                 />
                 <textarea
+                  className={styles.textarea}
                   name="description"
                   placeholder="Describe the issue..."
                   value={reportForm.description}
@@ -355,9 +341,12 @@ export default function UserMapPage() {
                   }
                   required
                 />
-                <label htmlFor="imageUpload">Upload Image</label>
-                <div className="upload-wrapper">
+                <label className={styles.inputLabel} htmlFor="imageUpload">
+                  Upload Image
+                </label>
+                <div className={styles.uploadWrapper}>
                   <input
+                    className={styles.fileInput}
                     type="file"
                     id="imageUpload"
                     name="image"
@@ -365,18 +354,20 @@ export default function UserMapPage() {
                     onChange={handleImageChange}
                   />
                   {uploadedFile && (
-                    <div id="imagePreview" className="image-preview">
+                    <div id="imagePreview" className={styles.imagePreview}>
                       <a
                         href={URL.createObjectURL(uploadedFile)}
                         target="_blank"
                         rel="noreferrer"
+                        className={styles.previewLink}
                       >
                         {uploadedFile.name}
                       </a>
                       <button
                         type="button"
                         onClick={removeImage}
-                        className="remove-btn"
+                        className={styles.removeBtn}
+                        aria-label="Remove image"
                       >
                         ✖
                       </button>
@@ -385,9 +376,12 @@ export default function UserMapPage() {
                 </div>
               </div>
 
-              <div className="form-right">
-                <label htmlFor="address">Location</label>
+              <div className={styles.formRight}>
+                <label className={styles.inputLabel} htmlFor="address">
+                  Location
+                </label>
                 <input
+                  className={styles.input}
                   type="text"
                   id="address"
                   name="address"
@@ -400,19 +394,14 @@ export default function UserMapPage() {
                 />
                 <input type="hidden" id="latitude" name="latitude" />
                 <input type="hidden" id="longitude" name="longitude" />
-                <div
-                  id="modal-map"
-                  style={{
-                    width: "100%",
-                    height: "18rem",
-                    margin: "10px 0",
-                    borderRadius: "6px",
-                  }}
-                ></div>
+                <div id="modal-map" className={styles.modalMap}></div>
               </div>
-              <button type="submit" className="submit-btn">
-                Submit Report
-              </button>
+
+              <div className={styles.submitRow}>
+                <button type="submit" className={styles.submitBtn}>
+                  Submit Report
+                </button>
+              </div>
             </form>
           </div>
         </div>

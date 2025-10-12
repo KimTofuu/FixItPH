@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import "./user-profile.css";
+import styles from "./ProfilePage.module.css";
 import { toast } from "react-toastify";
 
 interface ProfileData {
@@ -14,13 +14,20 @@ interface ProfileData {
   barangay?: string;
   municipality?: string;
   contact?: string;
-  // removed password from interface
 }
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+
+  // New: change password modal state
+  const [showChangePassModal, setShowChangePassModal] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [changingPassword, setChangingPassword] = useState(false);
 
   const profilePic = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
   const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
@@ -101,137 +108,342 @@ export default function ProfilePage() {
     }
   };
 
-  if (!profile) return <div>Loading profile...</div>;
+  // performLogout: UI-only logout action (no confirmation)
+const performLogout = () => {
+  localStorage.clear();
+  window.location.href = "/login";
+};
+
+  // New: handle password change (UI-level). Adjust to match your API contract if needed.
+  const handleChangePassword = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!currentPassword || !newPassword) {
+      toast.error("Please fill all password fields");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast.error("New password and confirm password do not match");
+      return;
+    }
+
+    setChangingPassword(true);
+    try {
+      const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("token")
+          : null;
+      const res = await fetch(`${API}/users/change-password`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token ? `Bearer ${token}` : "",
+        },
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        toast.error(err.message || "Password change failed");
+        setChangingPassword(false);
+        return;
+      }
+
+      toast.success("Password changed");
+      setShowChangePassModal(false);
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (err) {
+      console.error("Change password error:", err);
+      toast.error("Network error");
+    } finally {
+      setChangingPassword(false);
+    }
+  };
+
+  if (!profile) return <div className={styles.loading}>Loading profile...</div>;
 
   return (
-    <div>
-      {/* HEADER */}
-      <header>
-        <nav>
-          <Image
-            src="/images/Fix-it_logo_3.png"
-            alt="Fixit Logo"
-            className="logo"
-            width={160}
-            height={40}
-          />
+    <div className={styles.page}>
+      <header className={styles.headerWrap}>
+        <nav className={styles.nav}>
+          <div className={styles.brand}>
+            <Image
+              src="/images/Fix-it_logo_3.png"
+              alt="Fixit Logo"
+              className={styles.logo}
+              width={160}
+              height={40}
+            />
+          </div>
 
-          {/* Hamburger Button */}
-          <button className="hamburger" onClick={() => setMenuOpen(!menuOpen)}>
+          <button
+            className={styles.hamburger}
+            onClick={() => setMenuOpen(!menuOpen)}
+            aria-label="Toggle menu"
+          >
             ☰
           </button>
 
-          <ul className={`nav-list-user-side ${menuOpen ? "open" : ""}`}>
-            <li><Link href="/user-map">Map</Link></li>
-            <li><Link href="/user-feed">Feed</Link></li>
-            <li><Link href="/user-myreports">My Reports</Link></li>
+          <ul className={`${styles.navList} ${menuOpen ? styles.open : ""}`}>
             <li>
-              <Link style={{ color: "#aeaeaeff" }} href="/user-profile">
-                <Image src={profilePic} alt="User Profile" width={40} height={40} />
-              </Link>
+              <a className={styles.navLink} href="/user-map">
+                Map
+              </a>
+            </li>
+            <li>
+              <a className={styles.navLink} href="/user-feed">
+                Feed
+              </a>
+            </li>
+            <li>
+              <a className={styles.navLink} href="/user-myreports">
+                My Reports
+              </a>
+            </li>
+            <li>
+              <a className={styles.profileLink} href="/user-profile">
+                <img
+                  id="profilePic"
+                  src="https://cdn-icons-png.flaticon.com/512/149/149071.png"
+                  alt="User Profile"
+                  className={styles.profilePic}
+                />
+              </a>
             </li>
           </ul>
         </nav>
+
+        {menuOpen && (
+          <div className={styles.mobileMenu}>
+            <Link href="/user-map" className={styles.mobileLink}>Map</Link>
+            <Link href="/user-feed" className={styles.mobileLink}>Feed</Link>
+            <Link href="/user-myreports" className={styles.mobileLink}>My Reports</Link>
+          </div>
+        )}
       </header>
 
-      {/* PROFILE FORM */}
-      <div id="profile-page">
-        <div className="profile-container">
-          <div className="profile-field">
-            <input
-              name="fName"
-              type="text"
-              value={profile.fName}
-              disabled={!isEditing}
-              onChange={handleChange}
-            />
+      <main className={styles.container}>
+        <section className={styles.card}>
+          <div className={styles.headerRow}>
+            <div className={styles.avatarWrap}>
+              <Image
+                src={profilePic}
+                alt="avatar"
+                width={88}
+                height={88}
+                className={styles.largeAvatar}
+              />
+            </div>
+
+            <div className={styles.identity}>
+              <h2 className={styles.name}>{profile.fName} {profile.lName}</h2>
+              <p className={styles.email}>{profile.email}</p>
+            </div>
+
+            <div className={styles.headerActions}>
+              {!isEditing && (
+                <button
+                  onClick={() => setIsEditing(true)}
+                  className={styles.primary}
+                >
+                  Edit
+                </button>
+              )}
+              {isEditing && (
+                <button
+                  onClick={handleSave}
+                  className={styles.primaryDark}
+                >
+                  Save
+                </button>
+              )}
+            </div>
           </div>
 
-          <div className="profile-field">
-            <input
-              name="lName"
-              type="text"
-              value={profile.lName}
-              disabled={!isEditing}
-              onChange={handleChange}
-            />
+          <div className={styles.grid}>
+            <div className={styles.field}>
+              <label className={styles.label}>First name</label>
+              <input
+                name="fName"
+                type="text"
+                value={profile.fName}
+                disabled={!isEditing}
+                onChange={handleChange}
+                className={styles.input}
+              />
+            </div>
+
+            <div className={styles.field}>
+              <label className={styles.label}>Last name</label>
+              <input
+                name="lName"
+                type="text"
+                value={profile.lName}
+                disabled={!isEditing}
+                onChange={handleChange}
+                className={styles.input}
+              />
+            </div>
+
+            <div className={styles.fieldFull}>
+              <label className={styles.label}>Email</label>
+              <input
+                name="email"
+                type="email"
+                value={profile.email}
+                disabled={!isEditing}
+                onChange={handleChange}
+                className={styles.input}
+              />
+            </div>
+
+            <div className={styles.field}>
+              <label className={styles.label}>Barangay</label>
+              <input
+                name="barangay"
+                type="text"
+                value={profile.barangay || ""}
+                disabled={!isEditing}
+                onChange={handleChange}
+                className={styles.input}
+              />
+            </div>
+
+            <div className={styles.field}>
+              <label className={styles.label}>Municipality</label>
+              <input
+                name="municipality"
+                type="text"
+                value={profile.municipality || ""}
+                disabled={!isEditing}
+                onChange={handleChange}
+                className={styles.input}
+              />
+            </div>
+
+            <div className={styles.fieldFull}>
+              <label className={styles.label}>Contact</label>
+              <input
+                name="contact"
+                type="tel"
+                value={profile.contact || ""}
+                disabled={!isEditing}
+                onChange={handleChange}
+                className={styles.input}
+              />
+            </div>
           </div>
 
-          <div className="profile-field">
-            <input
-              name="email"
-              type="email"
-              value={profile.email}
-              disabled={!isEditing}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div className="profile-field">
-            <input
-              name="barangay"
-              type="text"
-              value={profile.barangay || ""}
-              disabled={!isEditing}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div className="profile-field">
-            <input
-              name="municipality"
-              type="text"
-              value={profile.municipality || ""}
-              disabled={!isEditing}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div className="profile-field">
-            <input
-              name="contact"
-              type="tel"
-              value={profile.contact || ""}
-              disabled={!isEditing}
-              onChange={handleChange}
-            />
-          </div>
-
-          {/* Buttons always visible */}
-          <div
-            className="profile-actions"
-            style={{ marginTop: "15px", gap: "10px", display: "flex" }}
-          >
-            <button type="button" onClick={() => setIsEditing(true)} className="edit-btn">
-              Edit
+          <div className={styles.actionsRow}>
+            <button
+              type="button"
+              onClick={() => setShowChangePassModal(true)}
+              className={styles.linkButton}
+            >
+              Change Password
             </button>
-            <button type="button" onClick={handleSave} className="save-btn">
-              Save
-            </button>
 
-            <Link href="/change-password">
+            <div className={styles.rightActions}>
               <button
                 type="button"
-                className="change-password-btn"
-                style={{
-                  padding: "10px 20px",
-                  backgroundColor: "#007bff",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "4px",
-                  cursor: "pointer"
-                }}
+                onClick={() => setShowLogoutModal(true)}
+                className={styles.danger}
               >
-                Change Password
+                Log Out
               </button>
-            </Link>
+            </div>
+          </div>
+        </section>
+      </main>
 
-            <button type="button" onClick={handleLogout} className="logout-btn">
-              Log Out
+      {/* LOGOUT CONFIRMATION MODAL */}
+      {showLogoutModal && (
+        <div className={styles.modalBackdrop} role="dialog" aria-modal="true">
+          <div className={styles.modal}>
+            <h3 className={styles.modalTitle}>Confirm log out</h3>
+            <p className={styles.modalText}>Are you sure you want to log out? You will be returned to the login screen.</p>
+
+            <div className={styles.modalActions}>
+              <button
+                onClick={() => setShowLogoutModal(false)}
+                className={styles.modalCancel}
+              >
+                Cancel
+              </button>
+             <button
+              onClick={() => {
+                setShowLogoutModal(false);
+                performLogout();
+              }}
+              className={styles.modalConfirm}
+            >
+             Log Out
             </button>
+
+            </div>
           </div>
         </div>
-      </div>
+      )}
+
+      {/* CHANGE PASSWORD MODAL */}
+      {showChangePassModal && (
+        <div className={styles.modalBackdrop} role="dialog" aria-modal="true">
+          <div className={styles.modal}>
+            <h3 className={styles.modalTitle}>Change password</h3>
+            <p className={styles.modalText}>Enter your current password and a new password.</p>
+
+            <form onSubmit={handleChangePassword} style={{ marginTop: 12 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                <input
+                  type="password"
+                  placeholder="Current password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  className={styles.input}
+                />
+                <input
+                  type="password"
+                  placeholder="New password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className={styles.input}
+                />
+                <input
+                  type="password"
+                  placeholder="Confirm new password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className={styles.input}
+                />
+              </div>
+
+              <div className={styles.modalActions} style={{ marginTop: 14 }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowChangePassModal(false);
+                    setCurrentPassword("");
+                    setNewPassword("");
+                    setConfirmPassword("");
+                  }}
+                  className={styles.modalCancel}
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="submit"
+                  disabled={changingPassword}
+                  className={styles.modalConfirm}
+                >
+                  {changingPassword ? "Changing..." : "Change password"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

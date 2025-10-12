@@ -154,52 +154,62 @@ export default function AdminReportsPage() {
     <>
       {/* Header */}
       <header>
-        <nav
-          className="admin-nav"
-          style={{ width: "100%", background: "white", color: "black" }}
-        >
-          <Image
-            src="/images/Fix-it_logo_3.png"
-            alt="Fixit Logo"
-            className="logo"
-            width={160}
-            height={40}
-          />
-
-          {/* Hamburger menu button */}
-          <button
-            className="hamburger"
-            onClick={() => setMenuOpen((prev) => !prev)}
-          >
-            ☰
-          </button>
-
-          {/* Nav links */}
-          <ul className={`nav-list-user-side ${menuOpen ? "open" : ""}`}>
-            <li>
-              <a href="/admin-dashboard">Dashboard</a>
-            </li>
-            <li
-              style={{
-                padding: "0.5rem 1rem",
-                borderRadius: "0.5rem",
-                background: "#f0f0f0",
-              }}
-            >
-              <a href="/admin-reports">Reports</a>
-            </li>
-            <li>
-              <a href="/admin-profile" className="admin-profile-link">
-                <img
-                  src={profilePicUrl}
-                  alt="Admin Profile"
-                  className="admin-profile-pic"
-                />
-              </a>
-            </li>
-          </ul>
-        </nav>
-      </header>
+              <nav
+                className="admin-nav"
+                style={{
+                  width: "100%",
+                  background: "white",
+                  color: "black",
+                }}
+              >
+                <div className="nav-left">
+                  <Image
+                    src="/images/Fix-it_logo_3.png"
+                    alt="Fixit Logo"
+                    className="logo"
+                    width={160}
+                    height={40}
+                  />
+                </div>
+      
+                {/* Hamburger icon */}
+                <div className="hamburger" onClick={() => setMenuOpen(!menuOpen)}>
+                  <div className={`bar ${menuOpen ? "open" : ""}`}></div>
+                  <div className={`bar ${menuOpen ? "open" : ""}`}></div>
+                  <div className={`bar ${menuOpen ? "open" : ""}`}></div>
+                </div>
+      
+                <ul className={`nav-list-user-side ${menuOpen ? "open" : ""}`}>
+                  <li>
+                    <a href="/admin-dashboard">Dashboard</a>
+                  </li>
+                  <li
+                  style={{
+                      padding: "0.5rem 1rem",
+                      borderRadius: "0.5rem",
+                      background: "#f0f0f0",
+                    }}
+                  >
+                    <a href="/admin-reports">Reports</a>
+                  </li>
+      
+                  {/* NEW Users link added for admin user list navigation (design only) */}
+                  <li>
+                    <a href="/admin-users">Users</a>
+                  </li>
+      
+                  <li>
+                    <a href="/admin-profile" className="admin-profile-link">
+                      <img
+                        src={profilePicUrl}
+                        alt="Admin Profile"
+                        className="admin-profile-pic"
+                      />
+                    </a>
+                  </li>
+                </ul>
+              </nav>
+            </header>
 
       {/* Reports Section */}
       <div className="reports-page">

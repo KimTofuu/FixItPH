@@ -2,8 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
-import "./fixit-login.css";
+import { useState, useEffect } from "react";
+import styles from "./LoginPage.module.css";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 
@@ -38,7 +38,7 @@ export default function LoginPage() {
 
   const handleAdminSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     const formData = new FormData(e.target as HTMLFormElement);
     const adminData = {
       officialEmail: formData.get("officialEmail") as string,
@@ -51,9 +51,9 @@ export default function LoginPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(adminData),
       });
-      
+
       const result = await res.json();
-      
+
       if (result.token) {
         localStorage.setItem("adminToken", result.token);
         toast.success("Admin login successful! Redirecting...");
@@ -68,7 +68,7 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       const result = await loginUser(form);
       if (result.token) {
@@ -85,144 +85,149 @@ export default function LoginPage() {
 
   const toggleForm = () => setIsResident(!isResident);
 
-  // 🔹 Google Auth handler (placeholder)
   const handleGoogleAuth = async () => {
     toast.info("Redirecting to Google...");
-    // e.g., router.push("/api/auth/google") or your Firebase sign-in logic
   };
+
+  useEffect(() => {
+    // add class to body while this page is mounted so background and body visuals are page-scoped
+    document.body.classList.add("login-page-bg");
+    // trigger entrance animation on container
+    const el = document.querySelector(`.${styles.container}`);
+    if (el) el.classList.add(styles.enter);
+    return () => {
+      document.body.classList.remove("login-page-bg");
+      if (el) el.classList.remove(styles.enter);
+    };
+  }, []);
 
   return (
     <>
-      <header>
-        <nav>
+      <header className={styles.header}>
+        <nav className={styles.nav}>
           <Image
             src="/images/Fix-it_logo_3.png"
             alt="Fixit Logo"
-            className="logo"
+            className={styles.logo}
             width={160}
             height={40}
           />
-          <ul className="nav-list">
+          <ul className={styles.navList}>
             <li>
-              <Link href="/" style={{ marginRight: "2rem" }}>
-                <button className="back-btn">Back</button>
+              <Link href="/" aria-label="Back to home">
+                <button className={styles.backBtn}>Back</button>
               </Link>
             </li>
           </ul>
         </nav>
       </header>
 
-      <div className="login">
-        <div className="login-container">
-          <h1 id="form-title">
+      <div className={styles.login}>
+        <div className={`${styles.loginContainer} ${styles.container}`}>
+          <h1 id="form-title" className={styles.formTitle}>
             {isResident ? "Resident Login" : "Admin Login"}
           </h1>
 
-          <div className="toggle" onClick={toggleForm}>
+          <div
+            className={styles.toggle}
+            onClick={toggleForm}
+            role="button"
+            tabIndex={0}
+            aria-pressed={!isResident}
+          >
             {isResident ? "Switch to Admin Login" : "Switch to Resident Login"}
           </div>
 
-          {/* Resident Login */}
           <form
             autoComplete="off"
             id="resident-form"
-            className={isResident ? "active" : ""}
+            className={`${styles.form} ${isResident ? styles.active : ""}`}
             onSubmit={handleSubmit}
           >
-            <input
-              type="email"
-              name="email"
-              placeholder="Resident Email"
-              value={form.email}
-              onChange={handleChange}
-              required
-            />
-
-            <div className="password-wrapper">
+            <label className={styles.floatingLabel}>
               <input
-                type={showResidentPassword ? "text" : "password"}
-                name="password"
-                placeholder="Password"
-                value={form.password}
+                type="email"
+                name="email"
+                placeholder=" "
+                value={form.email}
                 onChange={handleChange}
                 required
+                className={styles.input}
               />
-              <span
-                className="eye-icon"
+              <span className={styles.labelText}>Resident Email</span>
+            </label>
+
+            <div className={styles.passwordWrapper}>
+              <label className={styles.floatingLabel} style={{ flex: 1 }}>
+                <input
+                  type={showResidentPassword ? "text" : "password"}
+                  name="password"
+                  placeholder=" "
+                  value={form.password}
+                  onChange={handleChange}
+                  required
+                  className={styles.input}
+                />
+                <span className={styles.labelText}>Password</span>
+              </label>
+
+              <button
+                type="button"
+                className={styles.eyeIcon}
                 onClick={() => setShowResidentPassword(!showResidentPassword)}
+                aria-label="toggle resident password visibility"
               >
                 {showResidentPassword ? "👁️" : "🙈"}
-              </span>
+              </button>
             </div>
 
-            <button className="login-btn" type="submit">Log in</button>
-
-            
-            {/* <button
-              type="button"
-              className="google-signin-btn"
-              onClick={handleGoogleAuth}
-            >
-              <Image
-                src="/images/google-icon.png"
-                alt="Google Icon"
-                width={18}
-                height={18}
-              />
-              <span>Continue with Google</span>
-            </button>  */}
-            <div>
-              <a href={`${API}/auth/google`} className="google-btn">
-                Sign in with Google
-              </a>
-            </div>
+            <button className={styles.loginBtn} type="submit">
+              Log in
+            </button>
           </form>
 
-          {/* Admin Login */}
           <form
             autoComplete="off"
             id="admin-form"
-            className={!isResident ? "active" : ""}
+            className={`${styles.form} ${!isResident ? styles.active : ""}`}
             onSubmit={handleAdminSubmit}
           >
-            <input 
-              type="text" 
-              name="username"
-              placeholder="Admin Username" 
-              required 
-            />
-
-            <div className="password-wrapper">
+            <label className={styles.floatingLabel}>
               <input
-                type={showAdminPassword ? "text" : "password"}
-                name="password"
-                placeholder="Password"
+                type="text"
+                name="username"
+                placeholder=" "
                 required
+                className={styles.input}
               />
-              <span
-                className="eye-icon"
+              <span className={styles.labelText}>Admin Username</span>
+            </label>
+
+            <div className={styles.passwordWrapper}>
+              <label className={styles.floatingLabel} style={{ flex: 1 }}>
+                <input
+                  type={showAdminPassword ? "text" : "password"}
+                  name="password"
+                  placeholder=" "
+                  required
+                  className={styles.input}
+                />
+                <span className={styles.labelText}>Password</span>
+              </label>
+
+              <button
+                type="button"
+                className={styles.eyeIcon}
                 onClick={() => setShowAdminPassword(!showAdminPassword)}
+                aria-label="toggle admin password visibility"
               >
                 {showAdminPassword ? "👁️" : "🙈"}
-              </span>
+              </button>
             </div>
 
-            <button className="login-btn" type="submit">Log in</button>
-
-            {/* 🔹 Google Auth Button */}
-            {/* <button
-              type="button"
-              className="google-signin-btn"
-              onClick={handleGoogleAuth}
-            >
-              <Image
-                src="/images/google-icon.png"
-                alt="Google Icon"
-                width={18}
-                height={18}
-              />
-              <span>Continue with Google</span>
-            </button> */}
+            <button className={styles.loginBtn} type="submit">
+              Log in
+            </button>
           </form>
         </div>
       </div>
