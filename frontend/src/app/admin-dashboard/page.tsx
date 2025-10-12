@@ -1,11 +1,10 @@
-// app/admin-dashboard/page.tsx (or the file you provided)
-// Only change: added "Users" link in the nav list. No functions touched.
 "use client";
+
 import { useState, useEffect, useRef } from "react";
 import Head from "next/head";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import "./admin-dashboard.css";
+import styles from "./AdminDashboard.module.css";
 import Image from "next/image";
 
 interface Report {
@@ -21,7 +20,7 @@ type StatusFilter = "Reported" | "Processing" | "Resolved" | "All";
 
 export default function AdminDashboardPage() {
   const [reports, setReports] = useState<Report[]>([]);
-  const [resolvedReports, setResolvedReports] = useState<Report[]>([]); // <-- new
+  const [resolvedReports, setResolvedReports] = useState<Report[]>([]);
   const [stats, setStats] = useState({
     reported: 0,
     processing: 0,
@@ -79,7 +78,6 @@ export default function AdminDashboardPage() {
 
         setReports(transformed);
 
-        // handle resolved list
         let resolvedCount = 0;
         if (resResolved.status === "fulfilled" && resResolved.value.ok) {
           try {
@@ -129,7 +127,6 @@ export default function AdminDashboardPage() {
     }).addTo(map);
   }, []);
 
-  // map markers: use resolvedReports when showing Resolved; when All, merge reports + resolvedReports
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
@@ -144,7 +141,6 @@ export default function AdminDashboardPage() {
     if (filterStatus === "Resolved") {
       reportsToShow = resolvedReports;
     } else if (filterStatus === "All") {
-      // combine reports (non-resolved) with resolvedReports (separate collection)
       const nonResolved = reports.filter((r) => r.status !== "Resolved");
       reportsToShow = [...nonResolved, ...resolvedReports];
     } else {
@@ -186,105 +182,99 @@ export default function AdminDashboardPage() {
         ></script>
       </Head>
 
-      <header>
-        <nav
-          className="admin-nav"
-          style={{
-            width: "100%",
-            background: "white",
-            color: "black",
-          }}
-        >
-          <div className="nav-left">
-            <Image
-              src="/images/Fix-it_logo_3.png"
-              alt="Fixit Logo"
-              className="logo"
-              width={160}
-              height={40}
-            />
-          </div>
+      <div className={styles.adminReportsRoot}>
+        <header className={styles.header}>
+          <nav className={styles.adminNav}>
+            <div className={styles.navLeft}>
+              <Image
+                src="/images/Fix-it_logo_3.png"
+                alt="Fixit Logo"
+                className={styles.logo}
+                width={160}
+                height={40}
+              />
+            </div>
 
-          {/* Hamburger icon */}
-          <div className="hamburger" onClick={() => setMenuOpen(!menuOpen)}>
-            <div className={`bar ${menuOpen ? "open" : ""}`}></div>
-            <div className={`bar ${menuOpen ? "open" : ""}`}></div>
-            <div className={`bar ${menuOpen ? "open" : ""}`}></div>
-          </div>
-
-          <ul className={`nav-list-user-side ${menuOpen ? "open" : ""}`}>
-            <li
-              style={{
-                padding: "0.5rem 1rem",
-                borderRadius: "0.5rem",
-                background: "#f0f0f0",
-              }}
+            <button
+              className={`${styles.hamburger} ${menuOpen ? styles.open : ""}`}
+              onClick={() => setMenuOpen(!menuOpen)}
+              aria-label={menuOpen ? "Close menu" : "Open menu"}
+              aria-expanded={menuOpen}
+              type="button"
             >
-              <a href="/admin-dashboard">Dashboard</a>
-            </li>
-            <li>
-              <a href="/admin-reports">Reports</a>
-            </li>
+            <span className={styles.bar} />
+            <span className={styles.bar} />
+            <span className={styles.bar} />
+            </button>
 
-            {/* NEW Users link added for admin user list navigation (design only) */}
-            <li>
-              <a href="/admin-users">Users</a>
-            </li>
+            <ul className={`${styles.navListUserSide} ${menuOpen ? styles.open : ""}`}>
+              <li className={styles.activeNavItem}>
+                <a href="/admin-dashboard" className={styles.navLink}>Dashboard</a>
+              </li>
+              <li>
+                <a href="/admin-reports" className={styles.navLink}>Reports</a>
+              </li>
 
-            <li>
-              <a href="/admin-profile" className="admin-profile-link">
-                <img
-                  src={profilePicUrl}
-                  alt="Admin Profile"
-                  className="admin-profile-pic"
-                />
-              </a>
-            </li>
-          </ul>
-        </nav>
-      </header>
+              {/* Users link intentionally commented out per your request */}
+              {/* <li>
+                <a href="/admin-users" className={styles.navLink}>Users</a>
+              </li> */}
 
-      <div id="admin-map">
-        <div className="map-container">
-          <div className="map-row-2" style={{ position: "relative", display: "flex" }}>
-            <div className="reports-stats">
-              <div
-                className={`reported ${
-                  filterStatus === "Reported" ? "active-card" : ""
-                }`}
-                onClick={() => handleFilterClick("Reported")}
-                style={{ background: "#c92a2a", color: "#ffffff" }}
-              >
-                <h3>Reported</h3>
-                <h1>{loading ? "..." : stats.reported}</h1>
-              </div>
-              <div
-                className={`processing ${
-                  filterStatus === "Processing" ? "active-card" : ""
-                }`}
-                onClick={() => handleFilterClick("Processing")}
-                style={{ background: "#c2b82a", color: "#ffffff" }}
-              >
-                <h3>Processing</h3>
-                <h1>{loading ? "..." : stats.processing}</h1>
-              </div>
-              <div
-                className={`resolved ${
-                  filterStatus === "Resolved" ? "active-card" : ""
-                }`}
-                onClick={() => handleFilterClick("Resolved")}
-                style={{ background: "#3a9d49", color: "#ffffff" }}
-              >
-                <h3>Resolved</h3>
-                <h1>{loading ? "..." : stats.resolved}</h1>
+              <li>
+                <a href="/admin-profile" className={styles.adminProfileLink}>
+                  <img
+                    src={profilePicUrl}
+                    alt="Admin Profile"
+                    className={styles.adminProfilePic}
+                  />
+                </a>
+              </li>
+            </ul>
+          </nav>
+        </header>
+
+        <main className={styles.reportsPage}>
+          <div className={styles.mainContainer}>
+            <div className={styles.contentCard}>
+              <div className={styles.statsAndMap}>
+                <div
+                  className={`${styles.reportsStats} ${styles.floatingStats}`}
+                  role="region"
+                  aria-label="Reports stats"
+                >
+                  <div
+                    className={`${styles.statCard} ${filterStatus === "Reported" ? styles.activeCard : ""}`}
+                    onClick={() => handleFilterClick("Reported")}
+                    style={{ background: "#ef4444", color: "#fff" }}
+                  >
+                    <h3>Reported</h3>
+                    <h1>{loading ? "..." : stats.reported}</h1>
+                  </div>
+
+                  <div
+                    className={`${styles.statCard} ${filterStatus === "Processing" ? styles.activeCard : ""}`}
+                    onClick={() => handleFilterClick("Processing")}
+                    style={{ background: "#f59e0b", color: "#fff" }}
+                  >
+                    <h3>Processing</h3>
+                    <h1>{loading ? "..." : stats.processing}</h1>
+                  </div>
+
+                  <div
+                    className={`${styles.statCard} ${filterStatus === "Resolved" ? styles.activeCard : ""}`}
+                    onClick={() => handleFilterClick("Resolved")}
+                    style={{ background: "#10b981", color: "#fff" }}
+                  >
+                    <h3>Resolved</h3>
+                    <h1>{loading ? "..." : stats.resolved}</h1>
+                  </div>
+                </div>
+
+                <div id="map" className={`${styles.map} ${styles.mapFull}`} />
               </div>
             </div>
-            <div
-              id="map"
-              style={{ width: "100%", height: "42rem", borderRadius: "0rem" }}
-            ></div>
           </div>
-        </div>
+        </main>
       </div>
     </>
   );

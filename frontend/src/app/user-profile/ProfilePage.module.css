@@ -1,11 +1,11 @@
-/* ProfilePage.module.css - scoped styles for ProfilePage component */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@300;400;600;700&display=swap');
 
 /* Base styles */
 .page{
   min-height: 100vh;
-  background: linear-gradient(180deg,#f8fbfb 0%, #ecf7f7 100%);
   font-family: Roboto, Inter, sans-serif;
   color: #0f172a;
+  
 }
 
 /* header wrap */
@@ -23,21 +23,25 @@
 
 /* nav with white-to-transparent gradient */
 .nav {
+  width: 100%;
+  max-width: 100%;
+  position: relative;
   height: var(--nav-height);
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
   padding: 0 1rem;
-  background: rgba(255,255,255,0.96);
+  background: linear-gradient(180deg, rgba(255,255,255,1) 0%, rgba(255,255,255,0.96) 30%, rgba(255,255,255,0.9) 60%);
   border-radius: 0 0 12px 12px;
+  z-index: 1500;
 }
 
-/* brand */
+/* brand/logo */
 .brand { display:flex; align-items:center; gap:0.75rem; }
 .logo { border-radius:6px; display:block; object-fit:contain; }
 
-/* nav list / mobile menu */
+/* nav list (desktop) */
 .navList {
   display:flex;
   gap:1.25rem;
@@ -56,6 +60,7 @@
   transition:background 160ms, transform 120ms, color 120ms;
   background: rgba(255,255,255,0.06);
 }
+
 .navLink:hover { background: rgba(255,255,255,0.18); transform:translateY(-2px); color:#000; }
 
 .profileLink { display:inline-flex; align-items:center; justify-content:center; padding:0.1rem; }
@@ -114,6 +119,8 @@
   border-radius:12px;
   padding:1.75rem;
   box-shadow:0 10px 30px rgba(12,24,40,0.06);
+  margin-top: -3rem;
+  margin-bottom: -3rem;
 }
 
 /* header row */

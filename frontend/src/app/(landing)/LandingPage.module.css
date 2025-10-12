@@ -1,12 +1,23 @@
 /* LandingPage.module.css */
 
+/* Load fonts from Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@400;600;700&display=swap');
+
 /* Page wrapper (scoped via CSS Modules) */
 .landingPage {
-  font-family: 'Roboto', sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   background: radial-gradient(circle at bottom, #00CCCB 54%, #00CCCB 63%, #F5F5F5 90%);
   min-height: 100vh;
   overflow-x: hidden;
   color: #1c1c1c;
+}
+
+/* Use Poppins for prominent headings */
+.hero h1,
+.about h1,
+.services h1 {
+  font-family: 'Poppins', 'Inter', system-ui, sans-serif;
+  letter-spacing: -0.02em;
 }
 
 /* Header and navigation */
@@ -19,6 +30,7 @@
   z-index: 1200;
 }
 .logo { width: 160px; height: auto; }
+
 .navList {
   display: flex;
   gap: 1.5rem;
@@ -28,21 +40,35 @@
 .navList a {
   text-decoration: none;
   color: #1c1c1c;
-  font-weight: 500;
+  font-weight: 600;
+  font-family: 'Inter', system-ui, sans-serif;
   transition: color 0.3s ease;
 }
 .navList a:hover { color: #0070f3; }
 
+/* Login button — made larger and more noticeable */
 .loginBtn {
   background: #00CCCB;
   color: #fff;
   border: none;
-  padding: 0.6rem 1.2rem;
-  border-radius: 6px;
+  padding: 0.9rem 1.6rem; /* increased padding */
+  border-radius: 8px; /* slightly larger radius for modern look */
   cursor: pointer;
-  transition: background 0.3s ease;
+  transition: background 0.25s ease, transform 0.12s ease, box-shadow 0.25s ease;
+  font-size: 1.05rem; /* slightly larger text */
+  font-weight: 700;
+  font-family: 'Poppins', 'Inter', sans-serif; /* stronger visual weight */
+  box-shadow: 0 6px 18px rgba(0, 204, 203, 0.14);
 }
-.loginBtn:hover { background: #009999; }
+.loginBtn:hover {
+  background: #00b3b3;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px rgba(0, 179, 179, 0.16);
+}
+.loginBtn:active {
+  transform: translateY(0);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+}
 
 /* Burger menu (hidden by default on large screens) */
 .burger {
@@ -79,6 +105,7 @@
   font-size: 1.2rem;
   margin-bottom: 2rem;
   color: #333;
+  font-family: 'Inter', system-ui, sans-serif;
 }
 .registerBtn {
   background: #1c1c1c;
@@ -89,6 +116,7 @@
   font-size: 1.2rem;
   cursor: pointer;
   transition: background 0.3s ease;
+  font-family: 'Poppins', 'Inter', sans-serif;
 }
 .registerBtn:hover { background: #333; }
 
@@ -113,6 +141,7 @@
   flex: 1;
   line-height: 1.6;
   font-size: 1.1rem;
+  font-family: 'Inter', system-ui, sans-serif;
 }
 .laptop {
   flex: 1;
@@ -135,8 +164,8 @@
   gap: 2rem;
 }
 .servicesCard {
-  background: #fff;
-  color: #1c1c1c;
+  background: #1c1c1c;
+  color:#fff  ;
   border-radius: 1rem;
   padding: 2rem;
   box-shadow: 0 6px 16px rgba(0,0,0,0.08);
@@ -150,6 +179,7 @@
 .servicesCard p {
   margin-top: 1rem;
   font-weight: 600;
+  font-family: 'Inter', system-ui, sans-serif;
 }
 
 /* ===================== MEDIA QUERIES (ALL COMMON SIZES) ===================== */
@@ -235,7 +265,7 @@
   .hero { padding: 5rem 1.5rem; }
   .hero h1 { font-size: 2.3rem; }
   .hero p { font-size: 0.98rem; }
-  .registerBtn, .loginBtn { font-size: 1.1rem; padding: 0.7rem 1.6rem; }
+  .registerBtn, .loginBtn { font-size: 1.12rem; padding: 0.85rem 1.6rem; }
   .servicesRow { grid-template-columns: 1fr; }
 }
 
@@ -261,7 +291,7 @@
   .hero { padding: 4.5rem 1.25rem; }
   .hero h1 { font-size: 2.1rem; }
   .hero p { font-size: 0.95rem; }
-  .registerBtn, .loginBtn { font-size: 1.05rem; padding: 0.6rem 1.4rem; }
+  .registerBtn, .loginBtn { font-size: 1.08rem; padding: 0.75rem 1.4rem; }
   .about { padding: 3rem 1.25rem; }
   .services { padding: 3rem 1.25rem; }
 }
@@ -288,7 +318,7 @@
   .hero { padding: 4rem 1rem; }
   .hero h1 { font-size: 1.9rem; }
   .hero p { font-size: 0.92rem; }
-  .registerBtn, .loginBtn { font-size: 1rem; padding: 0.55rem 1.2rem; }
+  .registerBtn, .loginBtn { font-size: 1rem; padding: 0.65rem 1.2rem; }
 }
 
 /* ≤320px Extra small phones */
@@ -314,5 +344,5 @@
   .hero h1 { font-size: 1.7rem; }
   .hero p { font-size: 0.88rem; }
   .servicesCard { padding: 1.25rem; }
-  .registerBtn, .loginBtn { font-size: 0.95rem; padding: 0.5rem 1rem; }
+  .registerBtn, .loginBtn { font-size: 0.95rem; padding: 0.55rem 1rem; }
 }
