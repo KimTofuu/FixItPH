@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import "./admin-profile.css";
+import styles from "./admin-profile.module.css";
 
 interface ProfileData {
   firstName: string;
@@ -27,6 +27,7 @@ export default function ProfilePage() {
 
   const [isEditing, setIsEditing] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const profilePic = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
 
@@ -42,7 +43,7 @@ export default function ProfilePage() {
   };
 
   const handleLogout = () => {
-    const confirmed = window.confirm("Are you sure you want to log out?");
+    const confirmed = true; // called only after modal confirmation
     if (confirmed) {
       localStorage.clear();
       console.log("User logged out");
@@ -51,55 +52,43 @@ export default function ProfilePage() {
   };
 
   return (
-    <div>
-      {/* HEADER */}
-      <header>
-        <nav
-          className="admin-nav"
-          style={{
-            width: "100%",
-            background: "white",
-            color: "black",
-          }}
-        >
-          <div className="nav-left">
+    <div className={styles.adminReportsRoot}>
+      <header className={styles.header}>
+        <nav className={styles.adminNav}>
+          <div className={styles.navLeft}>
             <Image
               src="/images/Fix-it_logo_3.png"
               alt="Fixit Logo"
-              className="logo"
+              className={styles.logo}
               width={160}
               height={40}
             />
           </div>
 
-          {/* Hamburger icon */}
           <button
-            className={`hamburger ${menuOpen ? "open" : ""}`}
+            className={`${styles.hamburger} ${menuOpen ? styles.open : ""}`}
             onClick={() => setMenuOpen(!menuOpen)}
             aria-label="Toggle navigation"
             type="button"
           >
-            <span className={`bar ${menuOpen ? "open" : ""}`} />
-            <span className={`bar ${menuOpen ? "open" : ""}`} />
-            <span className={`bar ${menuOpen ? "open" : ""}`} />
+            <span className={styles.bar} />
+            <span className={styles.bar} />
+            <span className={styles.bar} />
           </button>
 
-          <ul className={`nav-list-user-side ${menuOpen ? "open" : ""}`}>
+          <ul className={`${styles.navListUserSide} ${menuOpen ? styles.open : ""}`}>
             <li>
-              <a href="/admin-dashboard">Dashboard</a>
+              <a href="/admin-dashboard" className={styles.navLink}>Dashboard</a>
             </li>
             <li>
-              <a href="/admin-reports">Reports</a>
+              <a href="/admin-reports" className={styles.navLink}>Reports</a>
             </li>
             <li>
-              <a href="/admin-users">Users</a>
-            </li>
-            <li>
-              <a href="/admin-profile" className="admin-profile-link" aria-label="Admin profile">
+              <a href="/admin-profile" className={styles.adminProfileLink} aria-label="Admin profile">
                 <img
                   src={profilePic}
                   alt="Admin Profile"
-                  className="admin-profile-pic"
+                  className={styles.adminProfilePic}
                   width={36}
                   height={36}
                 />
@@ -109,140 +98,110 @@ export default function ProfilePage() {
         </nav>
       </header>
 
-      {/* PROFILE FORM */}
-      <main id="profile-page">
-        <div className="profile-container">
-          <div className="profile-header">
-            <div className="profile-avatar">
-              <img
-                src={profilePic}
-                alt={`${profile.firstName} ${profile.lastName}`}
-                className="profile-avatar-img"
-                width={96}
-                height={96}
-              />
+      <div className={styles.reportsPage}>
+        <main id="profile-page" className={styles.mainContainer}>
+          <div className={styles.contentCard}>
+
+            <div className={styles.profileContainer}>
+              <div className={styles.profileHeader}>
+                <div className={styles.profileAvatar}>
+                  <img
+                    src={profilePic}
+                    alt={`${profile.firstName} ${profile.lastName}`}
+                    className={styles.profileAvatarImg}
+                    width={96}
+                    height={96}
+                  />
+                </div>
+                <div className={styles.profileName}>
+                  <h2 className={styles.profileFullName}>{profile.firstName} {profile.lastName}</h2>
+                  <p className={styles.profileEmail}>{profile.email}</p>
+                </div>
+              </div>
+
+              {[
+                { id: "firstName", type: "text", value: profile.firstName, label: "First name" },
+                { id: "lastName", type: "text", value: profile.lastName, label: "Last name" },
+                { id: "email", type: "email", value: profile.email, label: "Email" },
+                { id: "password", type: "password", value: profile.password, label: "Password", placeholder: "••••••••" },
+                { id: "barangay", type: "text", value: profile.barangay, label: "Barangay" },
+                { id: "municipality", type: "text", value: profile.municipality, label: "Municipality" },
+                { id: "contact", type: "tel", value: profile.contact, label: "Contact" },
+              ].map(({ id, type, value, placeholder, label }) => (
+                <div key={id} className={styles.profileField}>
+                  <label htmlFor={id} className={styles.fieldLabel}>{label}</label>
+                  <input
+                    id={id}
+                    name={id}
+                    type={type}
+                    value={value}
+                    disabled={!isEditing}
+                    onChange={handleChange}
+                    placeholder={placeholder}
+                    className={styles.inputField}
+                  />
+                </div>
+              ))}
+
+              <div className={styles.profileActions}>
+                <button
+                  type="button"
+                  onClick={() => setIsEditing(true)}
+                  className={styles.editBtn}
+                  aria-pressed={isEditing}
+                >
+                  Edit
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleSave}
+                  className={styles.saveBtn}
+                  disabled={!isEditing}
+                >
+                  Save
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setShowLogoutModal(true)}
+                  className={styles.logoutBtnProminent}
+                >
+                  Log Out
+                </button>
+              </div>
             </div>
-            <div className="profile-name">
-              <h2>{profile.firstName} {profile.lastName}</h2>
-              <p className="profile-email">{profile.email}</p>
+          </div>
+        </main>
+      </div>
+
+      {showLogoutModal && (
+        <div className={styles.modalOverlay} role="dialog" aria-modal="true" aria-labelledby="logout-title">
+          <div className={styles.modal}>
+            <h3 id="logout-title" className={styles.modalTitle}>Confirm Log Out</h3>
+            <p className={styles.modalBody}>Are you sure you want to log out? You will need to sign in again to access the admin dashboard.</p>
+            <div className={styles.modalActions}>
+              <button
+                type="button"
+                className={styles.modalCancel}
+                onClick={() => setShowLogoutModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className={styles.modalConfirm}
+                onClick={() => {
+                  setShowLogoutModal(false);
+                  handleLogout();
+                }}
+              >
+                Log Out
+              </button>
             </div>
-          </div>
-
-          <div className="profile-field">
-            <label htmlFor="firstName" className="visually-hidden">First name</label>
-            <input
-              id="firstName"
-              name="firstName"
-              type="text"
-              value={profile.firstName}
-              disabled={!isEditing}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div className="profile-field">
-            <label htmlFor="lastName" className="visually-hidden">Last name</label>
-            <input
-              id="lastName"
-              name="lastName"
-              type="text"
-              value={profile.lastName}
-              disabled={!isEditing}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div className="profile-field">
-            <label htmlFor="email" className="visually-hidden">Email</label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              value={profile.email}
-              disabled={!isEditing}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div className="profile-field">
-            <label htmlFor="password" className="visually-hidden">Password</label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              value={profile.password}
-              disabled={!isEditing}
-              onChange={handleChange}
-              placeholder="••••••••"
-            />
-          </div>
-
-          <div className="profile-field">
-            <label htmlFor="barangay" className="visually-hidden">Barangay</label>
-            <input
-              id="barangay"
-              name="barangay"
-              type="text"
-              value={profile.barangay}
-              disabled={!isEditing}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div className="profile-field">
-            <label htmlFor="municipality" className="visually-hidden">Municipality</label>
-            <input
-              id="municipality"
-              name="municipality"
-              type="text"
-              value={profile.municipality}
-              disabled={!isEditing}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div className="profile-field">
-            <label htmlFor="contact" className="visually-hidden">Contact</label>
-            <input
-              id="contact"
-              name="contact"
-              type="tel"
-              value={profile.contact}
-              disabled={!isEditing}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div
-            className="profile-actions"
-            style={{ marginTop: "15px", gap: "10px", display: "flex" }}
-          >
-            <button
-              type="button"
-              onClick={() => setIsEditing(true)}
-              className="edit-btn"
-              aria-pressed={isEditing}
-            >
-              Edit
-            </button>
-            <button
-              type="button"
-              onClick={handleSave}
-              className="save-btn"
-              disabled={!isEditing}
-            >
-              Save
-            </button>
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="logout-btn"
-            >
-              Log Out
-            </button>
           </div>
         </div>
-      </main>
+      )}
     </div>
   );
 }
