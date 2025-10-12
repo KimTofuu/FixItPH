@@ -1,0 +1,327 @@
+/* admin-users.css
+   Responsive styles for admin users page
+   Import with: import "./admin-users.css";
+*/
+#header {
+	background-size: cover;
+	background-position: center;
+    
+}
+
+.logo {
+ margin-left: 2rem;
+ width: 160;
+ height: 40;
+}
+
+
+nav {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	flex-wrap: wrap;
+  background-color: transparent;
+  height: 6rem;
+}
+
+.nav-list-user-side {
+  display: flex;           
+  flex-direction: row;    
+  align-items: center;     
+  gap: 1.5rem;             
+  list-style: none;        
+  margin-right: 2rem;
+  padding: 0;
+}
+
+.nav-list-user-side li {
+  display: inline-flex;    
+  align-items: center;
+  margin: 0 0.2rem;
+}
+
+.nav-list-user-side a {
+  text-decoration: none;
+  color: #000000;
+  font-size: 1.2rem;
+  transition: transform 0.2s ease-in-out;
+}
+
+.nav-list-user-side a:hover {
+  transform: scale(1.05);
+}
+
+.profile-pic, .admin-profile-pic {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* Base colors and sizes (no :root used) */
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: #f3f4f6;
+  color: #111827;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Page container */
+.admin-users-main {
+  max-width: 1100px;
+  margin: 24px auto;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+/* Header row */
+.admin-users-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.admin-users-header h1 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.admin-users-header .logo {
+  margin-left: auto;
+}
+
+/* Overview panel */
+.users-overview {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 18px;
+  align-items: stretch;
+}
+
+.users-overview .overview-card {
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 12px;
+  border: 1px solid #e6e6e6;
+  min-width: 0;
+  flex: 1;
+}
+
+.users-overview .overview-card .label {
+  font-size: 12px;
+  color: #6b7280;
+  margin-bottom: 6px;
+}
+
+.users-overview .overview-card .value {
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+/* Users grid/list */
+.users-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+/* Single user card */
+.user-card {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  background: #ffffff;
+  padding: 14px;
+  border-radius: 8px;
+  border: 1px solid #e6e6e6;
+  position: relative;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+}
+
+.user-card.archived {
+  background: #fbfbfb;
+  opacity: 0.98;
+}
+
+/* Avatar */
+.user-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #f0f0f0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Content column */
+.user-content {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.user-top {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.user-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111827;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-status {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.user-address {
+  font-size: 0.95rem;
+  color: #374151;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Meta row */
+.user-meta {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  font-size: 0.95rem;
+  color: #111827;
+}
+
+/* Actions */
+.user-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.btn {
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #e6e6e6;
+  background: #fff;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Primary and danger styles */
+.btn-primary {
+  background: #0066cc;
+  color: #fff;
+  border: none;
+}
+
+.btn-danger {
+  background: #c92a2a;
+  color: #fff;
+  border: none;
+}
+
+/* Confirmation card (inline) */
+.confirm-card {
+  position: absolute;
+  right: 16px;
+  top: calc(100% + 12px);
+  z-index: 30;
+  width: 320px;
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 8px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+  padding: 12px;
+}
+
+.confirm-card .title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.confirm-card .desc {
+  font-size: 13px;
+  color: #555;
+  margin-bottom: 12px;
+}
+
+.confirm-card .actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* Small screens adjustments */
+@media (max-width: 600px) {
+  .admin-users-main {
+    padding: 16px;
+    margin: 12px;
+  }
+
+  .users-overview {
+    flex-direction: column;
+  }
+
+  .user-card {
+    flex-direction: row;
+    align-items: center;
+    padding: 12px;
+  }
+
+  .user-address {
+    white-space: normal;
+  }
+
+  .confirm-card {
+    right: 12px;
+    left: 12px;
+    top: calc(100% + 8px);
+    width: auto;
+  }
+}
+
+/* Medium screens */
+@media (min-width: 601px) and (max-width: 900px) {
+  .admin-users-main {
+    padding: 18px;
+  }
+
+  .users-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Large screens */
+@media (min-width: 901px) {
+  .users-list {
+    grid-template-columns: 1fr;
+  }
+
+  .user-address {
+    white-space: nowrap;
+  }
+}

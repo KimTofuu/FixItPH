@@ -1,0 +1,340 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@300;400;600;700&display=swap');
+
+/* overlay nav that sits on top of the map */
+.overlayNav {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1400;
+  pointer-events: none;
+}
+
+.nav {
+  max-width: 100%;
+  margin: 0 auto;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: linear-gradient(180deg, rgba(255,255,255,1) 0%, rgba(255,255,255,0.6) 30%, rgba(255,255,255,0.2) 60%, rgba(255,255,255,0) 100%);
+  border-radius: 0 0 12px 12px;
+  pointer-events: auto;
+}
+
+/* brand */
+.brand { display:flex; align-items:center; gap:0.75rem; }
+.logo { border-radius:6px; display:block; object-fit:contain; }
+
+/* navigation */
+.navList {
+  display: flex;
+  gap: 1.25rem;
+  align-items: center;
+  list-style: none;
+  margin: 0;
+  padding: 0 1rem;
+}
+
+.navLink {
+  color: #0b0b0b;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: 8px;
+  transition: background 160ms, transform 120ms, color 120ms;
+  background: rgba(255, 255, 255, 0.06);
+  text-shadow: 0 1px 0 rgba(255,255,255,0.25);
+}
+
+.navLink:hover {
+  background: rgba(255, 255, 255, 0.18);
+  transform: translateY(-2px);
+  color: #000;
+}
+
+/* profile */
+.profileLink { display:inline-flex; align-items:center; justify-content:center; padding:0.1rem; }
+.profilePic { width:38px; height:38px; border-radius:50%; object-fit:cover; box-shadow:0 1px 4px rgba(2,6,23,0.12); }
+
+/* full-bleed map */
+.fullMapWrap {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  display: block;
+  background: #e9eef3;
+  font-family: 'Poppins', 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* leaflet map container covers entire viewport */
+.fullMap {
+  width: 100%;
+  height: 100vh;
+  min-height: 100vh;
+  display: block;
+  z-index: 0;
+}
+
+/* report button floats above map (on top-right for better visibility) */
+.reportBtn {
+  position: absolute;
+  bottom: 2.25rem;
+  right: 2rem;
+  z-index: 1500;
+  padding: 0.7rem 1rem;
+  background: linear-gradient(90deg, #06b6d4, #0891b2);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  display: inline-flex;
+  gap: 0.6rem;
+  align-items: center;
+  box-shadow: 0 10px 30px rgba(3, 102, 117, 0.18);
+  cursor: pointer;
+  transition: transform 140ms, box-shadow 140ms;
+}
+.reportBtn:hover { transform: translateY(-3px); box-shadow: 0 14px 38px rgba(3, 102, 117, 0.22); }
+
+/* modal backdrop + container */
+.modal {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(7, 12, 18, 0.55);
+  z-index: 1600;
+  padding: 1.25rem;
+}
+
+/* modal card */
+.modalContent {
+  width: 820px;
+  max-width: 96%;
+  background: linear-gradient(180deg, #ffffff, #fbfdff);
+  border-radius: 14px;
+  padding: 1.25rem 1.25rem 1.5rem 1.25rem;
+  box-shadow: 0 30px 60px rgba(3, 12, 23, 0.18);
+  position: relative;
+  min-height: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  border: 1px solid rgba(12, 20, 30, 0.04);
+  overflow: hidden;
+}
+
+/* modal header */
+.modalTitle {
+  margin: 0; font-family: 'Inter', 'Poppins', sans-serif; font-weight:700; color:#071427; font-size:1.2rem;
+}
+
+/* close control */
+.close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  font-size: 22px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #263238;
+  padding: 6px;
+  border-radius: 8px;
+  transition: background 120ms;
+}
+.close:hover { background: rgba(3,12,23,0.04); }
+
+/* form layout */
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 420px;
+  gap: 1rem;
+  align-items: start;
+  position: relative;
+  margin-top: 0.5rem;
+  padding-bottom: 0;
+}
+
+/* left / right */
+.formLeft, .formRight { display:flex; flex-direction:column; gap:0.6rem; }
+
+/* inputs */
+.input, .textarea, .fileInput {
+  width:100%;
+  padding:0.7rem 0.9rem;
+  border-radius: 10px;
+  border: 1px solid #e6e9ee;
+  background: #ffffff;
+  font-size: 0.95rem;
+  color: #071427;
+  outline: none;
+  transition: box-shadow 120ms, border-color 120ms;
+  font-family: 'Poppins', 'Inter', sans-serif;
+}
+.input:focus, .textarea:focus, .fileInput:focus {
+  box-shadow: 0 8px 24px rgba(6,95,129,0.06);
+  border-color: #06b6d4;
+}
+.textarea { min-height: 150px; resize: vertical; padding-top: 0.9rem; }
+
+/* labels */
+.inputLabel { font-size: 0.95rem; color:#344054; font-weight:600; margin-top:0.25rem; font-family:'Poppins',sans-serif; }
+
+/* modal map */
+.modalMap { width:100%; height:220px; border-radius: 10px; border:1px solid #e6e9ee; overflow:hidden; background:#f6f9fc; }
+
+/* upload preview */
+.uploadWrapper { display:flex; flex-direction:column; gap:0.5rem; }
+.fileInput { cursor:pointer; background:#fff; }
+.imagePreview { display:flex; align-items:center; gap:0.6rem; font-size:0.95rem; }
+.previewLink { color:#075985; text-decoration:none; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:260px; }
+.previewLink:hover { text-decoration:underline; }
+.removeBtn { background:#ef4444; color:#fff; border:none; padding:8px 10px; border-radius:10px; cursor:pointer; font-weight:700; }
+
+/* submit row fixed within modal content bottom */
+.submitRow {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 0.75rem;
+  padding-top: 0.5rem;
+  border-top: 1px dashed rgba(12,20,30,0.04);
+}
+
+/* submit button */
+.submitBtn {
+  padding: 0.72rem 1.1rem;
+  background: #071427;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 700;
+  transition: transform 120ms ease, box-shadow 120ms ease;
+  min-width: 180px;
+}
+.submitBtn:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(7,20,35,0.12); }
+
+/* hamburger (mobile) */
+.hamburger { display: none; font-size: 1.6rem; background: transparent; border: none; cursor: pointer; padding: 0.25rem 0.5rem; }
+
+/* responsive rules */
+@media (max-width: 1024px) {
+  .formGrid { grid-template-columns: 1fr 340px; }
+  .modalMap { height: 200px; }
+  .modalContent { padding: 1rem; width: 720px; }
+}
+
+/* Improved modal behavior for tablet and mobile */
+@media (max-width: 768px) {
+  .navList {
+    display: none;
+    position: absolute;
+    top: 60px;
+    right: 12px;
+    background: rgba(0,0,0,0.6);
+    padding: 0.75rem;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(2,6,23,0.12);
+    flex-direction: column;
+    gap: 0.5rem;
+    min-width: 160px;
+  }
+  .navList.open { display: flex; }
+  .hamburger { display: inline-flex; z-index: 1550; color: #000; }
+
+  .fullMap { min-height: 100vh; }
+  .reportBtn { right: 1rem; bottom: 1.2rem; }
+
+  /* Make modal act as a bottom sheet on small screens */
+  .modal {
+    align-items: flex-end;
+    padding: 0;
+    background: linear-gradient(180deg, rgba(7,12,18,0.35), rgba(7,12,18,0.6));
+  }
+  .modalContent {
+    width: 100%;
+    max-width: 100%;
+    border-radius: 14px 14px 0 0;
+    padding: 0.9rem 0.9rem 1rem 0.9rem;
+    min-height: auto;
+    max-height: 86vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* allow form area to scroll independently while submit stays visible */
+  .formGrid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+    align-items: start;
+    margin-top: 0.5rem;
+    padding: 0 1rem 0 1rem;
+    overflow: auto;
+  }
+
+  .modalMap { height: 180px; border-radius: 8px; }
+
+  .input, .textarea, .fileInput {
+    padding: 0.65rem 0.8rem;
+    border-radius: 10px;
+    font-size: 0.95rem;
+  }
+
+  /* Move submitRow to bottom and pin it visually */
+  .submitRow {
+    position: sticky;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.06));
+    border-top: 1px solid rgba(12,20,30,0.02);
+  }
+
+  .submitBtn {
+    width: 100%;
+    max-width: 520px;
+    min-width: unset;
+    padding: 0.85rem 1rem;
+    border-radius: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .modalContent {
+    padding: 0.6rem 0.6rem 0.9rem 0.6rem;
+    border-radius: 12px 12px 0 0;
+    max-height: 90vh;
+  }
+
+  .modalMap { height: 140px; }
+
+  .logo { width: 140px; height: auto; }
+  .profilePic { width: 34px; height: 34px; }
+  .previewLink { max-width: 160px; }
+
+  .submitRow {
+    padding: 0.6rem;
+  }
+
+  .submitBtn {
+    padding: 0.78rem 0.9rem;
+  }
+
+  .input, .textarea {
+    font-size: 0.95rem;
+  }
+}

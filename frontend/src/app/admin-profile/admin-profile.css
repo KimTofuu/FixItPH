@@ -2,145 +2,215 @@
 @import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&display=swap');
 
 * {
-	margin: 0;
-	padding: 0;
-	font-family: 'Inter', sans-serif;
-	box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Roboto', sans-serif;
 }
 
 html {
-	font-size: 16px;
-	scroll-behavior: smooth;
+  font-size: 16px;
+  scroll-behavior: smooth;
 }
 
 body {
   overflow-x: hidden;
-  font-family: 'Roboto', sans-serif;
   background: #f1f1f1;
+  color: #111;
 }
 
-#header {
-	background-size: cover;
-	background-position: center;
+/* NAV / HEADER */
+.admin-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+  background: white;
+  color: #000;
+  padding: 0.5rem 0;
+  height: 4rem;
 }
 
 .logo {
   margin-left: 2rem;
   width: 160px;
   height: 40px;
+  object-fit: contain;
 }
 
-nav {
-  display: flex;
+/* Hamburger (mobile) */
+.hamburger {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin-right: 1.5rem;
+  padding: 0.25rem;
+  width: 44px;
+  height: 36px;
   align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  background-color: transparent;
-  height: 6rem;
+  justify-content: center;
 }
 
+.hamburger .bar {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: #111;
+  margin: 5px 0;
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+.hamburger.open .bar:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+.hamburger.open .bar:nth-child(2) {
+  opacity: 0;
+}
+.hamburger.open .bar:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+/* Nav list */
 .nav-list-user-side {
-  display: flex;           
-  flex-direction: row;    
-  align-items: center;     
-  gap: 1.5rem;             
-  list-style: none;        
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1.5rem;
+  list-style: none;
   margin-right: 2rem;
   padding: 0;
 }
 
 .nav-list-user-side li {
-  display: inline-flex;    
+  display: inline-flex;
   align-items: center;
-  margin: 0 0.2rem;
 }
 
 .nav-list-user-side a {
   text-decoration: none;
-  color: #000000;
-  font-size: 1.2rem;
-  transition: transform 0.2s ease-in-out;
+  color: #000;
+  font-size: 1.1rem;
+  transition: transform 0.15s ease-in-out, color 0.15s ease;
 }
 
 .nav-list-user-side a:hover {
   transform: scale(1.05);
 }
 
-.profile-pic, .admin-profile-pic {
+/* profile avatar in nav */
+.admin-profile-pic,
+.profile-pic {
   width: 35px;
   height: 35px;
   border-radius: 50%;
   object-fit: cover;
+  display: inline-block;
 }
 
-.admin-nav {
-	display: flex;
-	align-items: center;
-	gap: 1.5rem;
-	list-style: none;
-	padding: 0;
-	margin: 0;
-  height: 4rem;
-}
-
-.admin-nav li {
-	list-style: none;
-}
-
-.admin-nav a {
-	text-decoration: none;
-    color: #000000;
-    font-size: 1.2rem;
-}
-
-.admin-nav li:hover, .register-btn:hover {
-	transform: scale(1.05);
-}
-
+/* PAGE LAYOUT */
 #profile-page {
   width: 60rem;
-  margin: 0rem auto;
+  margin: 2rem auto;
   padding: 2rem;
   border-radius: 12px;
-  margin-top: 2rem;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfbfb 100%);
+  box-shadow: 0 6px 20px rgba(15, 15, 15, 0.06);
 }
 
-#profile-page h2 {
-  text-align: center;
-  margin-bottom: 1.5rem;
-  color: #ffffff;
-}
-
+/* Container narrower than page for centered content */
 .profile-container {
-    width: 50rem;
-    margin: 0 auto;
+  width: 50rem;
+  margin: 0 auto;
 }
 
+/* Header inside profile */
+.profile-header {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+
+.profile-avatar {
+  flex: 0 0 auto;
+  width: 96px;
+  height: 96px;
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5f5f5;
+  border: 1px solid rgba(0,0,0,0.04);
+}
+
+.profile-avatar-img {
+  width: 96px;
+  height: 96px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.profile-name h2 {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 1.35rem;
+  color: #111;
+  margin-bottom: 0.25rem;
+}
+
+.profile-name .profile-email {
+  font-size: 0.95rem;
+  color: #666;
+}
+
+/* Form fields */
 .profile-field {
   margin-bottom: 1rem;
-  color: #ffffff;
 }
 
 .profile-field label {
   display: block;
-  font-weight: 100;
-  margin-bottom: 0rem;
-  color: #ffffff;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 0.35rem;
+  font-size: 0.95rem;
 }
 
 .profile-field input {
   width: 100%;
-  padding: 0.7rem;
-  border: 1px solid #ccc;
+  padding: 0.75rem;
+  border: 1px solid #e1e1e1;
   border-radius: 8px;
   font-size: 1rem;
+  background: #fff;
+  color: #111;
+  transition: box-shadow 0.12s ease, border-color 0.12s ease;
 }
 
+.profile-field input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 6px 18px rgba(0, 123, 255, 0.06);
+}
+
+/* Visually hidden label for accessibility */
+.visually-hidden {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+/* Actions */
 .profile-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
   margin-top: 15px;
+  align-items: center;
 }
 
 .profile-actions button {
@@ -148,13 +218,12 @@ nav {
   border: none;
   border-radius: 6px;
   cursor: pointer;
+  font-size: 0.95rem;
 }
 
 .edit-btn {
   background: #007bff;
-  color: white;
-  padding: 8px 16px;
-  font-size: 14px;
+  color: #fff;
 }
 
 .edit-btn:hover {
@@ -163,34 +232,24 @@ nav {
 
 .save-btn {
   background: #1c1c1c;
-  color: #ffffff;
-  padding: 8px 16px;
-  font-size: 14px;
+  color: #fff;
 }
 
 .save-btn:disabled {
   background: #ddd;
+  color: #777;
   cursor: not-allowed;
 }
 
 .logout-btn {
   margin-left: auto;
-  background: #00CCCB; 
-  color: #f9f9f9;
+  background: #00CCCB;
+  color: #fff;
 }
 
-.hamburger {
-  display: none;
-  font-size: 2rem;
-  background: none;
-  border: none;
-  cursor: pointer;
-  margin-right: 1.5rem;
-}
+/* Responsive adjustments */
 
-/* ---------- MEDIA QUERIES ---------- */
-
-/* Tablets (landscape, <= 1024px) */
+/* Tablets / small laptops */
 @media (max-width: 1024px) {
   #profile-page {
     width: 90%;
@@ -200,17 +259,12 @@ nav {
   .profile-container {
     width: 100%;
   }
-
-  .logout-btn {
-    margin-left: auto;
-  }
 }
 
-/* Tablets (portrait, <= 768px) */
+/* Tablets portrait / large phones */
 @media (max-width: 768px) {
   .hamburger {
-    display: block;
-    margin-left: auto;
+    display: flex;
   }
 
   .nav-list-user-side {
@@ -218,12 +272,14 @@ nav {
     flex-direction: column;
     gap: 1rem;
     position: absolute;
-    top: 60px;
-    right: 10px;
-    background: white;
+    top: 64px;
+    right: 12px;
+    background: #fff;
     padding: 1rem;
-    border-radius: 8px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    border-radius: 10px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+    z-index: 50;
+    min-width: 160px;
   }
 
   .nav-list-user-side.open {
@@ -239,9 +295,22 @@ nav {
     width: 100%;
   }
 
+  .profile-header {
+    gap: 0.75rem;
+  }
+
+  .profile-avatar {
+    width: 80px;
+    height: 80px;
+  }
+
+  .profile-avatar-img {
+    width: 80px;
+    height: 80px;
+  }
 }
 
-/* Phones (<= 480px) */
+/* Phones */
 @media (max-width: 480px) {
   nav {
     height: 5rem;
@@ -256,103 +325,24 @@ nav {
   #profile-page {
     width: 100%;
     padding: 0.8rem;
-  }
-
-  .profile-field input {
-    font-size: 0.9rem;
-    padding: 0.6rem;
-  }
-
-  .profile-actions button {
-    width: 30%;
-    font-size: 0.9rem;
-  }
-  .logout-btn {
-    margin-left: 0;
-    width: 100%;
-  }
-}
-
-
-/* ---------- MEDIA QUERIES ---------- */
-
-/* Tablets (landscape, <= 1024px) */
-@media (max-width: 1024px) {
-  #profile-page {
-    width: 90%;
-    padding: 1.5rem;
+    margin: 1rem 0;
+    border-radius: 10px;
   }
 
   .profile-container {
     width: 100%;
   }
 
-  .logout-btn {
-    margin-left: auto;
-  }
-}
-
-/* Tablets (portrait, <= 768px) */
-@media (max-width: 768px) {
-  .hamburger {
-    display: block;
-    margin-left: auto;
-  }
-
-  .nav-list-user-side {
-    display: none;
-    flex-direction: column;
-    gap: 1rem;
-    position: absolute;
-    top: 60px;
-    right: 10px;
-    background: white;
-    padding: 1rem;
-    border-radius: 8px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-  }
-
-  .nav-list-user-side.open {
-    display: flex;
-  }
-
-  #profile-page {
-    width: 95%;
-    padding: 1rem;
-  }
-
-  .profile-container {
-    width: 100%;
-  }
-
-}
-
-/* Phones (<= 480px) */
-@media (max-width: 480px) {
-  nav {
-    height: 5rem;
-  }
-
-  .logo {
-    margin-left: 1rem;
-    width: 120px;
-    height: auto;
-  }
-
-  #profile-page {
-    width: 100%;
-    padding: 0.8rem;
-  }
-
   .profile-field input {
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     padding: 0.6rem;
   }
 
   .profile-actions button {
-    width: 30%;
-    font-size: 0.9rem;
+    width: auto;
+    font-size: 0.95rem;
   }
+
   .logout-btn {
     margin-left: 0;
     width: 100%;

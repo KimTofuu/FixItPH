@@ -1,0 +1,542 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@300;400;600;700&display=swap');
+
+/* header wrapper (scoped variables) */
+.headerWrap {
+  --nav-height: 64px;
+  --toolbar-height: 64px;
+
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1400;
+  display: block;
+  box-shadow: 0 6px 20px rgba(2,6,23,0.03);
+}
+
+/* nav with white-to-transparent gradient */
+.nav {
+  height: var(--nav-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0 1rem;
+  background: rgba(255,255,255,0.96);
+  border-radius: 0 0 12px 12px;
+}
+
+/* brand */
+.brand { display:flex; align-items:center; gap:0.75rem; }
+.logo { border-radius:6px; display:block; object-fit:contain; }
+
+/* nav list / mobile menu */
+.navList {
+  display:flex;
+  gap:1.25rem;
+  align-items:center;
+  list-style:none;
+  margin:0;
+  padding:0 1rem;
+}
+.navLink {
+  color:#0b0b0b;
+  text-decoration:none;
+  font-weight:600;
+  font-size:1rem;
+  padding:0.4rem 0.6rem;
+  border-radius:8px;
+  transition:background 160ms, transform 120ms, color 120ms;
+  background: rgba(255,255,255,0.06);
+}
+.navLink:hover { background: rgba(255,255,255,0.18); transform:translateY(-2px); color:#000; }
+
+.profileLink { display:inline-flex; align-items:center; justify-content:center; padding:0.1rem; }
+.profilePic { width:38px; height:38px; border-radius:50%; object-fit:cover; box-shadow:0 1px 4px rgba(2,6,23,0.12); }
+
+/* hamburger */
+.hamburger {
+  display: none;
+  font-size: 1.5rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  color: #0b1220;
+}
+
+/* layout baseline */
+.pageWrap {
+  max-width: 1200px;
+  margin: 1.25rem auto;
+  padding: 0 1rem;
+  font-family: 'Poppins', 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  margin-top: calc( var(--nav-height) + var(--toolbar-height) + 1rem );
+}
+
+/* layout: single centered feed column (cards centered and wider) */
+.feedContainer {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  align-items: start;
+}
+
+/* left sidebar reserved (can hide on small screens) */
+.feedSidebar {
+  display: none; /* not used in this centered layout; keep hidden to avoid layout shift */
+}
+
+/* toolbar sits directly below nav and is visually attached */
+.toolbar {
+  height: var(--toolbar-height);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+  background: rgba(255,255,255,0.96);
+  border-bottom: 1px solid rgba(12,20,30,0.03);
+  box-shadow: 0 6px 20px rgba(2,6,23,0.04);
+  position: sticky;
+  top: var(--nav-height);
+}
+
+/* Inner toolbar layout */
+.toolbarInner {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  width: 100%;
+  max-width: 1200px;
+}
+
+/* button + search sizing */
+.reportBtn {
+  flex: 0 0 auto;
+  padding: 0.6rem 0.95rem;
+  border-radius: 10px;
+  font-weight: 700;
+  background: linear-gradient(90deg,#06b6d4,#0891b2);
+  color: #fff;
+  border: none;
+  box-shadow: 0 6px 18px rgba(3,102,117,0.12);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.searchInput {
+  flex: 1 1 auto;
+  padding: 0.6rem 0.9rem;
+  border-radius: 10px;
+  border: 1px solid #e6e9ee;
+  background: #fff;
+  font-size: 0.95rem;
+}
+
+/* feed list - centered container */
+.feedList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+  max-width: 920px;   /* control how wide the feed area gets */
+  margin: 0 auto;     /* center the feed within page */
+  padding: 0 1rem;
+  box-sizing: border-box;
+}
+
+/* wider report cards, centered */
+.reportCard {
+  width: 100%;
+  max-width: 920px;
+  margin: 0 auto;
+  background: #fff;
+  border-radius: 12px;
+  padding: 1.25rem;
+  box-shadow: 0 12px 36px rgba(2,6,23,0.07);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  box-sizing: border-box;
+}
+
+/* report row: content + image */
+.reportRow {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  flex-wrap: nowrap; /* keep image to the right by default */
+}
+
+/* left content area grows, right image is fixed width and stays to the right */
+.reportRow > div:first-child {
+  flex: 1 1 auto;
+  min-width: 220px;
+  order: 0; /* ensure content is first */
+}
+
+/* left content area grows, right image is fixed width */
+.reportRow > .content,
+.reportRow > div:first-child {
+  flex: 1 1 auto;
+  min-width: 220px;
+}
+
+/* report header */
+.reportHeader {
+  display:flex;
+  align-items:center;
+  gap:0.6rem;
+  margin-bottom: 0.35rem;
+}
+
+.reportAvatar {
+  width:42px;
+  height:42px;
+  border-radius:50%;
+  object-fit:cover;
+}
+
+.reportUser {
+  font-weight:700;
+  font-size:0.95rem;
+}
+
+.bookmarkBtn {
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #0b1220;
+  font-size: 1.1rem;
+}
+
+.reportTitle {
+  margin: 0.2rem 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.reportLocation {
+  color: #475569;
+  margin: 0.25rem 0;
+}
+
+.reportStatus {
+  display:inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 8px;
+  background: #f1f5f9;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.reportDetails {
+  margin-top: 0.5rem;
+  color: #263238;
+}
+
+/* larger image on wide cards */
+.reportImage {
+  width: 340px;
+  flex: 0 0 340px; /* fixed width so it remains on the right */
+  border-radius: 8px;
+  overflow: hidden;
+  order: 1; /* ensure image stays after content */
+}
+
+/* image element ensure full cover */
+.reportImage img, .reportImage :global(img) {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* comments */
+.reportComments {
+  border-top: 1px dashed rgba(12,20,30,0.04);
+  padding-top: 0.75rem;
+}
+
+.commentList { list-style:none; padding:0; margin:0 0 0.5rem 0; display:flex; flex-direction:column; gap:0.4rem; }
+.commentDate { color:#888; margin-left:8px; font-size:0.9em; }
+
+.commentInput {
+  width:100%;
+  padding:0.6rem 0.8rem;
+  border-radius:10px;
+  border:1px solid #e6e9ee;
+}
+
+/* modal (add report) */
+.modal {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(7, 12, 18, 0.55);
+  z-index: 1600;
+  padding: 1.25rem;
+}
+
+.modalContent {
+  width: 820px;
+  max-width: 96%;
+  background: linear-gradient(180deg, #ffffff, #fbfdff);
+  border-radius: 14px;
+  padding: 1.25rem 1.25rem 1.5rem 1.25rem;
+  box-shadow: 0 30px 60px rgba(3, 12, 23, 0.18);
+  position: relative;
+  min-height: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  border: 1px solid rgba(12, 20, 30, 0.04);
+  overflow: hidden;
+}
+
+.modalTitle { margin:0; font-family:'Inter','Poppins',sans-serif; font-weight:700; color:#071427; font-size:1.2rem; }
+
+/* close */
+.close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  font-size: 22px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #263238;
+  padding: 6px;
+  border-radius: 8px;
+}
+.close:hover { background: rgba(3,12,23,0.04); }
+
+/* form */
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 420px;
+  gap: 1rem;
+  align-items: start;
+  position: relative;
+  margin-top: 0.5rem;
+  padding-bottom: 0;
+}
+
+.formLeft, .formRight { display:flex; flex-direction:column; gap:0.6rem; }
+
+.input, .textarea, .fileInput {
+  width:100%;
+  padding:0.7rem 0.9rem;
+  border-radius: 10px;
+  border: 1px solid #e6e9ee;
+  background: #ffffff;
+  font-size: 0.95rem;
+  color: #071427;
+  outline: none;
+  transition: box-shadow 120ms, border-color 120ms;
+  font-family: 'Poppins', 'Inter', sans-serif;
+}
+.textarea { min-height: 150px; resize: vertical; padding-top: 0.9rem; }
+
+.inputLabel { font-size: 0.95rem; color:#344054; font-weight:600; margin-top:0.25rem; font-family:'Poppins',sans-serif; }
+
+.modalMap { width:100%; height:220px; border-radius: 10px; border:1px solid #e6e9ee; overflow:hidden; background:#f6f9fc; }
+
+/* upload preview */
+.uploadWrapper { display:flex; flex-direction:column; gap:0.5rem; position:relative; }
+.fileInput { cursor:pointer; background:#fff; }
+
+/* image preview area: show preview image and a styled remove button */
+.imagePreview {
+  display:flex;
+  align-items:flex-start;
+  gap:0.6rem;
+  font-size:0.95rem;
+  position: relative;
+  width: 100%;
+}
+
+/* preview image container (when JS injects an <img>) */
+.imagePreview > img {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 6px;
+  display: block;
+}
+
+/* styled remove button inside preview — positioned top-right of preview */
+.removeBtn {
+  background:#ef4444;
+  color:#fff;
+  border:none;
+  padding:6px 8px;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:700;
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 10;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* if markup places remove button outside preview, ensure consistent visual */
+.imagePreview + .removeBtn,
+.removeBtn.outside {
+  position: static;
+  margin-left: 0.5rem;
+}
+
+/* preview link when file listed (fallback) */
+.previewLink {
+  color:#075985;
+  text-decoration:none;
+  font-weight:600;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  max-width:260px;
+}
+.previewLink:hover { text-decoration: underline; }
+
+/* submit row */
+.submitRow {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 0.75rem;
+  padding-top: 0.5rem;
+  border-top: 1px dashed rgba(12,20,30,0.04);
+}
+
+.submitBtn {
+  padding: 0.72rem 1.1rem;
+  background: #071427;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 700;
+  transition: transform 120ms ease, box-shadow 120ms ease;
+  min-width: 180px;
+}
+
+/* responsive breakpoints */
+@media (max-width: 1024px) {
+  .formGrid { grid-template-columns: 1fr 340px; }
+  .modalMap { height: 200px; }
+  .modalContent { padding: 1rem; width: 720px; }
+  .feedList { max-width: 760px; }
+  .reportCard { max-width: 760px; padding: 1rem; }
+}
+
+@media (max-width: 768px) {
+  .headerWrap {
+    --nav-height: 56px;
+    --toolbar-height: 96px;
+  }
+
+  .nav { height: var(--nav-height); padding: 0 0.75rem; }
+
+  .toolbar {
+    top: var(--nav-height);
+    padding: 0.5rem;
+    background: rgba(255,255,255,0.98);
+  }
+
+  .toolbarInner {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: stretch;
+  }
+
+  .reportBtn { width: 100%; }
+  .searchInput { width: 100%; }
+
+  .hamburger { display: inline-flex; z-index: 1500; color: #0b1220; }
+  .navList {
+    display: none;
+    position: absolute;
+    top: calc(var(--nav-height) + 8px);
+    right: 12px;
+    background: rgba(255,255,255,0.98);
+    padding: 0.75rem;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(2,6,23,0.12);
+    flex-direction: column;
+    gap: 0.5rem;
+    min-width: 160px;
+  }
+  .navList.open { display: flex; }
+
+  .pageWrap { margin-top: calc(var(--nav-height) + var(--toolbar-height) + 0.5rem); }
+
+  .modalContent { width: 92%; border-radius: 12px; }
+  .formGrid { grid-template-columns: 1fr; padding: 0 1rem 0 1rem; overflow:auto; }
+  .modalMap { height: 180px; border-radius: 8px; }
+
+  .reportRow {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .reportRow > div:first-child {
+    order: 0;
+    width: 100%;
+  }
+
+  .reportImage {
+    order: 1;
+    width: 100%;
+    flex: 0 0 auto;
+    height: auto;
+  }
+
+  .reportImage img, .reportImage :global(img) {
+    height: auto;
+    max-height: 300px;
+    object-fit: cover;
+  }
+
+  .submitRow {
+    position: sticky;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    grid-column: 1 / -1;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:0.75rem 1rem;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.06));
+    border-top:1px solid rgba(12,20,30,0.02);
+  }
+
+  .submitBtn { width:100%; max-width:520px; min-width:unset; padding:0.85rem 1rem; border-radius:12px; }
+}
+
+@media (max-width: 480px) {
+  .headerWrap {
+    --nav-height: 52px;
+    --toolbar-height: 100px;
+  }
+
+  .pageWrap { margin-top: calc(var(--nav-height) + var(--toolbar-height) + 0.5rem); }
+  .modalContent { padding:0.6rem 0.6rem 0.9rem 0.6rem; border-radius:12px 12px 0 0; max-height:90vh; }
+  .modalMap { height:140px; }
+  .previewLink { max-width:160px; }
+  .submitRow { padding:0.6rem; }
+  .submitBtn { padding:0.78rem 0.9rem; }
+}
