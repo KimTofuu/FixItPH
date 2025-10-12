@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import "leaflet/dist/leaflet.css";
-import "./admin-reports.css";
+import styles from "./AdminReports.module.css";
 import Image from "next/image";
 import { toast } from "react-toastify";
 
@@ -151,139 +151,133 @@ export default function AdminReportsPage() {
 
   // ---------- JSX ----------
   return (
-    <>
+    <div className={styles.adminReportsRoot}>
       {/* Header */}
-      <header>
-              <nav
-                className="admin-nav"
-                style={{
-                  width: "100%",
-                  background: "white",
-                  color: "black",
-                }}
-              >
-                <div className="nav-left">
-                  <Image
-                    src="/images/Fix-it_logo_3.png"
-                    alt="Fixit Logo"
-                    className="logo"
-                    width={160}
-                    height={40}
-                  />
-                </div>
-      
-                {/* Hamburger icon */}
-                <div className="hamburger" onClick={() => setMenuOpen(!menuOpen)}>
-                  <div className={`bar ${menuOpen ? "open" : ""}`}></div>
-                  <div className={`bar ${menuOpen ? "open" : ""}`}></div>
-                  <div className={`bar ${menuOpen ? "open" : ""}`}></div>
-                </div>
-      
-                <ul className={`nav-list-user-side ${menuOpen ? "open" : ""}`}>
-                  <li>
-                    <a href="/admin-dashboard">Dashboard</a>
-                  </li>
-                  <li
-                  style={{
-                      padding: "0.5rem 1rem",
-                      borderRadius: "0.5rem",
-                      background: "#f0f0f0",
-                    }}
-                  >
-                    <a href="/admin-reports">Reports</a>
-                  </li>
-      
-                  {/* NEW Users link added for admin user list navigation (design only) */}
-                  <li>
-                    <a href="/admin-users">Users</a>
-                  </li>
-      
-                  <li>
-                    <a href="/admin-profile" className="admin-profile-link">
-                      <img
-                        src={profilePicUrl}
-                        alt="Admin Profile"
-                        className="admin-profile-pic"
-                      />
-                    </a>
-                  </li>
-                </ul>
-              </nav>
-            </header>
+      <header className={styles.header}>
+        <nav className={styles.adminNav}>
+          <div className={styles.navLeft}>
+            <Image
+              src="/images/Fix-it_logo_3.png"
+              alt="Fixit Logo"
+              className={styles.logo}
+              width={160}
+              height={40}
+            />
+          </div>
+
+          <div
+            className={`${styles.hamburger} ${menuOpen ? styles.open : ""}`}
+            onClick={() => setMenuOpen(!menuOpen)}
+            aria-label="Toggle menu"
+            role="button"
+            tabIndex={0}
+          >
+            <span className={`${styles.bar} ${menuOpen ? styles.barOpen : ""}`} />
+            <span className={`${styles.bar} ${menuOpen ? styles.barOpen : ""}`} />
+            <span className={`${styles.bar} ${menuOpen ? styles.barOpen : ""}`} />
+          </div>
+
+          <ul className={`${styles.navListUserSide} ${menuOpen ? styles.open : ""}`}>
+            <li>
+              <a href="/admin-dashboard" className={styles.navLink}>Dashboard</a>
+            </li>
+            <li className={styles.activeNavItem}>
+              <a href="/admin-reports" className={styles.navLink}>Reports</a>
+            </li>
+            <li>
+              <a href="/admin-profile" className={styles.adminProfileLink}>
+                <img
+                  src={profilePicUrl}
+                  alt="Admin Profile"
+                  className={styles.adminProfilePic}
+                />
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </header>
 
       {/* Reports Section */}
-      <div className="reports-page">
-        <main className="main-container">
-          <div className="content-card">
-            {/* Toolbar */}
-            <div className="toolbar">
-              <div className="toggle-group">
-                {(["pending", "in-progress", "resolved"] as StatusFilter[]).map(
-                  (status) => (
-                    <button
-                      key={status}
-                      onClick={() => setActiveStatus(status)}
-                      className={`toggle-button status-${status} ${
-                        activeStatus === status ? "active" : ""
-                      }`}
-                    >
-                      {status.charAt(0).toUpperCase() +
-                        status.slice(1).replace("-", " ")}
-                    </button>
-                  )
-                )}
-              </div>
-              <div className="search-container">
-                <input
-                  type="text"
-                  placeholder="Search by title or location..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="search-input"
-                />
+      <div className={styles.reportsPage}>
+        <main className={styles.mainContainer}>
+          <div className={styles.contentCard}>
+            {/* Toolbar wrapper (sticky) */}
+            <div className={styles.toolbarWrapper}>
+              <div className={styles.toolbar}>
+                <div className={styles.toggleGroup}>
+                  {(["pending", "in-progress", "resolved"] as StatusFilter[]).map(
+                    (status) => (
+                      <button
+                        key={status}
+                        onClick={() => setActiveStatus(status)}
+                        className={[
+                          styles.toggleButton,
+                          styles[`status_${status.replace("-", "_")}` as keyof typeof styles],
+                          activeStatus === status ? styles.active : "",
+                        ].join(" ")}
+                      >
+                        {status.charAt(0).toUpperCase() +
+                          status.slice(1).replace("-", " ")}
+                      </button>
+                    )
+                  )}
+                </div>
+                <div className={styles.searchContainer}>
+                  <input
+                    type="text"
+                    placeholder="Search by title or location..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className={styles.searchInput}
+                  />
+                </div>
               </div>
             </div>
 
-            {/* Report List */}
-            <div id="admin-reportList">
+            {/* Report List (scrollable only area) */}
+            <div id="admin-reportList" className={styles.reportList} role="region" aria-label="Reports list">
               {isLoading ? (
-                <p>Loading reports...</p>
+                <p className={styles.loadingText}>Loading reports...</p>
               ) : filteredReports.length > 0 ? (
                 filteredReports.map((r) => (
-                  <div className="admin-report-card" key={r._id}>
-                    <div className="reports-row">
-                      <div>
-                        <div className="report-header">
+                  <div className={styles.adminReportCard} key={r._id}>
+                    <div className={styles.reportsRow}>
+                      <div className={styles.reportMain}>
+                        <div className={styles.reportHeader}>
                           <Image
                             src={
                               r.user?.avatarUrl || "/images/sample_avatar.png"
                             }
-                            className="report-avatar"
+                            className={styles.reportAvatar}
                             alt="Avatar"
                             width={40}
                             height={40}
                           />
-                          <span className="report-user">
-                            {r.user?.fName} {r.user?.lName}
-                          </span>
+                          <div className={styles.userMeta}>
+                            <span className={styles.reportUser}>
+                              {r.user?.fName} {r.user?.lName}
+                            </span>
+                            <span className={styles.reportTime}>
+                              {formatTimeAgo(r.timestamp)}
+                            </span>
+                          </div>
                           <button
                             id={`bookmark-${r._id}`}
-                            className="bookmark-btn"
+                            className={styles.bookmarkBtn}
                             onClick={() => toggleBookmark(r._id)}
                           >
-                            <i className="fa-regular fa-bookmark"></i>
+                            <i className="fa-regular fa-bookmark" />
                           </button>
                         </div>
 
-                        <h3 className="report-title">{r.title}</h3>
-                        <p className="report-location">
-                          <i className="fa-solid fa-location-dot"></i>{" "}
-                          {r.location}
+                        <h3 className={styles.reportTitle}>{r.title}</h3>
+                        <p className={styles.reportLocation}>
+                          <i className="fa-solid fa-location-dot" /> {r.location}
                         </p>
-                        <p className="report-details">{r.description}</p>
+                        <p className={styles.reportDetails}>{r.description}</p>
 
-                        <div className="status-control">
-                          <label>Status: </label>
+                        <div className={styles.statusControl}>
+                          <label className={styles.statusLabel}>Status</label>
                           <select
                             value={r.status}
                             onChange={(e) =>
@@ -292,6 +286,7 @@ export default function AdminReportsPage() {
                                 e.target.value as StatusFilter
                               )
                             }
+                            className={styles.statusSelect}
                           >
                             <option value="pending">Pending</option>
                             <option value="in-progress">Processing</option>
@@ -300,18 +295,12 @@ export default function AdminReportsPage() {
                         </div>
                       </div>
 
-                      <div className="report-image">
+                      <div className={styles.reportImage}>
                         {r.imageUrl || r.image ? (
                           <img
                             src={r.imageUrl ?? (r as any).image}
                             alt="Report Image"
-                            style={{
-                              width: "100%",
-                              maxWidth: 500,
-                              height: 250,
-                              objectFit: "cover",
-                              borderRadius: 6,
-                            }}
+                            className={styles.inlineImage}
                             onError={(e) => {
                               (e.target as HTMLImageElement).src =
                                 "/images/broken-streetlights.jpg";
@@ -321,32 +310,20 @@ export default function AdminReportsPage() {
                           <img
                             src={"/images/broken-streetlights.jpg"}
                             alt="Report Image"
-                            style={{
-                              width: "100%",
-                              maxWidth: 500,
-                              height: 250,
-                              objectFit: "cover",
-                              borderRadius: 6,
-                            }}
+                            className={styles.inlineImage}
                           />
                         )}
                       </div>
                     </div>
 
-                    <div className="report-comments">
-                      <h4>Comments</h4>
-                      <ul className="comment-list">
+                    <div className={styles.reportComments}>
+                      <h4 className={styles.commentsTitle}>Comments</h4>
+                      <ul className={styles.commentList}>
                         {(r.comments ?? []).map((c, idx) => (
-                          <li key={idx}>
+                          <li key={idx} className={styles.commentItem}>
                             <b>{c.user}:</b> {c.text}
                             {c.createdAt && (
-                              <span
-                                style={{
-                                  color: "#888",
-                                  marginLeft: 8,
-                                  fontSize: "0.9em",
-                                }}
-                              >
+                              <span className={styles.commentTime}>
                                 {new Date(c.createdAt).toLocaleString()}
                               </span>
                             )}
@@ -355,7 +332,7 @@ export default function AdminReportsPage() {
                       </ul>
                       <input
                         type="text"
-                        className="comment-input"
+                        className={styles.commentInput}
                         placeholder="Add a comment..."
                         onKeyDown={(e) => {
                           if (
@@ -371,14 +348,12 @@ export default function AdminReportsPage() {
                   </div>
                 ))
               ) : (
-                <p style={{ color: "red", marginTop: "10px" }}>
-                  No reports found
-                </p>
+                <p className={styles.noReportsText}>No reports found</p>
               )}
             </div>
           </div>
         </main>
       </div>
-    </>
+    </div>
   );
 }
