@@ -1,3 +1,5 @@
+// app/admin-dashboard/page.tsx (or the file you provided)
+// Only change: added "Users" link in the nav list. No functions touched.
 "use client";
 import { useState, useEffect, useRef } from "react";
 import Head from "next/head";
@@ -223,6 +225,12 @@ export default function AdminDashboardPage() {
             <li>
               <a href="/admin-reports">Reports</a>
             </li>
+
+            {/* NEW Users link added for admin user list navigation (design only) */}
+            <li>
+              <a href="/admin-users">Users</a>
+            </li>
+
             <li>
               <a href="/admin-profile" className="admin-profile-link">
                 <img
