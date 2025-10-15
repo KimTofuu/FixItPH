@@ -123,3 +123,56 @@ exports.updateProfile = async (req, res) => {
     return res.status(500).json({ message: 'Server error' });
   }
 };
+
+// Get current logged-in user
+exports.getMe = async (req, res) => {
+  try {
+    const userId = req.user?.userId || req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const user = await User.findById(userId).select('-password');
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    return res.status(200).json(user);
+  } catch (err) {
+    console.error('getMe error:', err);
+    return res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Update current logged-in user
+exports.updateMe = async (req, res) => {
+  try {
+    const userId = req.user?.userId;
+    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+
+    const updates = {};
+    // Allow these fields to be updated
+    const allowed = ['fName', 'lName', 'email', 'contact', 'barangay', 'municipality', 'contactVerified'];
+
+    for (const key of allowed) {
+      if (req.body[key] !== undefined) {
+        updates[key] = req.body[key];
+      }
+    }
+
+    const updated = await User.findByIdAndUpdate(
+      userId, 
+      updates, 
+      { new: true, select: '-password' }
+    );
+    
+    if (!updated) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    return res.status(200).json(updated);
+  } catch (err) {
+    console.error('updateMe error:', err);
+    return res.status(500).json({ message: 'Server error' });
+  }
+};

@@ -14,6 +14,7 @@ interface ProfileData {
   barangay?: string;
   municipality?: string;
   contact?: string;
+  contactVerified?: boolean;
 }
 
 export default function ProfilePage() {
@@ -22,12 +23,18 @@ export default function ProfilePage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
-  // New: change password modal state
+  // Change password modal state
   const [showChangePassModal, setShowChangePassModal] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [changingPassword, setChangingPassword] = useState(false);
+
+  // SMS verification state
+  const [showSmsModal, setShowSmsModal] = useState(false);
+  const [smsOtp, setSmsOtp] = useState("");
+  const [sendingOtp, setSendingOtp] = useState(false);
+  const [verifyingOtp, setVerifyingOtp] = useState(false);
 
   const profilePic = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
   const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
@@ -39,7 +46,7 @@ export default function ProfilePage() {
           typeof window !== "undefined"
             ? localStorage.getItem("token")
             : null;
-        const res = await fetch(`${API}/users/profile`, {
+        const res = await fetch(`${API}/users/me`, {
           headers: token ? { Authorization: `Bearer ${token}` } : undefined,
         });
         if (!res.ok) {
@@ -55,6 +62,7 @@ export default function ProfilePage() {
           barangay: data.barangay || "",
           municipality: data.municipality || "",
           contact: data.contact || "",
+          contactVerified: data.contactVerified || false,
         });
       } catch (err) {
         console.error("Error fetching profile:", err);
@@ -62,7 +70,7 @@ export default function ProfilePage() {
     };
 
     fetchProfile();
-  }, []);
+  }, [API]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!profile) return;
@@ -77,7 +85,7 @@ export default function ProfilePage() {
         typeof window !== "undefined"
           ? localStorage.getItem("token")
           : null;
-      const res = await fetch(`${API}/users/profile`, {
+      const res = await fetch(`${API}/users/me`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -100,21 +108,11 @@ export default function ProfilePage() {
     }
   };
 
-  const handleLogout = () => {
-    const confirmed = window.confirm("Are you sure you want to log out?");
-    if (confirmed) {
-      localStorage.clear();
-      window.location.href = "/login";
-    }
+  const performLogout = () => {
+    localStorage.clear();
+    window.location.href = "/login";
   };
 
-  // performLogout: UI-only logout action (no confirmation)
-const performLogout = () => {
-  localStorage.clear();
-  window.location.href = "/login";
-};
-
-  // New: handle password change (UI-level). Adjust to match your API contract if needed.
   const handleChangePassword = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!currentPassword || !newPassword) {
@@ -158,6 +156,90 @@ const performLogout = () => {
       toast.error("Network error");
     } finally {
       setChangingPassword(false);
+    }
+  };
+
+  // Request SMS OTP
+  const handleRequestSmsOtp = async () => {
+    if (!profile?.contact) {
+      toast.error("Please enter your contact number first");
+      return;
+    }
+
+    setSendingOtp(true);
+    try {
+      const res = await fetch(`${API}/users/request-sms-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: profile.contact }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        toast.error(data.message || "Failed to send OTP");
+        return;
+      }
+
+      toast.success("OTP sent to your phone");
+      setShowSmsModal(true);
+    } catch (err) {
+      console.error(err);
+      toast.error("Network error");
+    } finally {
+      setSendingOtp(false);
+    }
+  };
+
+  // Verify SMS OTP
+  const handleVerifySmsOtp = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+
+    if (!smsOtp || smsOtp.length !== 6) {
+      toast.error("Please enter a valid 6-digit code");
+      return;
+    }
+
+    setVerifyingOtp(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${API}/users/verify-sms-otp`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token ? `Bearer ${token}` : "",
+        },
+        body: JSON.stringify({
+          phone: profile?.contact,
+          otp: smsOtp,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        toast.error(data.message || "Verification failed");
+        return;
+      }
+
+      toast.success("Phone number verified!");
+      setShowSmsModal(false);
+      setSmsOtp("");
+
+      // Refresh profile
+      const profileRes = await fetch(`${API}/users/me`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+
+      if (profileRes.ok) {
+        const updatedProfile = await profileRes.json();
+        setProfile(updatedProfile);
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Network error");
+    } finally {
+      setVerifyingOtp(false);
     }
   };
 
@@ -323,15 +405,43 @@ const performLogout = () => {
             </div>
 
             <div className={styles.fieldFull}>
-              <label className={styles.label}>Contact</label>
-              <input
-                name="contact"
-                type="tel"
-                value={profile.contact || ""}
-                disabled={!isEditing}
-                onChange={handleChange}
-                className={styles.input}
-              />
+              <label className={styles.label}>Contact Number</label>
+              <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                <input
+                  name="contact"
+                  type="tel"
+                  value={profile.contact || ""}
+                  disabled={!isEditing}
+                  onChange={handleChange}
+                  className={styles.input}
+                  placeholder="+639XXXXXXXXX or 09XXXXXXXXX"
+                  style={{ flex: 1 }}
+                />
+                {profile.contactVerified ? (
+                  <span style={{ color: "#22c55e", fontSize: "14px", fontWeight: 500, whiteSpace: "nowrap" }}>
+                    ✓ Verified
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleRequestSmsOtp}
+                    disabled={sendingOtp || !profile.contact}
+                    style={{
+                      padding: "8px 16px",
+                      backgroundColor: profile.contact ? "#3b82f6" : "#d1d5db",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "6px",
+                      cursor: profile.contact ? "pointer" : "not-allowed",
+                      fontSize: "14px",
+                      fontWeight: 500,
+                      whiteSpace: "nowrap"
+                    }}
+                  >
+                    {sendingOtp ? "Sending..." : "Verify"}
+                  </button>
+                )}
+              </div>
             </div>
           </div>
 
@@ -371,16 +481,15 @@ const performLogout = () => {
               >
                 Cancel
               </button>
-             <button
-              onClick={() => {
-                setShowLogoutModal(false);
-                performLogout();
-              }}
-              className={styles.modalConfirm}
-            >
-             Log Out
-            </button>
-
+              <button
+                onClick={() => {
+                  setShowLogoutModal(false);
+                  performLogout();
+                }}
+                className={styles.modalConfirm}
+              >
+                Log Out
+              </button>
             </div>
           </div>
         </div>
@@ -440,6 +549,85 @@ const performLogout = () => {
                   {changingPassword ? "Changing..." : "Change password"}
                 </button>
               </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* SMS VERIFICATION MODAL */}
+      {showSmsModal && (
+        <div className={styles.modalBackdrop} role="dialog" aria-modal="true">
+          <div className={styles.modal}>
+            <h3 className={styles.modalTitle}>Verify Phone Number</h3>
+            <p className={styles.modalText}>
+              Enter the 6-digit code sent to {profile.contact}
+            </p>
+
+            <form onSubmit={handleVerifySmsOtp}>
+              <input
+                type="text"
+                value={smsOtp}
+                onChange={(e) =>
+                  setSmsOtp(e.target.value.replace(/\D/g, "").slice(0, 6))
+                }
+                placeholder="Enter 6-digit code"
+                maxLength={6}
+                style={{
+                  width: "100%",
+                  padding: "16px",
+                  fontSize: "20px",
+                  textAlign: "center",
+                  letterSpacing: "0.5em",
+                  border: "2px solid #e5e7eb",
+                  borderRadius: "8px",
+                  marginTop: "16px",
+                  fontWeight: 500,
+                }}
+                autoFocus
+              />
+
+              <div className={styles.modalActions} style={{ marginTop: 16 }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowSmsModal(false);
+                    setSmsOtp("");
+                  }}
+                  className={styles.modalCancel}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={verifyingOtp || smsOtp.length !== 6}
+                  className={styles.modalConfirm}
+                  style={{
+                    opacity: smsOtp.length === 6 ? 1 : 0.5,
+                    cursor: smsOtp.length === 6 ? "pointer" : "not-allowed",
+                  }}
+                >
+                  {verifyingOtp ? "Verifying..." : "Verify"}
+                </button>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleRequestSmsOtp}
+                disabled={sendingOtp}
+                style={{
+                  width: "100%",
+                  marginTop: "12px",
+                  padding: "8px",
+                  background: "none",
+                  border: "none",
+                  color: "#3b82f6",
+                  cursor: "pointer",
+                  fontSize: "14px",
+                  textDecoration: "underline",
+                }}
+              >
+                {sendingOtp ? "Resending..." : "Resend Code"}
+              </button>
             </form>
           </div>
         </div>

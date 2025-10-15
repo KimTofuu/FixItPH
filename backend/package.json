@@ -7,6 +7,7 @@
     "dev": "nodemon ./bin/www"
   },
   "dependencies": {
+    "axios": "^1.12.2",
     "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.2",
     "body-parser": "^2.2.0",
@@ -16,6 +17,7 @@
     "debug": "~2.6.9",
     "dotenv": "^17.2.2",
     "express": "^4.21.2",
+    "googleapis": "^162.0.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.18.0",
     "morgan": "^1.10.1",
