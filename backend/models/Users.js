@@ -8,6 +8,10 @@ const UserSchema = new mongoose.Schema({
     password: { type: String, required: true },
     barangay: { type: String, required: true },
     municipality: { type: String, required: true },
+    contactVerified: {
+    type: Boolean,
+    default: false,
+    },
 
     // Optional profile picture
     profilePicture: {
