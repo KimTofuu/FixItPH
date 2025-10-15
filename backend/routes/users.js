@@ -30,6 +30,12 @@ router.get('/protected', authenticateToken, userController.protected);
 router.post('/request-otp', otpController.requestOtp);
 router.post('/verify-otp', otpController.verifyOtp);
 
+router.get('/me', authenticateToken, userController.getMe);
+router.patch('/me', authenticateToken, userController.updateMe);
+
+router.post('/request-sms-otp', otpController.requestSmsOtp);
+router.post('/verify-sms-otp', authenticateToken, otpController.verifySmsOtp);
+
 // new endpoints for current user
 router.get('/profile', authenticateToken, userController.getProfile);
 router.patch('/profile', authenticateToken, userController.updateProfile);

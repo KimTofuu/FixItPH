@@ -20,6 +20,8 @@ async function loginUser(formData: {
 }
 
 export default function LoginPage() {
+  const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+
   const [form, setForm] = useState({
     email: "",
     password: "",
