@@ -1,8 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const reportController = require('../controllers/reportController');
-const multer = require('multer');
-const upload = multer({ dest: 'uploads/' });
+const { upload } = require('../config/multer'); // Import from multer config
 const authenticateToken = require('../middleware/authenticateToken');
 
 router.post('/', authenticateToken, upload.single('image'), reportController.createReport);
