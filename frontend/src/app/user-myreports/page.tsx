@@ -11,6 +11,10 @@ interface Report {
   user: {
     fName: string;
     lName: string;
+    profilePicture?: {
+      url?: string;
+      public_id?: string;
+    };
   };
   title: string;
   location?: string;
@@ -22,10 +26,18 @@ interface Report {
   comments?: { author: string; text: string }[];
 }
 
+interface UserProfile {
+  profilePicture?: {
+    url?: string;
+    public_id?: string;
+  };
+}
+
 export default function UserMyReportsPage() {
   const [search, setSearch] = useState("");
   const [reports, setReports] = useState<Report[]>([]);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
@@ -48,11 +60,33 @@ export default function UserMyReportsPage() {
   const [editMap, setEditMap] = useState<any>(null);
   const [editMarker, setEditMarker] = useState<any>(null);
 
+  const defaultProfilePic = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+  const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+
+  // Fetch user profile
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch(`${API}/users/me`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setUserProfile(data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch user profile", err);
+      }
+    };
+    fetchUserProfile();
+  }, [API]);
+
   useEffect(() => {
     const fetchReports = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reports/my`, {
+        const res = await fetch(`${API}/reports/my`, {
           headers: token ? { Authorization: `Bearer ${token}` } : undefined,
         });
         if (res.ok) {
@@ -66,7 +100,7 @@ export default function UserMyReportsPage() {
       }
     };
     fetchReports();
-  }, []);
+  }, [API]);
 
   useEffect(() => {
     (async () => {
@@ -91,7 +125,7 @@ export default function UserMyReportsPage() {
         editMapRef.current.innerHTML = "";
       }
 
-      // Default to report’s coordinates, or Olongapo City if missing
+      // Default to report's coordinates, or Olongapo City if missing
       const lat = Number(editForm.latitude) || 14.8292;
       const lng = Number(editForm.longitude) || 120.2828;
 
@@ -193,29 +227,25 @@ export default function UserMyReportsPage() {
     setReports(updatedReports);
   };
 
-  // NOTE: original handleDelete performs server call.
-  // We will route delete through a confirmation modal: clicking "Delete" sets deleteTarget and opens confirm modal.
   const handleDelete = async (reportId: string, index: number) => {
-  // Confirmation is handled by the confirmation modal; this function only performs deletion.
-  const token = localStorage.getItem("token");
-  try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reports/${reportId}`, {
-      method: "DELETE",
-      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-    });
+    const token = localStorage.getItem("token");
+    try {
+      const res = await fetch(`${API}/reports/${reportId}`, {
+        method: "DELETE",
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
 
-    if (res.ok) {
-      const updatedReports = reports.filter((_, i) => i !== index);
-      setReports(updatedReports);
-      toast.success("Report deleted successfully!");
-    } else {
+      if (res.ok) {
+        const updatedReports = reports.filter((_, i) => i !== index);
+        setReports(updatedReports);
+        toast.success("Report deleted successfully!");
+      } else {
+        toast.error("Failed to delete report");
+      }
+    } catch (err) {
       toast.error("Failed to delete report");
     }
-  } catch (err) {
-    toast.error("Failed to delete report");
-  }
-};
-
+  };
 
   const handleEditClick = (report: Report) => {
     setEditForm({
@@ -306,7 +336,7 @@ export default function UserMyReportsPage() {
     const token = localStorage.getItem("token");
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reports/${editForm._id}`, {
+      const res = await fetch(`${API}/reports/${editForm._id}`, {
         method: "PATCH",
         body: formData,
         headers: token ? { Authorization: `Bearer ${token}` } : undefined,
@@ -337,20 +367,19 @@ export default function UserMyReportsPage() {
     return text.includes(search.toLowerCase());
   });
 
-  // Open delete confirmation modal (does not perform deletion yet)
   const confirmDelete = (id: string, index: number) => {
     setDeleteTarget({ id, index });
     setDeleteModalVisible(true);
   };
 
-  // Called when user confirms in the confirm modal
   const performDeleteConfirmed = async () => {
     if (!deleteTarget) return;
-    // call existing handleDelete
     await handleDelete(deleteTarget.id, deleteTarget.index);
     setDeleteTarget(null);
     setDeleteModalVisible(false);
   };
+
+  const profilePicUrl = userProfile?.profilePicture?.url || defaultProfilePic;
 
   return (
     <div className={styles.pageWrap}>
@@ -375,7 +404,13 @@ export default function UserMyReportsPage() {
             <li><Link href="/user-myreports" className={styles.navLink}>My Reports</Link></li>
             <li>
               <Link href="/user-profile" className={styles.profileLink}>
-                <Image src="https://cdn-icons-png.flaticon.com/512/149/149071.png" alt="User Profile" className={styles.profilePic} width={38} height={38} />
+                <Image 
+                  src={profilePicUrl} 
+                  alt="User Profile" 
+                  className={styles.profilePic} 
+                  width={38} 
+                  height={38} 
+                />
               </Link>
             </li>
           </ul>
@@ -408,47 +443,57 @@ export default function UserMyReportsPage() {
 
             <div id="reportList" className={styles.reportList}>
               {filteredReports.length > 0 ? (
-                filteredReports.map((report, i) => (
-                  <article key={report._id || i} className={styles.reportCard}>
-                    <div className={styles.reportRow}>
-                      <div className={styles.reportContent}>
-                        <div className={styles.reportHeader}>
-                          <Image src="/images/sample_avatar.png" alt="Avatar" className={styles.reportAvatar} width={32} height={32} />
-                          <span className={styles.reportUser}>{report.user.fName} {report.user.lName}</span>
+                filteredReports.map((report, i) => {
+                  const reportUserPic = report.user?.profilePicture?.url || defaultProfilePic;
+                  
+                  return (
+                    <article key={report._id || i} className={styles.reportCard}>
+                      <div className={styles.reportRow}>
+                        <div className={styles.reportContent}>
+                          <div className={styles.reportHeader}>
+                            <Image 
+                              src={profilePicUrl} 
+                              alt="Avatar" 
+                              className={styles.reportAvatar} 
+                              width={32} 
+                              height={32} 
+                            />
+                            <span className={styles.reportUser}>{report.user.fName} {report.user.lName}</span>
+                          </div>
+
+                          <h3 className={styles.reportTitle}>{report.title}</h3>
+                          <p className={styles.reportLocation}><i className="fa-solid fa-location-dot"></i> {report.location}</p>
+                          <span className={`${styles.reportStatus} ${String(report.status).toLowerCase().replace(" ", "-")}`}>{report.status}</span>
+
+                          <p className={styles.reportDetails}>{report.description}</p>
                         </div>
 
-                        <h3 className={styles.reportTitle}>{report.title}</h3>
-                        <p className={styles.reportLocation}><i className="fa-solid fa-location-dot"></i> {report.location}</p>
-                        <span className={`${styles.reportStatus} ${String(report.status).toLowerCase().replace(" ", "-")}`}>{report.status}</span>
-
-                        <p className={styles.reportDetails}>{report.description}</p>
-                      </div>
-
-                      <div className={styles.reportImage}>
-                        <div className={styles.cardActions}>
-                          <button className={styles.editBtn} onClick={() => handleEditClick(report)}>Edit</button>
-                          <button className={styles.deleteBtn} onClick={() => confirmDelete(report._id, i)}>Delete</button>
+                        <div className={styles.reportImage}>
+                          <div className={styles.cardActions}>
+                            <button className={styles.editBtn} onClick={() => handleEditClick(report)}>Edit</button>
+                            <button className={styles.deleteBtn} onClick={() => confirmDelete(report._id, i)}>Delete</button>
+                          </div>
+                          <Image src={report.image || "/images/broken-streetlights.jpg"} alt="Report Image" width={500} height={250} />
                         </div>
-                        <Image src={report.image || "/images/broken-streetlights.jpg"} alt="Report Image" width={500} height={250} />
                       </div>
-                    </div>
 
-                    <div className={styles.reportComments}>
-                      <h4>Comments</h4>
-                      <ul className={styles.commentList}>
-                        {(report.comments ?? []).map((c, j) => (
-                          <li key={j}><b>{c.author}:</b> {c.text}</li>
-                        ))}
-                      </ul>
-                      <input type="text" className={styles.commentInput} placeholder="Add a comment..." onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          handleComment(i, (e.target as HTMLInputElement).value);
-                          (e.target as HTMLInputElement).value = "";
-                        }
-                      }} />
-                    </div>
-                  </article>
-                ))
+                      <div className={styles.reportComments}>
+                        <h4>Comments</h4>
+                        <ul className={styles.commentList}>
+                          {(report.comments ?? []).map((c, j) => (
+                            <li key={j}><b>{c.author}:</b> {c.text}</li>
+                          ))}
+                        </ul>
+                        <input type="text" className={styles.commentInput} placeholder="Add a comment..." onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            handleComment(i, (e.target as HTMLInputElement).value);
+                            (e.target as HTMLInputElement).value = "";
+                          }
+                        }} />
+                      </div>
+                    </article>
+                  );
+                })
               ) : (
                 <p id="noResults" className={styles.noResults}>No reports found</p>
               )}
@@ -466,11 +511,20 @@ export default function UserMyReportsPage() {
 
             <form className={styles.formGrid} onSubmit={handleEditSubmit}>
               <div className={styles.formLeft}>
-                <input type="text" name="title" placeholder="Report Title" value={editForm.title}
-                  onChange={(e) => setEditForm({ ...editForm, title: e.target.value })} />
+                <input 
+                  type="text" 
+                  name="title" 
+                  placeholder="Report Title" 
+                  value={editForm.title}
+                  onChange={(e) => setEditForm({ ...editForm, title: e.target.value })} 
+                />
 
-                <textarea name="description" placeholder="Describe the issue..." value={editForm.description}
-                  onChange={(e) => setEditForm({ ...editForm, description: e.target.value })} />
+                <textarea 
+                  name="description" 
+                  placeholder="Describe the issue..." 
+                  value={editForm.description}
+                  onChange={(e) => setEditForm({ ...editForm, description: e.target.value })} 
+                />
 
                 <label htmlFor="editImageUpload" className={styles.inputLabel}>Upload Image</label>
                 <div className={styles.uploadWrapper}>
@@ -502,9 +556,14 @@ export default function UserMyReportsPage() {
 
               <div className={styles.formRight}>
                 <label htmlFor="editAddress" className={styles.inputLabel}>Location</label>
-                <input type="text" id="editAddress" name="address" placeholder="Search or click on map"
+                <input 
+                  type="text" 
+                  id="editAddress" 
+                  name="address" 
+                  placeholder="Search or click on map"
                   value={editForm.location}
-                  onChange={(e) => setEditForm({ ...editForm, location: e.target.value })} />
+                  onChange={(e) => setEditForm({ ...editForm, location: e.target.value })} 
+                />
 
                 <input type="hidden" id="editLatitude" name="latitude" value={String(editForm.latitude ?? "")} />
                 <input type="hidden" id="editLongitude" name="longitude" value={String(editForm.longitude ?? "")} />

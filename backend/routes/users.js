@@ -2,8 +2,7 @@ const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/userController');
 const jwt = require('jsonwebtoken');
-const upload = require("../config/multer");
-const { uploadProfilePic } = require("../controllers/userController");
+const { upload, uploadProfilePicture } = require("../config/multer");
 const otpController = require('../controllers/otpController');
 
 // JWT authentication middleware
@@ -21,23 +20,30 @@ function authenticateToken(req, res, next) {
 
 require('dotenv').config();
 
+// Auth routes
 router.post('/register', userController.register);
 router.post('/login', userController.login);
+router.post('/logout', userController.logout);
+
+// User routes
 router.get('/getAllUsers', userController.getAllUsers);
 router.post('/getUser', userController.getUser);
-router.post('/logout', userController.logout);
 router.get('/protected', authenticateToken, userController.protected);
-router.post('/request-otp', otpController.requestOtp);
-router.post('/verify-otp', otpController.verifyOtp);
 
+// Current user profile routes
 router.get('/me', authenticateToken, userController.getMe);
 router.patch('/me', authenticateToken, userController.updateMe);
-
-router.post('/request-sms-otp', otpController.requestSmsOtp);
-router.post('/verify-sms-otp', authenticateToken, otpController.verifySmsOtp);
-
-// new endpoints for current user
 router.get('/profile', authenticateToken, userController.getProfile);
 router.patch('/profile', authenticateToken, userController.updateProfile);
+
+// Profile picture routes
+router.post('/me/profile-picture', authenticateToken, uploadProfilePicture.single('profilePicture'), userController.uploadProfilePicture);
+router.delete('/me/profile-picture', authenticateToken, userController.deleteProfilePicture);
+
+// OTP routes
+router.post('/request-otp', otpController.requestOtp);
+router.post('/verify-otp', otpController.verifyOtp);
+router.post('/request-sms-otp', otpController.requestSmsOtp);
+router.post('/verify-sms-otp', authenticateToken, otpController.verifySmsOtp);
 
 module.exports = router;
