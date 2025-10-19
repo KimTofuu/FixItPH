@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import styles from "./ProfilePage.module.css";
@@ -15,6 +15,10 @@ interface ProfileData {
   municipality?: string;
   contact?: string;
   contactVerified?: boolean;
+  profilePicture?: {
+    url?: string;
+    public_id?: string;
+  };
 }
 
 export default function ProfilePage() {
@@ -36,7 +40,11 @@ export default function ProfilePage() {
   const [sendingOtp, setSendingOtp] = useState(false);
   const [verifyingOtp, setVerifyingOtp] = useState(false);
 
-  const profilePic = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+  // Profile picture state
+  const [uploadingPicture, setUploadingPicture] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const defaultProfilePic = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
   const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
   useEffect(() => {
@@ -63,6 +71,7 @@ export default function ProfilePage() {
           municipality: data.municipality || "",
           contact: data.contact || "",
           contactVerified: data.contactVerified || false,
+          profilePicture: data.profilePicture || { url: "", public_id: "" },
         });
       } catch (err) {
         console.error("Error fetching profile:", err);
@@ -105,6 +114,104 @@ export default function ProfilePage() {
     } catch (err) {
       console.error("Save profile error:", err);
       toast.error("Network error");
+    }
+  };
+
+  // Handle profile picture upload
+  const handleProfilePictureUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please upload an image file');
+      return;
+    }
+
+    // Validate file size (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image size must be less than 5MB');
+      return;
+    }
+
+    setUploadingPicture(true);
+
+    try {
+      const token = localStorage.getItem("token");
+      const formData = new FormData();
+      formData.append('profilePicture', file);
+
+      const res = await fetch(`${API}/users/me/profile-picture`, {
+        method: 'POST',
+        headers: {
+          Authorization: token ? `Bearer ${token}` : '',
+        },
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        toast.error(err.message || 'Upload failed');
+        return;
+      }
+
+      toast.success('Profile picture updated!');
+
+      // Refresh profile
+      const profileRes = await fetch(`${API}/users/me`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+      if (profileRes.ok) {
+        const updatedProfile = await profileRes.json();
+        setProfile(updatedProfile);
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('Network error');
+    } finally {
+      setUploadingPicture(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  // Delete profile picture
+  const handleDeleteProfilePicture = async () => {
+    if (!profile?.profilePicture?.url) return;
+
+    if (!confirm('Are you sure you want to delete your profile picture?')) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${API}/users/me/profile-picture`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: token ? `Bearer ${token}` : '',
+        },
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        toast.error(err.message || 'Delete failed');
+        return;
+      }
+
+      toast.success('Profile picture deleted');
+
+      // Refresh profile
+      const profileRes = await fetch(`${API}/users/me`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+      if (profileRes.ok) {
+        const updatedProfile = await profileRes.json();
+        setProfile(updatedProfile);
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('Network error');
     }
   };
 
@@ -245,6 +352,8 @@ export default function ProfilePage() {
 
   if (!profile) return <div className={styles.loading}>Loading profile...</div>;
 
+  const profilePicUrl = profile?.profilePicture?.url || defaultProfilePic;
+
   return (
     <div className={styles.page}>
       <header className={styles.headerWrap}>
@@ -287,7 +396,7 @@ export default function ProfilePage() {
               <a className={styles.profileLink} href="/user-profile">
                 <img
                   id="profilePic"
-                  src="https://cdn-icons-png.flaticon.com/512/149/149071.png"
+                  src={profilePicUrl}
                   alt="User Profile"
                   className={styles.profilePic}
                 />
@@ -308,13 +417,84 @@ export default function ProfilePage() {
       <main className={styles.container}>
         <section className={styles.card}>
           <div className={styles.headerRow}>
-            <div className={styles.avatarWrap}>
+            <div className={styles.avatarWrap} style={{ position: 'relative' }}>
               <Image
-                src={profilePic}
+                src={profilePicUrl}
                 alt="avatar"
                 width={88}
                 height={88}
                 className={styles.largeAvatar}
+              />
+              
+              {/* Upload/Delete buttons */}
+              <div style={{ 
+                position: 'absolute', 
+                bottom: '-8px', 
+                right: '-8px',
+                display: 'flex',
+                gap: '6px'
+              }}>
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploadingPicture}
+                  style={{
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '50%',
+                    backgroundColor: '#3b82f6',
+                    color: 'white',
+                    border: '2px solid white',
+                    cursor: uploadingPicture ? 'not-allowed' : 'pointer',
+                    fontSize: '18px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                    transition: 'all 0.2s'
+                  }}
+                  title={uploadingPicture ? "Uploading..." : "Upload picture"}
+                  onMouseOver={(e) => !uploadingPicture && (e.currentTarget.style.transform = 'scale(1.1)')}
+                  onMouseOut={(e) => (e.currentTarget.style.transform = 'scale(1)')}
+                >
+                  {uploadingPicture ? '...' : '📷'}
+                </button>
+                
+                {profile?.profilePicture?.url && (
+                  <button
+                    type="button"
+                    onClick={handleDeleteProfilePicture}
+                    style={{
+                      width: '36px',
+                      height: '36px',
+                      borderRadius: '50%',
+                      backgroundColor: '#ef4444',
+                      color: 'white',
+                      border: '2px solid white',
+                      cursor: 'pointer',
+                      fontSize: '18px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                      transition: 'all 0.2s'
+                    }}
+                    title="Delete picture"
+                    onMouseOver={(e) => (e.currentTarget.style.transform = 'scale(1.1)')}
+                    onMouseOut={(e) => (e.currentTarget.style.transform = 'scale(1)')}
+                  >
+                    🗑️
+                  </button>
+                )}
+              </div>
+
+              {/* Hidden file input */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleProfilePictureUpload}
+                style={{ display: 'none' }}
               />
             </div>
 
