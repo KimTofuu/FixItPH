@@ -46,10 +46,14 @@ exports.createReport = async (req, res) => {
 // Get all reports with user details
 exports.getAllReports = async (req, res) => {
   try {
-    const reports = await Report.find().select('-__v').populate('user', 'fName lName email');
-    res.json(reports);
+    const reports = await Report.find()
+      .populate('user', 'fName lName email profilePicture') // Make sure profilePicture is included
+      .sort({ createdAt: -1 });
+
+    return res.status(200).json(reports);
   } catch (err) {
-    res.status(500).json({ message: 'Server error' });
+    console.error('getAllReports error:', err);
+    return res.status(500).json({ message: 'Server error' });
   }
 };
 
@@ -138,14 +142,22 @@ exports.getReportByUser = async (req, res) => {
   }
 };
 
+// Get my reports
 exports.getMyReports = async (req, res) => {
   try {
-    const userId = req.user.userId; // Get from JWT, not from req.body
-    const reports = await Report.find({ user: userId }).select('-__v').populate('user', 'fName lName email');
-    res.status(200).json(reports);
+    const userId = req.user?.userId;
+    if (!userId) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const reports = await Report.find({ user: userId })
+      .populate('user', 'fName lName email profilePicture') // Make sure profilePicture is included
+      .sort({ createdAt: -1 });
+
+    return res.status(200).json(reports);
   } catch (err) {
-    res.status(500).json({ message: 'Server error' });
-    console.error(err);
+    console.error('getMyReports error:', err);
+    return res.status(500).json({ message: 'Server error' });
   }
 };
 

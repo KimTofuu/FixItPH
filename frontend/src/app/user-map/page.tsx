@@ -8,17 +8,44 @@ import Image from "next/image";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 
+interface UserProfile {
+  profilePicture?: {
+    url?: string;
+    public_id?: string;
+  };
+}
+
+interface Report {
+  _id: string;
+  user?: {
+    fName: string;
+    lName: string;
+    profilePicture?: {
+      url?: string;
+      public_id?: string;
+    };
+  };
+  title: string;
+  description: string;
+  status: string;
+  location: string;
+  image?: string;
+  latitude?: string | number;
+  longitude?: string | number;
+}
+
 export default function UserMapPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
-  const [profilePic] = useState(
-    "https://cdn-icons-png.flaticon.com/512/149/149071.png"
-  );
-  const [menuOpen, setMenuOpen] = useState(false); // for hamburger menu
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
   const feedMapRef = useRef<L.Map | null>(null);
   const modalMapRef = useRef<L.Map | null>(null);
   const modalMarkerRef = useRef<L.Marker | null>(null);
+
+  const defaultProfilePic = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+  const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
   // Custom pin icon
   const customPin = L.icon({
@@ -39,18 +66,45 @@ export default function UserMapPage() {
     longitude: "",
   });
 
-  const [reports, setReports] = useState<any[]>([]);
+  const [reports, setReports] = useState<Report[]>([]);
 
+  // Fetch current user profile
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch(`${API}/users/me`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        });
+        if (res.ok) {
+          const data = await res.json();
+          console.log("✅ User profile loaded:", data);
+          console.log("📸 Profile picture URL:", data.profilePicture?.url);
+          setUserProfile(data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch user profile", err);
+      }
+    };
+    fetchUserProfile();
+  }, [API]);
+
+  // Fetch reports
   useEffect(() => {
     const fetchReports = async () => {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reports`);
-      if (res.ok) {
-        const data = await res.json();
-        setReports(data);
+      try {
+        const res = await fetch(`${API}/reports`);
+        if (res.ok) {
+          const data = await res.json();
+          console.log("✅ Reports loaded:", data);
+          setReports(data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch reports", err);
       }
     };
     fetchReports();
-  }, []);
+  }, [API]);
 
   useEffect(() => {
     if (feedMapRef.current) return;
@@ -76,13 +130,22 @@ export default function UserMapPage() {
 
     reports.forEach((r) => {
       if (r.latitude && r.longitude) {
-        const m = L.marker([parseFloat(r.latitude), parseFloat(r.longitude)], {
+        const m = L.marker([parseFloat(String(r.latitude)), parseFloat(String(r.longitude))], {
           icon: customPin,
         }).addTo(feedMap);
+        
+        const userName = r.user ? `${r.user.fName} ${r.user.lName}` : 'Anonymous';
+        const userPic = r.user?.profilePicture?.url || defaultProfilePic;
+        
         m.bindPopup(`
-          <b>${r.title}</b><br>
-          <b>Status:</b> ${r.status}<br>
-          <b>Location:</b> ${r.location}
+          <div style="text-align: center;">
+            <img src="${userPic}" alt="${userName}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; margin-bottom: 8px;" />
+            <br>
+            <b>${r.title}</b><br>
+            <b>Reported by:</b> ${userName}<br>
+            <b>Status:</b> ${r.status}<br>
+            <b>Location:</b> ${r.location}
+          </div>
         `);
       }
     });
@@ -144,39 +207,6 @@ export default function UserMapPage() {
     }
   }
 
-  async function getCoordsFromAddress(
-    address: string
-  ): Promise<{ lat: number; lng: number } | null> {
-    try {
-      const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
-          address
-        )}`
-      );
-      const data = await res.json();
-      if (data.length > 0) {
-        return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
-      }
-      return null;
-    } catch {
-      return null;
-    }
-  }
-
-  const ReportImage = ({ src, alt }: { src: string; alt: string }) => {
-    const [imgSrc, setImgSrc] = useState(src || "/images/broken-streetlights.jpg");
-
-    return (
-      <Image
-        src={imgSrc}
-        alt={alt}
-        width={450}
-        height={250}
-        onError={() => setImgSrc("/images/broken-streetlights.jpg")}
-      />
-    );
-  };
-
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -204,7 +234,7 @@ export default function UserMapPage() {
 
       const token = localStorage.getItem("token");
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reports`, {
+      const res = await fetch(`${API}/reports`, {
         method: "POST",
         body: formData,
         headers: {
@@ -215,6 +245,13 @@ export default function UserMapPage() {
       if (res.ok) {
         toast.success("Report submitted successfully!");
         setModalOpen(false);
+        
+        // Refresh reports after submission
+        const refreshRes = await fetch(`${API}/reports`);
+        if (refreshRes.ok) {
+          const data = await refreshRes.json();
+          setReports(data);
+        }
       } else {
         const data = await res.json();
         toast.error(data.message || "Failed to submit report");
@@ -223,6 +260,8 @@ export default function UserMapPage() {
       toast.error("An error occurred while submitting the report.");
     }
   };
+
+  const profilePicUrl = userProfile?.profilePicture?.url || defaultProfilePic;
 
   return (
     <>
@@ -281,9 +320,19 @@ export default function UserMapPage() {
             <li>
               <a className={styles.profileLink} href="/user-profile">
                 <img
-                  src={profilePic}
+                  src={profilePicUrl}
                   alt="User Profile"
                   className={styles.profilePic}
+                  style={{ 
+                    width: '38px', 
+                    height: '38px', 
+                    borderRadius: '50%',
+                    objectFit: 'cover'
+                  }}
+                  onError={(e) => {
+                    console.error('Failed to load profile picture');
+                    (e.target as HTMLImageElement).src = defaultProfilePic;
+                  }}
                 />
               </a>
             </li>

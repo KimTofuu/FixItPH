@@ -9,13 +9,28 @@ import { toast } from "react-toastify";
 
 interface Report {
   _id: string;
-  user: { fName: string; lName: string; email: string } | null;
+  user: { 
+    fName: string; 
+    lName: string; 
+    email: string;
+    profilePicture?: {
+      url?: string;
+      public_id?: string;
+    };
+  } | null;
   title: string;
   description: string;
   status: string;
   location: string;
   image: string;
   comments?: { user: string; text: string; createdAt?: string }[];
+}
+
+interface UserProfile {
+  profilePicture?: {
+    url?: string;
+    public_id?: string;
+  };
 }
 
 export default function UserFeedPage() {
@@ -37,6 +52,10 @@ export default function UserFeedPage() {
   const [reports, setReports] = useState<Report[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+
+  const defaultProfilePic = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+  const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
   const filteredReports = reports.filter((r) =>
     `${r.user?.fName ?? ""} ${r.user?.lName ?? ""} ${r.title} ${r.location} ${r.description}`
@@ -44,13 +63,36 @@ export default function UserFeedPage() {
       .includes(searchTerm.toLowerCase())
   );
 
+  // Fetch current user profile
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch(`${API}/users/me`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        });
+        if (res.ok) {
+          const data = await res.json();
+          console.log("✅ User profile loaded:", data);
+          console.log("📸 Nav profile picture URL:", data.profilePicture?.url);
+          setUserProfile(data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch user profile", err);
+      }
+    };
+    fetchUserProfile();
+  }, [API]);
+
   // Fetch reports
   useEffect(() => {
     const fetchReports = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reports`);
+        const res = await fetch(`${API}/reports`);
         if (res.ok) {
           const data = await res.json();
+          console.log("✅ Reports loaded:", data);
+          console.log("📸 First report user pic:", data[0]?.user?.profilePicture?.url);
           setReports(data);
         }
       } catch (err) {
@@ -58,7 +100,7 @@ export default function UserFeedPage() {
       }
     };
     fetchReports();
-  }, []);
+  }, [API]);
 
   // Dynamically import Leaflet only on client
   useEffect(() => {
@@ -157,7 +199,7 @@ export default function UserFeedPage() {
   const addComment = async (reportId: string, text: string) => {
     const token = localStorage.getItem("token");
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/reports/${reportId}/comment`,
+      `${API}/reports/${reportId}/comment`,
       {
         method: "POST",
         headers: {
@@ -204,7 +246,7 @@ export default function UserFeedPage() {
 
     const token = localStorage.getItem("token");
 
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reports`, {
+    const res = await fetch(`${API}/reports`, {
       method: "POST",
       body: formData,
       headers: {
@@ -215,10 +257,19 @@ export default function UserFeedPage() {
     if (res.ok) {
       toast.success("Report submitted successfully!");
       setModalVisible(false);
+      
+      // Refresh reports after submission
+      const refreshRes = await fetch(`${API}/reports`);
+      if (refreshRes.ok) {
+        const data = await refreshRes.json();
+        setReports(data);
+      }
     } else {
       toast.error("Failed to submit report");
     }
   };
+
+  const profilePicUrl = userProfile?.profilePicture?.url || defaultProfilePic;
 
   return (
     <>
@@ -275,9 +326,15 @@ export default function UserFeedPage() {
               <a className={styles.profileLink} href="/user-profile">
                 <img
                   id="profilePic"
-                  src="https://cdn-icons-png.flaticon.com/512/149/149071.png"
+                  src={profilePicUrl}
                   alt="User Profile"
                   className={styles.profilePic}
+                  style={{ 
+                    width: '38px', 
+                    height: '38px', 
+                    borderRadius: '50%',
+                    objectFit: 'cover'
+                  }}
                 />
               </a>
             </li>
@@ -313,73 +370,88 @@ export default function UserFeedPage() {
           <section className={styles.feedMain}>
             <section id="reportList" className={styles.feedList}>
               {filteredReports.length > 0 ? (
-                filteredReports.map((r) => (
-                  <article className={styles.reportCard} key={r._id}>
-                    <div className={styles.reportRow}>
-                      <div>
-                        <div className={styles.reportHeader}>
-                          <img
-                            src="/images/sample_avatar.png"
-                            className={styles.reportAvatar}
-                            alt="Avatar"
-                          />
-                          <span className={styles.reportUser}>
-                            {r.user ? `${r.user.fName} ${r.user.lName}` : "Unknown User"}
-                          </span>
-                          <button
-                            id={`bookmark-${r._id}`}
-                            className={styles.bookmarkBtn}
-                            onClick={() => toggleBookmark(r._id)}
+                filteredReports.map((r) => {
+                  const reportUserPic = r.user?.profilePicture?.url || defaultProfilePic;
+                  console.log(`📸 Report ${r._id} user pic:`, reportUserPic);
+                  
+                  return (
+                    <article className={styles.reportCard} key={r._id}>
+                      <div className={styles.reportRow}>
+                        <div>
+                          <div className={styles.reportHeader}>
+                            <img
+                              src={reportUserPic}
+                              className={styles.reportAvatar}
+                              alt={r.user ? `${r.user.fName} ${r.user.lName}` : "User Avatar"}
+                              style={{ 
+                                width: '32px', 
+                                height: '32px', 
+                                borderRadius: '50%',
+                                objectFit: 'cover'
+                              }}
+                              onError={(e) => {
+                                console.error('Failed to load image:', reportUserPic);
+                                (e.target as HTMLImageElement).src = defaultProfilePic;
+                              }}
+                            />
+                            <span className={styles.reportUser}>
+                              {r.user ? `${r.user.fName} ${r.user.lName}` : "Unknown User"}
+                            </span>
+                            <button
+                              id={`bookmark-${r._id}`}
+                              className={styles.bookmarkBtn}
+                              onClick={() => toggleBookmark(r._id)}
+                            >
+                              <i className="fa-regular fa-bookmark"></i>
+                            </button>
+                          </div>
+
+                          <h3 className={styles.reportTitle}>{r.title}</h3>
+                          <p className={styles.reportLocation}>
+                            <i className="fa-solid fa-location-dot"></i> {r.location}
+                          </p>
+                          <span
+                            className={`${styles.reportStatus} ${styles[r.status.toLowerCase().replace(" ", "-")]}`}
                           >
-                            <i className="fa-regular fa-bookmark"></i>
-                          </button>
+                            {r.status}
+                          </span>
+                          <p className={styles.reportDetails}>{r.description}</p>
                         </div>
 
-                        <h3 className={styles.reportTitle}>{r.title}</h3>
-                        <p className={styles.reportLocation}>
-                          <i className="fa-solid fa-location-dot"></i> {r.location}
-                        </p>
-                        <span
-                          className={`${styles.reportStatus} ${styles[r.status.toLowerCase().replace(" ", "-")]}`}
-                        >
-                          {r.status}
-                        </span>
-                        <p className={styles.reportDetails}>{r.description}</p>
+                        <div className={styles.reportImage}>
+                          <ReportImage src={r.image} alt="Report Image" />
+                        </div>
                       </div>
 
-                      <div className={styles.reportImage}>
-                        <ReportImage src={r.image} alt="Report Image" />
+                      <div className={styles.reportComments}>
+                        <h4>Comments</h4>
+                        <ul className={styles.commentList}>
+                          {(r.comments ?? []).map((c, idx) => (
+                            <li key={idx}>
+                              <b>{c.user}:</b> {c.text}
+                              {c.createdAt && (
+                                <span className={styles.commentDate}>
+                                  {new Date(c.createdAt).toLocaleString()}
+                                </span>
+                              )}
+                            </li>
+                          ))}
+                        </ul>
+                        <input
+                          type="text"
+                          className={styles.commentInput}
+                          placeholder="Add a comment..."
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" && e.currentTarget.value.trim() !== "") {
+                              addComment(r._id, e.currentTarget.value);
+                              e.currentTarget.value = "";
+                            }
+                          }}
+                        />
                       </div>
-                    </div>
-
-                    <div className={styles.reportComments}>
-                      <h4>Comments</h4>
-                      <ul className={styles.commentList}>
-                        {(r.comments ?? []).map((c, idx) => (
-                          <li key={idx}>
-                            <b>{c.user}:</b> {c.text}
-                            {c.createdAt && (
-                              <span className={styles.commentDate}>
-                                {new Date(c.createdAt).toLocaleString()}
-                              </span>
-                            )}
-                          </li>
-                        ))}
-                      </ul>
-                      <input
-                        type="text"
-                        className={styles.commentInput}
-                        placeholder="Add a comment..."
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" && e.currentTarget.value.trim() !== "") {
-                            addComment(r._id, e.currentTarget.value);
-                            e.currentTarget.value = "";
-                          }
-                        }}
-                      />
-                    </div>
-                  </article>
-                ))
+                    </article>
+                  );
+                })
               ) : (
                 <p className={styles.noReports}>No reports found</p>
               )}

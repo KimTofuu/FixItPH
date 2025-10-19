@@ -176,3 +176,88 @@ exports.updateMe = async (req, res) => {
     return res.status(500).json({ message: 'Server error' });
   }
 };
+
+// Upload/Update profile picture
+exports.uploadProfilePicture = async (req, res) => {
+  try {
+    const userId = req.user?.userId;
+    if (!userId) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Delete old profile picture from Cloudinary if exists
+    if (user.profilePicture?.public_id) {
+      try {
+        await cloudinary.uploader.destroy(user.profilePicture.public_id);
+        console.log('Old profile picture deleted:', user.profilePicture.public_id);
+      } catch (err) {
+        console.error('Error deleting old image:', err);
+      }
+    }
+
+    // Update user with new profile picture
+    user.profilePicture = {
+      url: req.file.path,
+      public_id: req.file.filename
+    };
+
+    await user.save();
+
+    return res.status(200).json({
+      message: 'Profile picture updated successfully',
+      profilePicture: user.profilePicture
+    });
+  } catch (err) {
+    console.error('uploadProfilePicture error:', err);
+    return res.status(500).json({ message: 'Server error: ' + err.message });
+  }
+};
+
+// Delete profile picture
+exports.deleteProfilePicture = async (req, res) => {
+  try {
+    const userId = req.user?.userId;
+    if (!userId) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Delete from Cloudinary if exists
+    if (user.profilePicture?.public_id) {
+      try {
+        await cloudinary.uploader.destroy(user.profilePicture.public_id);
+        console.log('Profile picture deleted:', user.profilePicture.public_id);
+      } catch (err) {
+        console.error('Error deleting image:', err);
+      }
+    }
+
+    // Reset profile picture
+    user.profilePicture = {
+      url: '',
+      public_id: ''
+    };
+
+    await user.save();
+
+    return res.status(200).json({
+      message: 'Profile picture deleted successfully'
+    });
+  } catch (err) {
+    console.error('deleteProfilePicture error:', err);
+    return res.status(500).json({ message: 'Server error: ' + err.message });
+  }
+};
