@@ -11,6 +11,7 @@ async function loginUser(formData: {
   email: string;
   password: string;
 }) {
+  // Use /users/login if that's your actual route
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -36,33 +37,37 @@ export default function LoginPage() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  // --- ADMIN LOGIN LOGIC ---
+  const [adminEmail, setAdminEmail] = useState("");
+  const [adminPassword, setAdminPassword] = useState("");
+
   const handleAdminSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    const formData = new FormData(e.target as HTMLFormElement);
-    const adminData = {
-      officialEmail: formData.get("officialEmail") as string,
-      password: formData.get("password") as string,
-    };
-
     try {
+      // Also remove /api from the admin login path
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/login`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(adminData),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: adminEmail,
+          password: adminPassword,
+        }),
       });
 
-      const result = await res.json();
+      const data = await res.json();
 
-      if (result.token) {
-        localStorage.setItem("adminToken", result.token);
-        toast.success("Admin login successful! Redirecting...");
-        setTimeout(() => router.push("/admin-dashboard"), 1000);
+      if (res.ok) {
+        toast.success(data.message);
+        localStorage.setItem("token", data.token);
+        router.push("/admin-reports");
       } else {
-        toast.error(result.message || "Admin login failed");
+        toast.error(data.message || "Admin login failed");
       }
     } catch (error) {
-      toast.error("Network error. Please try again.");
+      toast.error("An error occurred during admin login.");
+      console.error("Admin login error:", error);
     }
   };
 
@@ -194,13 +199,15 @@ export default function LoginPage() {
           >
             <label className={styles.floatingLabel}>
               <input
-                type="text"
-                name="username"
+                type="email"
+                name="email" // Changed from 'username' to 'email'
                 placeholder=" "
                 required
                 className={styles.input}
+                value={adminEmail} // --- ADD THIS ---
+                onChange={(e) => setAdminEmail(e.target.value)} // --- ADD THIS ---
               />
-              <span className={styles.labelText}>Admin Username</span>
+              <span className={styles.labelText}>Admin Email</span>
             </label>
 
             <div className={styles.passwordWrapper}>
@@ -211,6 +218,8 @@ export default function LoginPage() {
                   placeholder=" "
                   required
                   className={styles.input}
+                  value={adminPassword} // --- ADD THIS ---
+                  onChange={(e) => setAdminPassword(e.target.value)} // --- ADD THIS ---
                 />
                 <span className={styles.labelText}>Password</span>
               </label>
