@@ -7,6 +7,7 @@ import styles from "./user-map.module.css";
 import Image from "next/image";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
+import { useLoader } from "@/context/LoaderContext";
 
 interface UserProfile {
   profilePicture?: {
@@ -39,6 +40,7 @@ export default function UserMapPage() {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const { showLoader, hideLoader } = useLoader();
 
   const feedMapRef = useRef<L.Map | null>(null);
   const modalMapRef = useRef<L.Map | null>(null);
@@ -222,6 +224,7 @@ export default function UserMapPage() {
 
   const handleReportSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    showLoader(); // Show the loader
 
     try {
       const formData = new FormData();
@@ -258,6 +261,8 @@ export default function UserMapPage() {
       }
     } catch (error) {
       toast.error("An error occurred while submitting the report.");
+    } finally {
+      hideLoader(); // Hide the loader
     }
   };
 
