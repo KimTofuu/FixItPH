@@ -30,7 +30,8 @@ interface Report {
   description: string;
   status: string;
   location: string;
-  category: string; // Add category to the interface
+  category: string;
+  isUrgent?: boolean; // Add to interface
   image?: string;
   latitude?: string | number;
   longitude?: string | number;
@@ -63,7 +64,8 @@ export default function UserMapPage() {
   const [reportForm, setReportForm] = useState({
     title: "",
     description: "",
-    category: "", // Add category to the form state
+    category: "",
+    isUrgent: false, // Add to form state
     image: null as File | null,
     address: "",
     latitude: "",
@@ -226,6 +228,10 @@ export default function UserMapPage() {
 
   const handleReportSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!reportForm.category) {
+      toast.error("Please select a category.");
+      return;
+    }
     showLoader(); // Show the loader
 
     try {
@@ -233,6 +239,7 @@ export default function UserMapPage() {
       formData.append("title", reportForm.title);
       formData.append("description", reportForm.description);
       formData.append("category", reportForm.category);
+      formData.append("isUrgent", String(reportForm.isUrgent)); // Add this line
       if (reportForm.image) formData.append("image", reportForm.image);
       formData.append("location", reportForm.address);
       formData.append("latitude", reportForm.latitude);
@@ -473,6 +480,18 @@ export default function UserMapPage() {
               </div>
 
               <div className={styles.submitRow}>
+                <div className={styles.urgentToggle}>
+                  <input
+                    type="checkbox"
+                    id="isUrgent"
+                    name="isUrgent"
+                    checked={reportForm.isUrgent}
+                    onChange={(e) =>
+                      setReportForm({ ...reportForm, isUrgent: e.target.checked })
+                    }
+                  />
+                  <label htmlFor="isUrgent">Mark as Urgent</label>
+                </div>
                 <button type="submit" className={styles.submitBtn}>
                   Submit Report
                 </button>
