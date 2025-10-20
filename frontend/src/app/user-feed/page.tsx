@@ -6,6 +6,7 @@ import dynamic from "next/dynamic";
 import styles from "./user-feed.module.css";
 import Image from "next/image";
 import { toast } from "react-toastify";
+import { useLoader } from "@/context/LoaderContext";
 
 interface Report {
   _id: string;
@@ -53,6 +54,7 @@ export default function UserFeedPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const { showLoader, hideLoader } = useLoader();
 
   const defaultProfilePic = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
   const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
@@ -235,37 +237,45 @@ export default function UserFeedPage() {
 
   const handleReportSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    showLoader(); // Show the loader
 
-    const formData = new FormData();
-    formData.append("title", reportForm.title);
-    formData.append("description", reportForm.description);
-    if (reportForm.image) formData.append("image", reportForm.image);
-    formData.append("location", reportForm.address);
-    formData.append("latitude", reportForm.latitude);
-    formData.append("longitude", reportForm.longitude);
+    try {
+      const formData = new FormData();
+      formData.append("title", reportForm.title);
+      formData.append("description", reportForm.description);
+      if (reportForm.image) formData.append("image", reportForm.image);
+      formData.append("location", reportForm.address);
+      formData.append("latitude", reportForm.latitude);
+      formData.append("longitude", reportForm.longitude);
 
-    const token = localStorage.getItem("token");
+      const token = localStorage.getItem("token");
 
-    const res = await fetch(`${API}/reports`, {
-      method: "POST",
-      body: formData,
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+      const res = await fetch(`${API}/reports`, {
+        method: "POST",
+        body: formData,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-    if (res.ok) {
-      toast.success("Report submitted successfully!");
-      setModalVisible(false);
-      
-      // Refresh reports after submission
-      const refreshRes = await fetch(`${API}/reports`);
-      if (refreshRes.ok) {
-        const data = await refreshRes.json();
-        setReports(data);
+      if (res.ok) {
+        toast.success("Report submitted successfully!");
+        setModalVisible(false);
+        
+        // Refresh reports after submission
+        const refreshRes = await fetch(`${API}/reports`);
+        if (refreshRes.ok) {
+          const data = await refreshRes.json();
+          setReports(data);
+        }
+      } else {
+        toast.error("Failed to submit report");
       }
-    } else {
-      toast.error("Failed to submit report");
+    } catch (error) {
+      console.error("Submission error:", error);
+      toast.error("An error occurred while submitting the report.");
+    } finally {
+      hideLoader(); // Hide the loader
     }
   };
 

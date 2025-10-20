@@ -1,9 +1,6 @@
 require('dotenv').config();
 const nodemailer = require('nodemailer');
 
-// console.log('EMAIL_USER set?', !!process.env.EMAIL_USER);
-// console.log('EMAIL_PASS set?', !!process.env.EMAIL_PASS);
-
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
@@ -20,14 +17,31 @@ transporter.verify((err, success) => {
   }
 });
 
-const sendOtpEmail = async (email, otp) => {
+/**
+ * A generic email sending function.
+ * @param {object} options - Email options.
+ * @param {string} options.to - Recipient's email address.
+ * @param {string} options.subject - Email subject.
+ * @param {string} options.html - Email body in HTML format.
+ */
+const sendEmail = async (options) => {
   const mailOptions = {
-    from: process.env.EMAIL_USER,
-    to: email,
-    subject: 'Your FixItPH verification code',
-    html: `<p>Your verification code is <strong>${otp}</strong>. It expires in 10 minutes.</p>`,
+    from: `"FixItPH Support" <${process.env.MAIL_USERNAME}>`, // Using a sender name
+    to: options.to,
+    subject: options.subject,
+    html: options.html,
   };
   return transporter.sendMail(mailOptions);
 };
 
-module.exports = { sendOtpEmail };
+const sendOtpEmail = async (email, otp) => {
+  const subject = 'Your FixItPH verification code';
+  const html = `<p>Your verification code is <strong>${otp}</strong>. It expires in 10 minutes.</p>`;
+  
+  return sendEmail({ to: email, subject, html });
+};
+
+module.exports = { 
+  sendOtpEmail,
+  sendEmail // Export the new generic function
+};

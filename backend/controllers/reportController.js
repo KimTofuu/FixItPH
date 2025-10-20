@@ -1,24 +1,28 @@
 const Report = require('../models/Report');
-const ResolvedReport = require('../models/ResolvedReport');
 const User = require('../models/Users');
 const cloudinary = require('../config/cloudinary');
-const fs = require('fs');
-
+const { sendEmail } = require('../utils/emailService'); 
 // Create a new report
 exports.createReport = async (req, res) => {
   try {
     const { title, description, location, latitude, longitude } = req.body;
     const userId = req.user.userId;
 
+    // Find the user to get their email and name
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
     let imageUrl = null;
     
     // Upload image to Cloudinary if provided
     if (req.file) {
       const result = await cloudinary.uploader.upload(req.file.path, {
-        folder: 'fixit-reports', // Optional: organize in folders
+        folder: 'fixit-reports',
         transformation: [
-          { width: 800, height: 600, crop: 'limit' }, // Resize image
-          { quality: 'auto' } // Auto optimize quality
+          { width: 800, height: 600, crop: 'limit' },
+          { quality: 'auto' }
         ]
       });
       imageUrl = result.secure_url;
@@ -27,7 +31,7 @@ exports.createReport = async (req, res) => {
     const newReport = new Report({
       title,
       description,
-      image: imageUrl, // Store Cloudinary URL instead of local path
+      image: imageUrl,
       location,
       latitude,
       longitude,
@@ -36,7 +40,47 @@ exports.createReport = async (req, res) => {
     });
 
     await newReport.save();
-    res.status(201).json({ message: 'Report created successfully', report: newReport });
+
+    // --- Send Email Acknowledgement ---
+    try {
+      const emailMessage = `
+        <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+          <h2>Report Received!</h2>
+          <p>Hi ${user.fName},</p>
+          <p>Thank you for submitting your report to FixItPH. We have received it and our team will review it shortly.</p>
+          <h3>Report Details:</h3>
+          <ul>
+            <li><strong>Report ID:</strong> ${newReport._id}</li>
+            <li><strong>Title:</strong> ${title}</li>
+            <li><strong>Location:</strong> ${location}</li>
+            <li><strong>Status:</strong> Pending</li>
+          </ul>
+          <p>You can track the status of your report in the "My Reports" section of the app.</p>
+          <p>Thank you for helping improve our community!</p>
+          <br>
+          <p>Sincerely,</p>
+          <p><strong>The FixItPH Team</strong></p>
+        </div>
+      `;
+
+      await sendEmail({
+        to: user.email, // Change 'email' to 'to'
+        subject: `Your FixItPH Report Has Been Received (ID: ${newReport._id})`,
+        html: emailMessage, // Change 'message' to 'html'
+      });
+
+      console.log('Acknowledgement email sent successfully to:', user.email);
+
+    } catch (emailError) {
+      console.error('Failed to send acknowledgement email:', emailError);
+      // We log the error but don't stop the request. The report was still created.
+    }
+    // --- End of Email Logic ---
+
+    // Populate user details in the response so the frontend can display it
+    const populatedReport = await Report.findById(newReport._id).populate('user', 'fName lName email profilePicture');
+
+    res.status(201).json({ message: 'Report created successfully', report: populatedReport });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });
