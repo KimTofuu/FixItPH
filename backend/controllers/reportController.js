@@ -5,7 +5,7 @@ const { sendEmail } = require('../utils/emailService');
 // Create a new report
 exports.createReport = async (req, res) => {
   try {
-    const { title, description, location, latitude, longitude } = req.body;
+    const { title, description, location, latitude, longitude, category } = req.body;
     const userId = req.user.userId;
 
     // Find the user to get their email and name
@@ -35,6 +35,7 @@ exports.createReport = async (req, res) => {
       location,
       latitude,
       longitude,
+      category,
       user: userId,
       status: 'pending',
     });
@@ -52,6 +53,7 @@ exports.createReport = async (req, res) => {
           <ul>
             <li><strong>Report ID:</strong> ${newReport._id}</li>
             <li><strong>Title:</strong> ${title}</li>
+            <li><strong>Category:</strong> ${category}</li>
             <li><strong>Location:</strong> ${location}</li>
             <li><strong>Status:</strong> Pending</li>
           </ul>
@@ -267,12 +269,13 @@ exports.updateReport = async (req, res) => {
       return res.status(403).json({ error: 'Forbidden' });
     }
 
-    const { title, description, location, latitude, longitude, removeImage } = req.body;
+    const { title, description, location, latitude, longitude, removeImage, category } = req.body;
     if (title !== undefined) report.title = title;
     if (description !== undefined) report.description = description;
     if (location !== undefined) report.location = location;
     if (latitude !== undefined) report.latitude = latitude;
     if (longitude !== undefined) report.longitude = longitude;
+    if (category !== undefined) report.category = category;
 
     // handle file upload -> Cloudinary
     if (req.file) {

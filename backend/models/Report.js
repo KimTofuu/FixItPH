@@ -5,8 +5,22 @@ const ReportSchema = new mongoose.Schema({
     description: { type: String, required: true, index: true },
     image: { type: String, required: true, index: true },
     location: { type: String, required: true, index: true },
-    latitude: { type: String, required: true, index: true },   // <-- add this
-    longitude: { type: String, required: true, index: true },  // <-- add this
+    latitude: { type: String, required: true, index: true },
+    longitude: { type: String, required: true, index: true },
+    category: {
+        type: String,
+        required: true,
+        enum: [
+            'Infrastructure',
+            'Utilities',
+            'Sanitation and Waste',
+            'Environment and Public Spaces',
+            'Community and Safety',
+            'Government / Administrative',
+            'Others'
+        ],
+        index: true
+    },
     status: { type: String, enum: ['pending', 'in-progress', 'resolved'], default: 'pending', index: true },
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     comments: [
