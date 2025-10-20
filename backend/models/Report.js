@@ -21,7 +21,16 @@ const ReportSchema = new mongoose.Schema({
         ],
         index: true
     },
-    status: { type: String, enum: ['pending', 'in-progress', 'resolved'], default: 'pending', index: true },
+    isUrgent: { 
+        type: Boolean, 
+        default: false 
+    },
+    status: { 
+        type: String, 
+        enum: ['awaiting-approval', 'pending', 'in-progress', 'resolved'], 
+        default: 'awaiting-approval', 
+        index: true 
+    },
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     comments: [
         {

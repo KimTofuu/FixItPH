@@ -22,7 +22,7 @@ interface User {
 interface Report {
   _id: string;
   title: string;
-  status: "pending" | "in-progress" | "resolved";
+  status: "awaiting-approval" | "pending" | "in-progress" | "resolved";
   location: string;
   timestamp: string;
   description: string;
@@ -32,7 +32,7 @@ interface Report {
   comments?: Comment[];
 }
 
-type StatusFilter = "pending" | "in-progress" | "resolved";
+type AdminStatusFilter = "awaiting-approval" | "pending" | "in-progress" | "resolved";
 
 // ---------- Helpers ----------
 const formatTimeAgo = (timestamp: string): string => {
@@ -49,7 +49,7 @@ const formatTimeAgo = (timestamp: string): string => {
 export default function AdminReportsPage() {
   const [reports, setReports] = useState<Report[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeStatus, setActiveStatus] = useState<StatusFilter>("pending");
+  const [activeStatus, setActiveStatus] = useState<AdminStatusFilter>("awaiting-approval");
   const [searchTerm, setSearchTerm] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -59,32 +59,56 @@ export default function AdminReportsPage() {
   // ---------- Fetch Reports ----------
   useEffect(() => {
     const fetchReports = async () => {
+      setIsLoading(true);
       try {
         let endpoint;
         if (activeStatus === "resolved") {
-          endpoint = `${process.env.NEXT_PUBLIC_API_URL}/admin/resolved-reports`;
+          endpoint = `${process.env.NEXT_PUBLIC_API_URL}/reports/admin/resolved-reports`;
+        } else if (activeStatus === "awaiting-approval") {
+          endpoint = `${process.env.NEXT_PUBLIC_API_URL}/reports/admin/reports-for-approval`;
         } else {
           endpoint = `${process.env.NEXT_PUBLIC_API_URL}/reports`;
         }
 
-        const res = await fetch(endpoint);
-        if (res.ok) {
-          const data = await res.json();
-          if (activeStatus === "resolved") {
-            setReports(data);
-          } else {
-            const filteredData = data.filter(
-              (report: Report) => report.status === activeStatus
-            );
-            setReports(filteredData);
+        const token = localStorage.getItem("token");
+        const res = await fetch(endpoint, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!res.ok) {
+          let errorMessage = `Error: ${res.statusText}`;
+          try {
+            // Try to parse as JSON first
+            const errorData = await res.json();
+            errorMessage = `Error: ${errorData.message || res.statusText}`;
+          } catch (e) {
+            // If JSON parsing fails, use the raw text response
+            const errorText = await res.text();
+            errorMessage = `Error: ${errorText || res.statusText}`;
           }
+          console.error("Failed to fetch reports:", errorMessage);
+          toast.error(errorMessage);
+          setReports([]);
+          return;
         }
+
+        const data = await res.json();
+        if (activeStatus === "resolved" || activeStatus === "awaiting-approval") {
+          setReports(data);
+        } else {
+          const filteredData = data.filter(
+            (report: Report) => report.status === activeStatus
+          );
+          setReports(filteredData);
+        }
+      } catch (err) {
+        console.error("A network or other error occurred:", err);
+        toast.error("Could not connect to the server.");
       } finally {
         setIsLoading(false);
       }
     };
 
-    setIsLoading(true);
     fetchReports();
   }, [activeStatus]);
 
@@ -97,7 +121,56 @@ export default function AdminReportsPage() {
     console.log(`New comment on ${reportId}: ${text}`);
   };
 
-  const updateReportStatus = async (reportId: string, newStatus: StatusFilter) => {
+  const handleApproveReport = async (reportId: string) => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(
+        // --- CORRECTED ENDPOINT ---
+        `${process.env.NEXT_PUBLIC_API_URL}/reports/admin/reports/${reportId}/approve`,
+        {
+          method: "PATCH",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      if (res.ok) {
+        setReports((prev) => prev.filter((r) => r._id !== reportId));
+        toast.success("Report approved and moved to pending.");
+      } else {
+        toast.error("Failed to approve report.");
+      }
+    } catch (err) {
+      toast.error("An error occurred while approving the report.");
+    }
+  };
+
+  const handleRejectReport = async (reportId: string) => {
+    if (!window.confirm("Are you sure you want to reject and delete this report?")) {
+      return;
+    }
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(
+        // Use the new admin reject endpoint
+        `${process.env.NEXT_PUBLIC_API_URL}/reports/admin/reports/${reportId}/reject`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      if (res.ok) {
+        setReports((prev) => prev.filter((r) => r._id !== reportId));
+        toast.success("Report has been rejected and deleted.");
+      } else {
+        const errorData = await res.json();
+        toast.error(errorData.message || "Failed to reject report.");
+      }
+    } catch (err) {
+      console.error("Reject report error:", err);
+      toast.error("An error occurred while rejecting the report.");
+    }
+  };
+
+  const updateReportStatus = async (reportId: string, newStatus: AdminStatusFilter) => {
     try {
       const token = localStorage.getItem("token");
       const res = await fetch(
@@ -135,7 +208,7 @@ export default function AdminReportsPage() {
   // ---------- Filtered Reports ----------
   const filteredReports = useMemo(() => {
     let filtered: Report[] = reports ?? [];
-    if (activeStatus !== "resolved") {
+    if (activeStatus !== "resolved" && activeStatus !== "awaiting-approval") {
       filtered = filtered.filter(
         (r) => (r.status ?? "").toLowerCase() === activeStatus.toLowerCase()
       );
@@ -205,7 +278,7 @@ export default function AdminReportsPage() {
             <div className={styles.toolbarWrapper}>
               <div className={styles.toolbar}>
                 <div className={styles.toggleGroup}>
-                  {(["pending", "in-progress", "resolved"] as StatusFilter[]).map(
+                  {(["awaiting-approval", "pending", "in-progress", "resolved"] as AdminStatusFilter[]).map(
                     (status) => (
                       <button
                         key={status}
@@ -276,23 +349,40 @@ export default function AdminReportsPage() {
                         </p>
                         <p className={styles.reportDetails}>{r.description}</p>
 
-                        <div className={styles.statusControl}>
-                          <label className={styles.statusLabel}>Status</label>
-                          <select
-                            value={r.status}
-                            onChange={(e) =>
-                              updateReportStatus(
-                                r._id,
-                                e.target.value as StatusFilter
-                              )
-                            }
-                            className={styles.statusSelect}
-                          >
-                            <option value="pending">Pending</option>
-                            <option value="in-progress">Processing</option>
-                            <option value="resolved">Resolved</option>
-                          </select>
-                        </div>
+                        {activeStatus === "awaiting-approval" ? (
+                          <div className={styles.approvalActions}>
+                            <button
+                              onClick={() => handleApproveReport(r._id)}
+                              className={`${styles.actionBtn} ${styles.approveBtn}`}
+                            >
+                              Approve
+                            </button>
+                            <button
+                              onClick={() => handleRejectReport(r._id)}
+                              className={`${styles.actionBtn} ${styles.rejectBtn}`}
+                            >
+                              Reject
+                            </button>
+                          </div>
+                        ) : (
+                          <div className={styles.statusControl}>
+                            <label className={styles.statusLabel}>Status</label>
+                            <select
+                              value={r.status}
+                              onChange={(e) =>
+                                updateReportStatus(
+                                  r._id,
+                                  e.target.value as AdminStatusFilter
+                                )
+                              }
+                              className={styles.statusSelect}
+                            >
+                              <option value="pending">Pending</option>
+                              <option value="in-progress">Processing</option>
+                              <option value="resolved">Resolved</option>
+                            </select>
+                          </div>
+                        )}
                       </div>
 
                       <div className={styles.reportImage}>
