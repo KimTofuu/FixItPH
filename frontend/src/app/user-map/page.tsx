@@ -30,6 +30,7 @@ interface Report {
   description: string;
   status: string;
   location: string;
+  category: string; // Add category to the interface
   image?: string;
   latitude?: string | number;
   longitude?: string | number;
@@ -62,6 +63,7 @@ export default function UserMapPage() {
   const [reportForm, setReportForm] = useState({
     title: "",
     description: "",
+    category: "", // Add category to the form state
     image: null as File | null,
     address: "",
     latitude: "",
@@ -230,6 +232,7 @@ export default function UserMapPage() {
       const formData = new FormData();
       formData.append("title", reportForm.title);
       formData.append("description", reportForm.description);
+      formData.append("category", reportForm.category);
       if (reportForm.image) formData.append("image", reportForm.image);
       formData.append("location", reportForm.address);
       formData.append("latitude", reportForm.latitude);
@@ -395,6 +398,24 @@ export default function UserMapPage() {
                   }
                   required
                 />
+                <select
+                  className={styles.input}
+                  name="category"
+                  value={reportForm.category}
+                  onChange={(e) =>
+                    setReportForm({ ...reportForm, category: e.target.value })
+                  }
+                  required
+                >
+                  <option value="" disabled>-- Select a Category --</option>
+                  <option value="Infrastructure">Infrastructure</option>
+                  <option value="Utilities">Utilities</option>
+                  <option value="Sanitation and Waste">Sanitation and Waste</option>
+                  <option value="Environment and Public Spaces">Environment and Public Spaces</option>
+                  <option value="Community and Safety">Community and Safety</option>
+                  <option value="Government / Administrative">Government / Administrative</option>
+                  <option value="Others">Others</option>
+                </select>
                 <label className={styles.inputLabel} htmlFor="imageUpload">
                   Upload Image
                 </label>
