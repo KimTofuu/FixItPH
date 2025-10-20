@@ -23,6 +23,8 @@ interface Report {
   description: string;
   status: string;
   location: string;
+  category: string; // Add category to interface
+  isUrgent?: boolean; // Add isUrgent to interface
   image: string;
   comments?: { user: string; text: string; createdAt?: string }[];
 }
@@ -44,6 +46,8 @@ export default function UserFeedPage() {
   const [reportForm, setReportForm] = useState({
     title: "",
     description: "",
+    category: "", // Add category to form state
+    isUrgent: false, // Add isUrgent to form state
     image: null as File | null,
     address: "",
     latitude: "",
@@ -237,12 +241,20 @@ export default function UserFeedPage() {
 
   const handleReportSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!reportForm.category) {
+      toast.error("Please select a category.");
+      return;
+    }
+
     showLoader(); // Show the loader
 
     try {
       const formData = new FormData();
       formData.append("title", reportForm.title);
       formData.append("description", reportForm.description);
+      formData.append("category", reportForm.category); // Add category
+      formData.append("isUrgent", String(reportForm.isUrgent)); // Add isUrgent
       if (reportForm.image) formData.append("image", reportForm.image);
       formData.append("location", reportForm.address);
       formData.append("latitude", reportForm.latitude);
@@ -261,6 +273,18 @@ export default function UserFeedPage() {
       if (res.ok) {
         toast.success("Report submitted successfully!");
         setModalVisible(false);
+        
+        // Reset form
+        setReportForm({
+          title: "",
+          description: "",
+          category: "",
+          isUrgent: false,
+          image: null,
+          address: "",
+          latitude: "",
+          longitude: "",
+        });
         
         // Refresh reports after submission
         const refreshRes = await fetch(`${API}/reports`);
@@ -492,6 +516,7 @@ export default function UserFeedPage() {
                   placeholder="Report Title"
                   value={reportForm.title}
                   onChange={(e) => setReportForm({ ...reportForm, title: e.target.value })}
+                  required
                 />
                 <textarea
                   className={styles.textarea}
@@ -499,7 +524,26 @@ export default function UserFeedPage() {
                   placeholder="Describe the issue..."
                   value={reportForm.description}
                   onChange={(e) => setReportForm({ ...reportForm, description: e.target.value })}
+                  required
                 />
+
+                {/* Add Category Dropdown */}
+                <select
+                  className={styles.input}
+                  name="category"
+                  value={reportForm.category}
+                  onChange={(e) => setReportForm({ ...reportForm, category: e.target.value })}
+                  required
+                >
+                  <option value="" disabled>-- Select a Category --</option>
+                  <option value="Infrastructure">Infrastructure</option>
+                  <option value="Utilities">Utilities</option>
+                  <option value="Sanitation and Waste">Sanitation and Waste</option>
+                  <option value="Environment and Public Spaces">Environment and Public Spaces</option>
+                  <option value="Community and Safety">Community and Safety</option>
+                  <option value="Government / Administrative">Government / Administrative</option>
+                  <option value="Others">Others</option>
+                </select>
 
                 <label className={styles.inputLabel} htmlFor="imageUpload">Upload Image</label>
                 <div className={styles.uploadWrapper}>
@@ -544,6 +588,7 @@ export default function UserFeedPage() {
                   placeholder="Search or click on map"
                   value={reportForm.address}
                   onChange={(e) => setReportForm({ ...reportForm, address: e.target.value })}
+                  required
                 />
                 <input type="hidden" id="latitude" name="latitude" />
                 <input type="hidden" id="longitude" name="longitude" />
@@ -552,6 +597,17 @@ export default function UserFeedPage() {
               </div>
 
               <div className={styles.submitRow}>
+                {/* Add Urgent Checkbox */}
+                <div className={styles.urgentToggle}>
+                  <input
+                    type="checkbox"
+                    id="isUrgent"
+                    name="isUrgent"
+                    checked={reportForm.isUrgent}
+                    onChange={(e) => setReportForm({ ...reportForm, isUrgent: e.target.checked })}
+                  />
+                  <label htmlFor="isUrgent">Mark as Urgent</label>
+                </div>
                 <button type="submit" className={styles.submitBtn}>Submit Report</button>
               </div>
             </form>
