@@ -10,19 +10,18 @@ import Image from "next/image";
 interface Report {
   id: number;
   title: string;
-  status: "Pending" | "Reported" | "Processing" | "Resolved";
+  status: "Reported" | "Processing" | "Resolved";
   location: string;
   latitude?: string;
   longitude?: string;
 }
 
-type StatusFilter = "Pending" | "Reported" | "Processing" | "Resolved" | "All";
+type StatusFilter = "Reported" | "Processing" | "Resolved" | "All";
 
 export default function AdminDashboardPage() {
   const [reports, setReports] = useState<Report[]>([]);
   const [resolvedReports, setResolvedReports] = useState<Report[]>([]);
   const [stats, setStats] = useState({
-    pending: 0,
     reported: 0,
     processing: 0,
     resolved: 0,
@@ -105,7 +104,6 @@ export default function AdminDashboardPage() {
         }
 
         setStats({
-          pending: transformed.filter((r) => r.status === "Pending").length,
           reported: transformed.filter((r) => r.status === "Reported").length,
           processing: transformed.filter((r) => r.status === "Processing").length,
           resolved: resolvedCount,
@@ -244,15 +242,6 @@ export default function AdminDashboardPage() {
                   role="region"
                   aria-label="Reports stats"
                 >
-                  <div
-                    className={`${styles.statCard} ${filterStatus === "Pending" ? styles.activeCard : ""}`}
-                    onClick={() => handleFilterClick("Pending")}
-                    style={{ background: "#1E90FF", color: "#fff" }}
-                  >
-                    <h3>Pending</h3>
-                    <h1>{loading ? "..." : stats.pending}</h1>
-                  </div>
-
                   <div
                     className={`${styles.statCard} ${filterStatus === "Reported" ? styles.activeCard : ""}`}
                     onClick={() => handleFilterClick("Reported")}

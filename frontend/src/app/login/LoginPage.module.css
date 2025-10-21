@@ -1,14 +1,21 @@
+/* LoginPage.module.css
+   Modern font pairing: Inter (UI) + Poppins (headings)
+   Fonts imported locally here and applied only to this page via scoped classes.
+*/
+
+/* Import fonts (Google) */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@600;700&display=swap');
 
-
+/* Page-level font variables (scoped to the wrapper to avoid leaking) */
 .login {
+  /* fallback stack included */
   --ui-font: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --heading-font: 'Poppins', var(--ui-font);
   font-family: var(--ui-font);
   color: #07122a;
 }
 
-
+/* Page header and nav (scoped) */
 .header {
   padding: 1rem 1.5rem;
   z-index: 20;
@@ -45,7 +52,7 @@
   box-shadow: 0 10px 30px rgba(3,10,28,0.06);
 }
 
-
+/* Page wrapper (scoped fallback background) */
 .login {
   min-height: calc(100vh - 96px);
   display: flex;
@@ -218,41 +225,6 @@
   outline: 3px solid rgba(37,99,235,0.12);
   outline-offset: 3px;
 }
-
-/* helper row under password inputs */
-.helperRow {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 0.5rem;
-  width: 100%;
-}
-
-/* forgot password link */
-.forgotLink {
-  color: #2563eb;
-  font-size: 0.9rem;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  font-weight: 600;
-  background: transparent;
-  padding: 0.125rem 0.25rem;
-  border-radius: 6px;
-  transition: color 140ms ease, background 140ms ease, transform 120ms ease;
-}
-
-.forgotLink:hover,
-.forgotLink:focus {
-  color: #1e40af;
-  background: rgba(37,99,235,0.04);
-  transform: translateY(-2px);
-  outline: none;
-}
-
-/* ensure accessibility focus visible for keyboard users */
-.forgotLink:focus {
-  box-shadow: 0 0 0 4px rgba(37,99,235,0.10);
-}
-
 
 /* responsive adjustments */
 @media (min-width: 1440px) {
