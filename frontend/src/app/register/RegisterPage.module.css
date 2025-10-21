@@ -1,13 +1,7 @@
-/* RegisterPage.module.css
-   Fully scoped register page styles.
-   Modern font pairing: Inter for UI, Poppins for headings (imported here).
-   No global pure selectors; body visuals should be placed in globals.css if needed.
-*/
 
-/* Import fonts */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@600;700&display=swap');
 
-/* Page-level font variables (scoped via wrapper) */
+
 .register {
   --ui-font: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --heading-font: 'Poppins', var(--ui-font);
@@ -18,14 +12,14 @@
   padding: 3rem 1rem 6rem;
   min-height: calc(100vh - 96px);
   gap: 1.5rem;
-  background: transparent; /* body provides visual via globals.css */
+  background: transparent;
   font-family: var(--ui-font);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: #0f1724;
 }
 
-/* Page header / nav */
+
 .header {
   padding: 1rem 1.5rem;
   position: relative;
@@ -55,7 +49,7 @@
   letter-spacing: -0.01em;
 }
 
-/* nav list and back button */
+
 .navList {
   display: flex;
   gap: 1rem;
@@ -87,7 +81,6 @@
   transform: translateY(-1px) scale(.998);
 }
 
-/* card */
 .registerContainer {
   width: 720px;
   max-width: calc(100% - 2rem);
@@ -105,13 +98,13 @@
   margin-bottom: -6rem;
 }
 
-/* entrance */
+
 .enter {
   opacity: 1;
   transform: translateY(0) scale(1);
 }
 
-/* form */
+
 .form {
   display: flex;
   flex-direction: column;
@@ -146,7 +139,7 @@
   color: #0070f3;
 }
 
-/* inputs */
+
 .input {
   width: 100%;
   padding: 1.05rem 1rem;
@@ -167,11 +160,11 @@
   transform: translateY(-1px);
 }
 
-/* layout helpers */
+
 .row { display: flex; gap: 1rem; }
 .rowInline { display: flex; gap: 0.75rem; align-items: center; }
 
-/* otp button */
+
 .otpBtn {
   background: linear-gradient(180deg,#00CCCB,#00A9A8);
   color: #fff;
@@ -189,7 +182,7 @@
 .otpBtn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
 .otpBtn:hover:not(:disabled) { transform: translateY(-3px); }
 
-/* password area */
+
 .passwordWrapper {
   position: relative;
   display: flex;
@@ -208,7 +201,7 @@
 }
 .eyeIcon:hover { transform: translateY(-2px); }
 
-/* conditions tooltip */
+
 .passwordConditions {
   position: absolute;
   top: calc(100% + 10px);
@@ -239,7 +232,7 @@
 }
 .okDot { background: #16a34a; } .badDot { background: #ef4444; }
 
-/* errors & submit */
+
 .errorText { color: #ef4444; font-size: 0.95rem; font-family: var(--ui-font); }
 .registerBtn {
   margin-top: 0.5rem;
@@ -263,7 +256,7 @@
 }
 .registerBtn:disabled { opacity: 0.6; cursor: not-allowed; }
 
-/* otp modal overlay and card (styled, matching fonts) */
+
 .otpModalOverlay {
   position: fixed;
   inset: 0;
@@ -290,7 +283,7 @@
   font-family: var(--ui-font);
 }
 
-/* modal header & content */
+
 .otpModal h2 {
   margin: 0 0 0.25rem 0;
   font-weight: 600;
@@ -305,7 +298,7 @@
   font-family: var(--ui-font);
 }
 
-/* OTP input */
+
 .otpModal input {
   width: 100%;
   padding: 0.85rem 1rem;
@@ -319,7 +312,7 @@
   margin-top: 0.5rem;
 }
 
-/* Buttons row */
+
 .otpModalButtons {
   display: flex;
   gap: 0.6rem;
@@ -352,7 +345,7 @@
 }
 .secondaryBtn:hover { background: rgba(2,6,23,0.03); transform: translateY(-2px); }
 
-/* small helper text inside modal */
+
 .otpModal .smallNote {
   font-size: 0.9rem;
   color: #64748b;
@@ -360,7 +353,7 @@
   font-family: var(--ui-font);
 }
 
-/* focus outlines for local controls only */
+
 .backBtn:focus,
 .otpBtn:focus,
 .registerBtn:focus,
@@ -387,27 +380,93 @@
   font-weight: 600;
 }
 
+.socialRow {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+  gap: 0.75rem;
+}
+
+
+.googleBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0.6rem 0.9rem;
+  border-radius: 12px;
+  border: 1px solid rgba(2,6,23,0.06);
+  background: #ffffff;
+  box-shadow: 0 8px 24px rgba(3,10,28,0.06);
+  cursor: pointer;
+  transition: transform 140ms ease, box-shadow 140ms ease, background 140ms ease;
+  font-family: var(--ui-font, Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif);
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #07122a;
+  text-decoration: none;
+  margin-top: 1rem;
+}
+
+
+
+.googleIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: transparent;
+  flex-shrink: 0;
+}
+
+
+.googleText {
+  display: inline-block;
+  line-height: 1;
+}
+
+
+.googleBtn:active {
+  transform: translateY(0);
+  box-shadow: 0 6px 18px rgba(3,10,28,0.06);
+}
+
+
+.googleBtn:focus {
+  outline: 3px solid rgba(37,99,235,0.12);
+  outline-offset: 3px;
+}
+
+
+.googleBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
 
 /* responsive breakpoints (all common sizes) */
-/* ≥1920 */
+
 @media (min-width: 1920px) {
   .registerContainer { width: 920px; padding: 2.75rem; }
   .formTitle { font-size: 1.5rem; }
 }
-/* 1440–1919 */
+
 @media (min-width: 1440px) and (max-width: 1919px) {
   .registerContainer { width: 820px; padding: 2.25rem; }
 }
-/* 1200–1439 */
+
 @media (min-width: 1200px) and (max-width: 1439px) {
   .registerContainer { width: 760px; }
 }
-/* 1024–1199 */
+
 @media (min-width: 1024px) and (max-width: 1199px) {
   .registerContainer { width: 700px; }
   .row { gap: 0.75rem; }
 }
-/* 768–1023 */
+
 @media (min-width: 768px) and (max-width: 1023px) {
   .registerContainer { width: 640px; padding: 1.75rem; margin-top: -2rem; }
   .row { flex-direction: column; }
@@ -416,7 +475,7 @@
   .input { font-size: 0.98rem; }
   
 }
-/* 640–767 */
+
 @media (min-width: 640px) and (max-width: 767px) {
   .registerContainer { width: calc(100% - 2rem); padding: 1.5rem; margin-top: -2rem; }
   .row { flex-direction: column; }
@@ -425,21 +484,21 @@
   .input { font-size: 0.96rem; padding: 0.75rem 0.9rem; }
   .otpBtn { font-size: 0.95rem; padding: 0.6rem 0.9rem; }
 }
-/* 425–639 */
+
 @media (min-width: 425px) and (max-width: 639px) {
   .registerContainer { padding: 1.25rem; width: calc(100% - 2rem); margin-top: -2rem; }
   .formTitle { font-size: 1rem; }
   .input { padding: 0.7rem 0.9rem; }
   .registerBtn { font-size: 1rem; padding: 0.75rem 0.9rem; }
 }
-/* 375–424 */
+
 @media (min-width: 375px) and (max-width: 424px) {
   .registerContainer { padding: 1rem; margin-top: 0rem; }
   .formTitle { font-size: 0.98rem; }
   .input { padding: 0.65rem 0.85rem; font-size: 0.95rem; }
   .otpBtn { padding: 0.5rem 0.75rem; font-size: 0.9rem; }
 }
-/* ≤374 */
+
 @media (max-width: 374px) {
   .registerContainer { padding: 0.9rem; border-radius: 10px; }
   .formTitle { font-size: 0.92rem; }
@@ -448,7 +507,7 @@
   .registerBtn { padding: 0.7rem; font-size: 0.95rem; }
 }
 
-/* modal popIn animation */
+
 @keyframes popIn {
   from { transform: translateY(8px) scale(.985); opacity: 0; }
   to { transform: translateY(0) scale(1); opacity: 1; }

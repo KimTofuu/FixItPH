@@ -81,6 +81,9 @@ export default function ProfilePage() {
               <a href="/admin-dashboard" className={styles.navLink}>Dashboard</a>
             </li>
             <li>
+              <a href="/admin-map" className={styles.navLink}>Map</a>
+            </li>
+            <li>
               <a href="/admin-reports" className={styles.navLink}>Reports</a>
             </li>
             <li>

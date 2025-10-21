@@ -1,21 +1,16 @@
-/* LoginPage.module.css
-   Modern font pairing: Inter (UI) + Poppins (headings)
-   Fonts imported locally here and applied only to this page via scoped classes.
-*/
 
-/* Import fonts (Google) */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@600;700&display=swap');
 
-/* Page-level font variables (scoped to the wrapper to avoid leaking) */
+
 .login {
-  /* fallback stack included */
+  
   --ui-font: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --heading-font: 'Poppins', var(--ui-font);
   font-family: var(--ui-font);
   color: #07122a;
 }
 
-/* Page header and nav (scoped) */
+
 .header {
   padding: 1rem 1.5rem;
   z-index: 20;
@@ -52,7 +47,6 @@
   box-shadow: 0 10px 30px rgba(3,10,28,0.06);
 }
 
-/* Page wrapper (scoped fallback background) */
 .login {
   min-height: calc(100vh - 96px);
   display: flex;
@@ -81,14 +75,14 @@
   box-shadow: 0 28px 80px rgba(3,10,28,0.14);
 }
 
-/* entrance helper */
+
 .container.enter,
 .loginContainer.enter {
   opacity: 1;
   transform: translateY(0) scale(1);
 }
 
-/* Title and toggle */
+
 .formTitle {
   text-align: center;
   font-size: 1.25rem;
@@ -112,7 +106,7 @@
 }
 .toggle:hover { transform: translateY(-2px); }
 
-/* Forms */
+
 .form {
   display: none;
   gap: 0.75rem;
@@ -123,7 +117,7 @@
   flex-direction: column;
 }
 
-/* Floating label implementation */
+
 .floatingLabel {
   position: relative;
   display: block;
@@ -150,7 +144,7 @@
   color: #2563eb;
 }
 
-/* Inputs */
+
 .input {
   width: 100%;
   padding: 0.95rem 1rem;
@@ -171,7 +165,7 @@
   transform: translateY(-1px);
 }
 
-/* password wrapper & eye icon */
+
 .passwordWrapper {
   display: flex;
   gap: 0.5rem;
@@ -188,7 +182,7 @@
 }
 .eyeIcon:hover { transform: translateY(-2px); }
 
-/* login button */
+
 .loginBtn {
   margin-top: 0.5rem;
   width: 100%;
@@ -209,7 +203,7 @@
 }
 .loginBtn:hover { transform: translateY(-3px); }
 
-/* subtle helper for small labels */
+
 .smallNote {
   font-size: 0.9rem;
   color: #556272;
@@ -217,11 +211,49 @@
   margin-top: 0.25rem;
 }
 
-/* focus styles targeted to local classes only */
+
 .backBtn:focus,
 .eyeIcon:focus,
 .loginBtn:focus,
 .input:focus {
+  outline: 3px solid rgba(37,99,235,0.12);
+  outline-offset: 3px;
+}
+
+/* Forgot password row */
+.forgotRow {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.forgotBtn {
+  color: #2563eb;
+  font-family: var(--ui-font);
+  font-weight: 600;
+  font-size: 0.92rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 8px;
+  text-decoration: none;
+  background: transparent;
+  transition: color 140ms ease, transform 140ms ease, background 140ms ease;
+  display: inline-block;
+  outline: none;
+}
+
+.forgotBtn:hover {
+  transform: translateY(-2px);
+  color: #0b63d6;
+  background: rgba(37,99,235,0.03);
+}
+
+.forgotBtn:active {
+  transform: translateY(0);
+  background: rgba(37,99,235,0.06);
+}
+
+.forgotBtn:focus {
   outline: 3px solid rgba(37,99,235,0.12);
   outline-offset: 3px;
 }
@@ -256,9 +288,11 @@
   .input { width: 100%; font-size: 1rem; }
   .loginBtn { width: 70%; font-size: 1.2rem; }
   .toggle { font-size: 0.8rem; }
+  .forgotRow { justify-content: center; margin-top: 0.4rem; }
+  .forgotBtn { font-size: 0.9rem; }
 }
 
-/* micro entrance animation for container */
+
 @keyframes floatIn {
   from { transform: translateY(10px) scale(.995); opacity: 0; }
   to { transform: translateY(0) scale(1); opacity: 1; }
