@@ -431,6 +431,14 @@
   min-width: 180px;
 }
 
+.reportCategory {
+  font-size: 0.875rem;
+  color: #6b6b6b;
+  margin: 4px 0 8px 0;
+  font-weight: 500;
+}
+
+
 /* responsive breakpoints */
 @media (max-width: 1024px) {
   .formGrid { grid-template-columns: 1fr 340px; }

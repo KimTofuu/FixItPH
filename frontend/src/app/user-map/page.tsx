@@ -477,10 +477,8 @@ export default function UserMapPage() {
                 <input type="hidden" id="latitude" name="latitude" />
                 <input type="hidden" id="longitude" name="longitude" />
                 <div id="modal-map" className={styles.modalMap}></div>
-              </div>
 
-              <div className={styles.submitRow}>
-                <div className={styles.urgentToggle}>
+                    <div className={styles.urgentToggle}>
                   <input
                     type="checkbox"
                     id="isUrgent"
@@ -492,6 +490,9 @@ export default function UserMapPage() {
                   />
                   <label htmlFor="isUrgent">Mark as Urgent</label>
                 </div>
+              </div>
+
+              <div className={styles.submitRow}>
                 <button type="submit" className={styles.submitBtn}>
                   Submit Report
                 </button>
