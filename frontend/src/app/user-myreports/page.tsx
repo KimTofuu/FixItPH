@@ -19,12 +19,11 @@ interface Report {
   title: string;
   location?: string;
   description?: string;
-  status: "Pending" | "Reported" | "Processing" | "Resolved" | string;
+  status: "Pending" | "In Progress" | string;
   image?: string | null;
   latitude?: string | number;
   longitude?: string | number;
   comments?: { author: string; text: string }[];
-  priority?: "urgent" | "not urgent" | string;
 }
 
 interface UserProfile {
@@ -54,7 +53,6 @@ export default function UserMyReportsPage() {
     imageFile: null as File | null,
     imagePreview: "" as string,
     removeImage: false,
-    priority: "not urgent",
   });
 
   const editMapRef = useRef<HTMLDivElement | null>(null);
@@ -62,7 +60,6 @@ export default function UserMyReportsPage() {
   const [editMap, setEditMap] = useState<any>(null);
   const [editMarker, setEditMarker] = useState<any>(null);
 
-<<<<<<< Updated upstream
   const defaultProfilePic = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
   const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
@@ -84,22 +81,6 @@ export default function UserMyReportsPage() {
     };
     fetchUserProfile();
   }, [API]);
-=======
-  // Normalize incoming status strings to one of: Pending, Reported, Processing, Resolved
-  const normalizeStatus = (s?: string): Report["status"] => {
-    if (!s) return "Reported";
-    const lower = s.toLowerCase();
-    if (lower.includes("pend")) return "Pending";
-    if (lower.includes("report")) return "Reported";
-    if (lower.includes("in-progress") || lower.includes("progress") || lower.includes("process")) return "Processing";
-    if (lower.includes("resolved") || lower.includes("resolve")) return "Resolved";
-    if (lower === "pending") return "Pending";
-    if (lower === "reported") return "Reported";
-    if (lower === "processing") return "Processing";
-    if (lower === "resolved") return "Resolved";
-    return s;
-  };
->>>>>>> Stashed changes
 
   useEffect(() => {
     const fetchReports = async () => {
@@ -110,14 +91,7 @@ export default function UserMyReportsPage() {
         });
         if (res.ok) {
           const myReports = await res.json();
-          // normalize statuses and preserve priority if present
-          const normalized = Array.isArray(myReports)
-            ? myReports.map((r: any) => ({
-                ...r,
-                status: normalizeStatus(r.status),
-              }))
-            : myReports;
-          setReports(normalized);
+          setReports(myReports);
         } else {
           console.error("Failed to fetch my reports", await res.text());
         }
@@ -254,16 +228,9 @@ export default function UserMyReportsPage() {
   };
 
   const handleDelete = async (reportId: string, index: number) => {
-<<<<<<< Updated upstream
     const token = localStorage.getItem("token");
     try {
       const res = await fetch(`${API}/reports/${reportId}`, {
-=======
-    // Confirmation is handled by the confirmation modal; this function only performs deletion.
-    const token = localStorage.getItem("token");
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reports/${reportId}`, {
->>>>>>> Stashed changes
         method: "DELETE",
         headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       });
@@ -291,7 +258,6 @@ export default function UserMyReportsPage() {
       imageFile: null,
       imagePreview: (report.image as string) || "/images/broken-streetlights.jpg",
       removeImage: false,
-      priority: (report.priority as string) || "not urgent",
     });
 
     setEditModalVisible(true);
@@ -365,11 +331,6 @@ export default function UserMyReportsPage() {
 
     if (editForm.removeImage) {
       formData.append("removeImage", "true");
-    }
-
-    // include priority/urgency in edit submission
-    if (editForm.priority) {
-      formData.append("priority", editForm.priority);
     }
 
     const token = localStorage.getItem("token");
@@ -457,6 +418,13 @@ export default function UserMyReportsPage() {
 
         <div className={styles.toolbar} role="toolbar" aria-label="Reports toolbar">
           <div className={styles.toolbarInner}>
+            <button
+              className={`${styles.reportBtn}`}
+              onClick={() => setEditModalVisible(true)}
+            >
+              + Add Report
+            </button>
+
             <input
               type="text"
               className={styles.searchInput}
@@ -500,38 +468,12 @@ export default function UserMyReportsPage() {
                           <p className={styles.reportDetails}>{report.description}</p>
                         </div>
 
-<<<<<<< Updated upstream
                         <div className={styles.reportImage}>
                           <div className={styles.cardActions}>
                             <button className={styles.editBtn} onClick={() => handleEditClick(report)}>Edit</button>
                             <button className={styles.deleteBtn} onClick={() => confirmDelete(report._id, i)}>Delete</button>
                           </div>
                           <Image src={report.image || "/images/broken-streetlights.jpg"} alt="Report Image" width={500} height={250} />
-=======
-                        <h3 className={styles.reportTitle}>{report.title}</h3>
-                        <p className={styles.reportLocation}><i className="fa-solid fa-location-dot"></i> {report.location}</p>
-
-                        <div className={styles.statusPriorityRow}>
-                          <span className={`${styles.reportStatus} ${String(report.status).toLowerCase().replace(" ", "-")}`}>
-                            {report.status}
-                          </span>
-
-                          <span
-                            className={`${styles.reportPriority} ${String((report.priority ?? "not-urgent")).toLowerCase().replace(" ", "-")}`}
-                            aria-label={`Priority ${report.priority ?? "not set"}`}
-                          >
-                            {report.priority ? report.priority : "not set"}
-                          </span>
-                        </div>
-
-                        <p className={styles.reportDetails}>{report.description}</p>
-                      </div>
-
-                      <div className={styles.reportImage}>
-                        <div className={styles.cardActions}>
-                          <button className={styles.editBtn} onClick={() => handleEditClick(report)}>Edit</button>
-                          <button className={styles.deleteBtn} onClick={() => confirmDelete(report._id, i)}>Delete</button>
->>>>>>> Stashed changes
                         </div>
                       </div>
 
@@ -627,18 +569,6 @@ export default function UserMyReportsPage() {
                 <input type="hidden" id="editLongitude" name="longitude" value={String(editForm.longitude ?? "")} />
 
                 <div id="edit-modal-map" ref={editMapRef} className={styles.modalMap} />
-
-                {/* Urgency dropdown added */}
-                <label htmlFor="editPriority" className={styles.inputLabel} style={{ marginTop: 12 }}>Urgency</label>
-                <select
-                  id="editPriority"
-                  className={styles.select}
-                  value={editForm.priority}
-                  onChange={(e) => setEditForm({ ...editForm, priority: e.target.value })}
-                >
-                  <option value="urgent">urgent</option>
-                  <option value="not urgent">not urgent</option>
-                </select>
               </div>
 
               <div className={styles.submitRow}>

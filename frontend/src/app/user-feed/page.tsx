@@ -21,13 +21,12 @@ interface Report {
   } | null;
   title: string;
   description: string;
-  status: "Pending" | "Reported" | "Processing" | "Resolved";
+  status: string;
   location: string;
   category: string; // Add category to interface
   isUrgent?: boolean; // Add isUrgent to interface
   image: string;
   comments?: { user: string; text: string; createdAt?: string }[];
-  priority?: string;
 }
 
 interface UserProfile {
@@ -53,7 +52,6 @@ export default function UserFeedPage() {
     address: "",
     latitude: "",
     longitude: "",
-    priority: "not urgent",
   });
 
   const [reports, setReports] = useState<Report[]>([]);
@@ -71,7 +69,6 @@ export default function UserFeedPage() {
       .includes(searchTerm.toLowerCase())
   );
 
-<<<<<<< Updated upstream
   // Fetch current user profile
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -92,24 +89,6 @@ export default function UserFeedPage() {
     };
     fetchUserProfile();
   }, [API]);
-=======
-  // Map incoming status strings to normalized display values
-  const normalizeStatus = (s?: string): Report["status"] => {
-    if (!s) return "Reported";
-    const lower = s.toLowerCase();
-    if (lower === "pending") return "Pending";
-    if (lower === "reported") return "Reported";
-    if (lower === "in-progress" || lower === "processing") return "Processing";
-    if (lower === "resolved") return "Resolved";
-    // fallback: try to match known words
-    if (lower.includes("pend")) return "Pending";
-    if (lower.includes("report")) return "Reported";
-    if (lower.includes("proc")) return "Processing";
-    if (lower.includes("resol")) return "Resolved";
-    // default
-    return "Reported";
-  };
->>>>>>> Stashed changes
 
   // Fetch reports
   useEffect(() => {
@@ -118,20 +97,9 @@ export default function UserFeedPage() {
         const res = await fetch(`${API}/reports`);
         if (res.ok) {
           const data = await res.json();
-<<<<<<< Updated upstream
           console.log("✅ Reports loaded:", data);
           console.log("📸 First report user pic:", data[0]?.user?.profilePicture?.url);
           setReports(data);
-=======
-          // Normalize status values before storing
-          const transformed = Array.isArray(data)
-            ? data.map((r: any) => ({
-                ...r,
-                status: normalizeStatus(r.status),
-              }))
-            : [];
-          setReports(transformed);
->>>>>>> Stashed changes
         }
       } catch (err) {
         console.error("Failed to load reports", err);
@@ -274,21 +242,10 @@ export default function UserFeedPage() {
   const handleReportSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-<<<<<<< Updated upstream
     if (!reportForm.category) {
       toast.error("Please select a category.");
       return;
     }
-=======
-    const formData = new FormData();
-    formData.append("title", reportForm.title);
-    formData.append("description", reportForm.description);
-    if (reportForm.image) formData.append("image", reportForm.image);
-    formData.append("location", reportForm.address);
-    formData.append("latitude", reportForm.latitude);
-    formData.append("longitude", reportForm.longitude);
-    formData.append("priority", reportForm.priority);
->>>>>>> Stashed changes
 
     showLoader(); // Show the loader
 
@@ -495,32 +452,9 @@ export default function UserFeedPage() {
                           <p className={styles.reportDetails}>{r.description}</p>
                         </div>
 
-<<<<<<< Updated upstream
                         <div className={styles.reportImage}>
                           <ReportImage src={r.image} alt="Report Image" />
                         </div>
-=======
-                        <h3 className={styles.reportTitle}>{r.title}</h3>
-                        <p className={styles.reportLocation}>
-                          <i className="fa-solid fa-location-dot"></i> {r.location}
-                        </p>
-
-                        <div className={styles.statusPriorityRow}>
-                          <span
-                            className={`${styles.reportStatus} ${styles[r.status.toLowerCase().replace(" ", "-")]}`}
-                          >
-                            {r.status}
-                          </span>
-                          <span
-                            className={`${styles.reportPriority} ${styles[(r.priority ?? "not-urgent").toLowerCase().replace(" ", "-")]}`}
-                            aria-label={`Priority ${r.priority ?? "not set"}`}
-                          >
-                            {r.priority ? r.priority : "not set"}
-                          </span>
-                        </div>
-
-                        <p className={styles.reportDetails}>{r.description}</p>
->>>>>>> Stashed changes
                       </div>
 
                       <div className={styles.reportComments}>
@@ -660,19 +594,6 @@ export default function UserFeedPage() {
                 <input type="hidden" id="longitude" name="longitude" />
 
                 <div id="modal-map" ref={modalMapRef} className={styles.modalMap}></div>
-
-                <label className={styles.inputLabel} htmlFor="prioritySelect" style={{ marginTop: "12px" }}>
-                  Priority Level
-                </label>
-                <select
-                  id="prioritySelect"
-                  className={styles.select}
-                  value={reportForm.priority}
-                  onChange={(e) => setReportForm({ ...reportForm, priority: e.target.value })}
-                >
-                  <option value="urgent">urgent</option>
-                  <option value="not urgent">not urgent</option>
-                </select>
               </div>
 
               <div className={styles.submitRow}>
