@@ -24,6 +24,8 @@ interface Report {
   latitude?: string | number;
   longitude?: string | number;
   comments?: { author: string; text: string }[];
+  priority?: "urgent" | "not urgent" | string;
+  category?: string; // UI-only property (displayed in card)
 }
 
 interface UserProfile {
@@ -53,6 +55,8 @@ export default function UserMyReportsPage() {
     imageFile: null as File | null,
     imagePreview: "" as string,
     removeImage: false,
+    priority: "not urgent",
+    category: "", // added category to edit form for UI editing
   });
 
   const editMapRef = useRef<HTMLDivElement | null>(null);
@@ -60,27 +64,25 @@ export default function UserMyReportsPage() {
   const [editMap, setEditMap] = useState<any>(null);
   const [editMarker, setEditMarker] = useState<any>(null);
 
-  const defaultProfilePic = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+  // Add missing constants used elsewhere
   const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+  const defaultProfilePic = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+  const profilePicUrl = userProfile?.profilePicture?.url || defaultProfilePic;
 
-  // Fetch user profile
-  useEffect(() => {
-    const fetchUserProfile = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const res = await fetch(`${API}/users/me`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setUserProfile(data);
-        }
-      } catch (err) {
-        console.error("Failed to fetch user profile", err);
-      }
-    };
-    fetchUserProfile();
-  }, [API]);
+  // Normalize incoming status strings to one of: Pending, Reported, Processing, Resolved
+  const normalizeStatus = (s?: string): Report["status"] => {
+    if (!s) return "Reported";
+    const lower = s.toLowerCase();
+    if (lower.includes("pend")) return "Pending";
+    if (lower.includes("report")) return "Reported";
+    if (lower.includes("in-progress") || lower.includes("progress") || lower.includes("process")) return "Processing";
+    if (lower.includes("resolved") || lower.includes("resolve")) return "Resolved";
+    if (lower === "pending") return "Pending";
+    if (lower === "reported") return "Reported";
+    if (lower === "processing") return "Processing";
+    if (lower === "resolved") return "Resolved";
+    return s;
+  };
 
   useEffect(() => {
     const fetchReports = async () => {
@@ -228,9 +230,10 @@ export default function UserMyReportsPage() {
   };
 
   const handleDelete = async (reportId: string, index: number) => {
+    // Confirmation is handled by the confirmation modal; this function only performs deletion.
     const token = localStorage.getItem("token");
     try {
-      const res = await fetch(`${API}/reports/${reportId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reports/${reportId}`, {
         method: "DELETE",
         headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       });
@@ -258,6 +261,8 @@ export default function UserMyReportsPage() {
       imageFile: null,
       imagePreview: (report.image as string) || "/images/broken-streetlights.jpg",
       removeImage: false,
+      priority: (report.priority as string) || "not urgent",
+      category: (report.category as string) || "", // carry existing category into edit form if present
     });
 
     setEditModalVisible(true);
@@ -379,8 +384,6 @@ export default function UserMyReportsPage() {
     setDeleteModalVisible(false);
   };
 
-  const profilePicUrl = userProfile?.profilePicture?.url || defaultProfilePic;
-
   return (
     <div className={styles.pageWrap}>
       {/* HEADER (nav + toolbar) */}
@@ -452,7 +455,7 @@ export default function UserMyReportsPage() {
                         <div className={styles.reportContent}>
                           <div className={styles.reportHeader}>
                             <Image 
-                              src={profilePicUrl} 
+                              src={reportUserPic} 
                               alt="Avatar" 
                               className={styles.reportAvatar} 
                               width={32} 
@@ -462,8 +465,19 @@ export default function UserMyReportsPage() {
                           </div>
 
                           <h3 className={styles.reportTitle}>{report.title}</h3>
+
+                          {/* Category displayed under title */}
+                          <p className={styles.reportCategory}>
+                            {report.category ?? "Uncategorized"}
+                          </p>
+
                           <p className={styles.reportLocation}><i className="fa-solid fa-location-dot"></i> {report.location}</p>
-                          <span className={`${styles.reportStatus} ${String(report.status).toLowerCase().replace(" ", "-")}`}>{report.status}</span>
+
+                          <div className={styles.statusPriorityRow}>
+                            <span className={`${styles.reportStatus} ${String(report.status).toLowerCase().replace(" ", "-")}`}>
+                              {report.status}
+                            </span>
+                          </div>
 
                           <p className={styles.reportDetails}>{report.description}</p>
                         </div>
@@ -473,7 +487,12 @@ export default function UserMyReportsPage() {
                             <button className={styles.editBtn} onClick={() => handleEditClick(report)}>Edit</button>
                             <button className={styles.deleteBtn} onClick={() => confirmDelete(report._id, i)}>Delete</button>
                           </div>
-                          <Image src={report.image || "/images/broken-streetlights.jpg"} alt="Report Image" width={500} height={250} />
+
+                          {report.image ? (
+                            <Image src={report.image} alt="Report Image" width={500} height={250} />
+                          ) : (
+                            <Image src="/images/broken-streetlights.jpg" alt="Report Image" width={500} height={250} />
+                          )}
                         </div>
                       </div>
 
@@ -525,6 +544,23 @@ export default function UserMyReportsPage() {
                   value={editForm.description}
                   onChange={(e) => setEditForm({ ...editForm, description: e.target.value })} 
                 />
+
+                {/* Category dropdown added to edit modal (design only) */}
+                <select
+                  className={styles.input}
+                  name="category"
+                  value={(editForm as any).category}
+                  onChange={(e) => setEditForm({ ...editForm, category: e.target.value })}
+                >
+                  <option value="" disabled>-- Select a Category --</option>
+                  <option value="Infrastructure">Infrastructure</option>
+                  <option value="Utilities">Utilities</option>
+                  <option value="Sanitation and Waste">Sanitation and Waste</option>
+                  <option value="Environment and Public Spaces">Environment and Public Spaces</option>
+                  <option value="Community and Safety">Community and Safety</option>
+                  <option value="Government / Administrative">Government / Administrative</option>
+                  <option value="Others">Others</option>
+                </select>
 
                 <label htmlFor="editImageUpload" className={styles.inputLabel}>Upload Image</label>
                 <div className={styles.uploadWrapper}>
