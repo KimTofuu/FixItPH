@@ -273,7 +273,6 @@ export default function UserFeedPage() {
       if (res.ok) {
         toast.success("Report submitted successfully!");
         setModalVisible(false);
-        
         // Reset form
         setReportForm({
           title: "",
@@ -285,6 +284,7 @@ export default function UserFeedPage() {
           latitude: "",
           longitude: "",
         });
+
         
         // Refresh reports after submission
         const refreshRes = await fetch(`${API}/reports`);
@@ -441,6 +441,11 @@ export default function UserFeedPage() {
                           </div>
 
                           <h3 className={styles.reportTitle}>{r.title}</h3>
+
+                          <p className={styles.reportCategory}>
+                            {r.category || "Uncategorized"}
+                          </p>
+
                           <p className={styles.reportLocation}>
                             <i className="fa-solid fa-location-dot"></i> {r.location}
                           </p>
@@ -594,10 +599,8 @@ export default function UserFeedPage() {
                 <input type="hidden" id="longitude" name="longitude" />
 
                 <div id="modal-map" ref={modalMapRef} className={styles.modalMap}></div>
-              </div>
-
-              <div className={styles.submitRow}>
-                {/* Add Urgent Checkbox */}
+             
+                     {/* Add Urgent Checkbox */}
                 <div className={styles.urgentToggle}>
                   <input
                     type="checkbox"
@@ -608,6 +611,8 @@ export default function UserFeedPage() {
                   />
                   <label htmlFor="isUrgent">Mark as Urgent</label>
                 </div>
+               </div>
+              <div className={styles.submitRow}>
                 <button type="submit" className={styles.submitBtn}>Submit Report</button>
               </div>
             </form>

@@ -53,8 +53,10 @@ export default function AdminReportsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const profilePicUrl =
-    "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+  // Small constants required by the component
+  const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+  const defaultProfilePic = "/images/sample_avatar.png";
+  const profilePicUrl = defaultProfilePic;
 
   // ---------- Fetch Reports ----------
   useEffect(() => {
@@ -78,11 +80,9 @@ export default function AdminReportsPage() {
         if (!res.ok) {
           let errorMessage = `Error: ${res.statusText}`;
           try {
-            // Try to parse as JSON first
             const errorData = await res.json();
             errorMessage = `Error: ${errorData.message || res.statusText}`;
           } catch (e) {
-            // If JSON parsing fails, use the raw text response
             const errorText = await res.text();
             errorMessage = `Error: ${errorText || res.statusText}`;
           }
@@ -93,11 +93,20 @@ export default function AdminReportsPage() {
         }
 
         const data = await res.json();
+
+        // Normalize status strings to lowercase expected values for UI comparisons
+        const normalized = Array.isArray(data)
+          ? data.map((r: any) => ({
+              ...r,
+              status: String(r.status ?? "").toLowerCase(),
+            }))
+          : data;
+
         if (activeStatus === "resolved" || activeStatus === "awaiting-approval") {
-          setReports(data);
+          setReports(normalized);
         } else {
-          const filteredData = data.filter(
-            (report: Report) => report.status === activeStatus
+          const filteredData = normalized.filter(
+            (report: Report) => (report.status ?? "").toLowerCase() === activeStatus
           );
           setReports(filteredData);
         }
@@ -112,7 +121,7 @@ export default function AdminReportsPage() {
     fetchReports();
   }, [activeStatus]);
 
-  // ---------- Actions ----------
+  // ---------- Actions (kept original functions intact) ----------
   const toggleBookmark = (id: string) => {
     console.log("Bookmark toggled for:", id);
   };
@@ -125,7 +134,6 @@ export default function AdminReportsPage() {
     try {
       const token = localStorage.getItem("token");
       const res = await fetch(
-        // --- CORRECTED ENDPOINT ---
         `${process.env.NEXT_PUBLIC_API_URL}/reports/admin/reports/${reportId}/approve`,
         {
           method: "PATCH",
@@ -150,7 +158,6 @@ export default function AdminReportsPage() {
     try {
       const token = localStorage.getItem("token");
       const res = await fetch(
-        // Use the new admin reject endpoint
         `${process.env.NEXT_PUBLIC_API_URL}/reports/admin/reports/${reportId}/reject`,
         {
           method: "DELETE",
@@ -192,7 +199,7 @@ export default function AdminReportsPage() {
         } else {
           setReports((prev) =>
             prev.map((r) =>
-              r._id === reportId ? { ...r, status: newStatus } : r
+              r._id === reportId ? { ...r, status: newStatus as Report["status"] } : r
             )
           );
           toast.success("Report status updated");
@@ -295,6 +302,22 @@ export default function AdminReportsPage() {
                     )
                   )}
                 </div>
+
+                <div className={styles.searchWrap}>
+                  <input
+                    type="text"
+                    className={styles.searchInput}
+                    placeholder="Search by title or location"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Secondary toolbar with alternative search input (kept but consolidated) */}
+            <div className={styles.toolbarWrapper}>
+              <div className={styles.toolbar}>
                 <div className={styles.searchContainer}>
                   <input
                     type="text"
@@ -319,7 +342,7 @@ export default function AdminReportsPage() {
                         <div className={styles.reportHeader}>
                           <Image
                             src={
-                              r.user?.avatarUrl || "/images/sample_avatar.png"
+                              (r.user?.avatarUrl as string) || "/images/sample_avatar.png"
                             }
                             className={styles.reportAvatar}
                             alt="Avatar"
