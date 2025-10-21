@@ -22,7 +22,11 @@ interface User {
 interface Report {
   _id: string;
   title: string;
+<<<<<<< Updated upstream
   status: "awaiting-approval" | "pending" | "in-progress" | "resolved";
+=======
+  status: "pending" | "reported" | "processing" | "resolved";
+>>>>>>> Stashed changes
   location: string;
   timestamp: string;
   description: string;
@@ -30,9 +34,15 @@ interface Report {
   image?: string;
   user?: User;
   comments?: Comment[];
+  // design-only: optional priority/urgency field (may come from API)
+  priority?: "urgent" | "not urgent" | string;
 }
 
+<<<<<<< Updated upstream
 type AdminStatusFilter = "awaiting-approval" | "pending" | "in-progress" | "resolved";
+=======
+type StatusFilter = "pending" | "reported" | "processing" | "resolved";
+>>>>>>> Stashed changes
 
 // ---------- Helpers ----------
 const formatTimeAgo = (timestamp: string): string => {
@@ -278,7 +288,11 @@ export default function AdminReportsPage() {
             <div className={styles.toolbarWrapper}>
               <div className={styles.toolbar}>
                 <div className={styles.toggleGroup}>
+<<<<<<< Updated upstream
                   {(["awaiting-approval", "pending", "in-progress", "resolved"] as AdminStatusFilter[]).map(
+=======
+                  {(["pending", "reported", "processing", "resolved"] as StatusFilter[]).map(
+>>>>>>> Stashed changes
                     (status) => (
                       <button
                         key={status}
@@ -349,6 +363,7 @@ export default function AdminReportsPage() {
                         </p>
                         <p className={styles.reportDetails}>{r.description}</p>
 
+<<<<<<< Updated upstream
                         {activeStatus === "awaiting-approval" ? (
                           <div className={styles.approvalActions}>
                             <button
@@ -360,10 +375,45 @@ export default function AdminReportsPage() {
                             <button
                               onClick={() => handleRejectReport(r._id)}
                               className={`${styles.actionBtn} ${styles.rejectBtn}`}
+=======
+                        <div className={styles.urgencyRow}>
+                          <label className={styles.urgencyLabel}>Urgency</label>
+                          <div
+                            className={`${styles.urgencyValue} ${
+                              r.priority === "urgent"
+                                ? styles.urgent
+                                : r.priority === "not urgent"
+                                ? styles.notUrgent
+                                : ""
+                            }`}
+                            aria-label="Report urgency"
+                          >
+                            {r.priority ?? "not urgent"}
+                          </div>
+                        </div>
+
+                        {activeStatus === "pending" && (
+                          <div className={styles.pendingControls}>
+                            <button
+                              className={styles.acceptBtn}
+                              onClick={() => updateReportStatus(r._id, "reported")}
+                              aria-label={`Accept report ${r._id}`}
+                            >
+                              Accept
+                            </button>
+
+                            <button
+                              className={styles.rejectBtn}
+                              onClick={() =>
+                                setReports((prev) => prev.filter((rep) => rep._id !== r._id))
+                              }
+                              aria-label={`Reject report ${r._id}`}
+>>>>>>> Stashed changes
                             >
                               Reject
                             </button>
                           </div>
+<<<<<<< Updated upstream
                         ) : (
                           <div className={styles.statusControl}>
                             <label className={styles.statusLabel}>Status</label>
@@ -383,6 +433,25 @@ export default function AdminReportsPage() {
                             </select>
                           </div>
                         )}
+=======
+                        )}
+
+                        <div className={styles.statusControl}>
+                          <label className={styles.statusLabel}>Status</label>
+                          <select
+                            value={activeStatus === "resolved" ? "resolved" : r.status}
+                            onChange={(e) =>
+                              updateReportStatus(r._id, e.target.value as StatusFilter)
+                            }
+                            className={styles.statusSelect}
+                          >
+                            <option value="pending">Pending</option>
+                            <option value="reported">Reported</option>
+                            <option value="processing">Processing</option>
+                            <option value="resolved">Resolved</option>
+                          </select>
+                        </div>
+>>>>>>> Stashed changes
                       </div>
 
                       <div className={styles.reportImage}>

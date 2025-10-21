@@ -266,6 +266,70 @@
 #admin-reportList::-webkit-scrollbar{ width:8px; height:8px; }
 #admin-reportList::-webkit-scrollbar-thumb{ background:rgba(2,6,23,0.12); border-radius:8px; }
 
+.urgencyRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.urgencyLabel {
+  font-weight: 600;
+  color: #374151;
+  font-size: 0.875rem;
+}
+
+.urgencyValue {
+  font-size: 0.875rem;
+  color: #111827;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: transparent;
+  border: 1px solid transparent;
+}
+
+/* Visual variants */
+.urgent {
+  background: #fff1f0;
+  color: #7f1d1d;
+  border-color: #fca5a5;
+}
+
+.notUrgent {
+  background: #f3f4f6;
+  color: #374151;
+  border-color: #e5e7eb;
+}
+
+/* pending controls */
+.pendingControls {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+/* Accept */
+.acceptBtn {
+  background: #10b981;
+  color: #ffffff;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Reject */
+.rejectBtn {
+  background: #ef4444;
+  color: #ffffff;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+
 /* Responsive breakpoints */
 @media (min-width: 1441px) {
   .mainContainer { padding: 36px 12px; }
