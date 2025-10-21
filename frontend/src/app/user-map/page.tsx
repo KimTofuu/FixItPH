@@ -70,6 +70,7 @@ export default function UserMapPage() {
     address: "",
     latitude: "",
     longitude: "",
+    priority: "not urgent", // new field for priority
   });
 
   const [reports, setReports] = useState<Report[]>([]);
@@ -244,6 +245,8 @@ export default function UserMapPage() {
       formData.append("location", reportForm.address);
       formData.append("latitude", reportForm.latitude);
       formData.append("longitude", reportForm.longitude);
+      // include priority in submission
+      formData.append("priority", reportForm.priority);
 
       const token = localStorage.getItem("token");
 
@@ -392,6 +395,22 @@ export default function UserMapPage() {
                   }
                   required
                 />
+                                {/* Priority dropdown added */}
+                <label className={styles.inputLabel} htmlFor="priority">
+                  Priority
+                </label>
+                <select
+                  id="priority"
+                  name="priority"
+                  className={styles.select}
+                  value={reportForm.priority}
+                  onChange={(e) =>
+                    setReportForm({ ...reportForm, priority: e.target.value })
+                  }
+                >
+                  <option value="urgent">urgent</option>
+                  <option value="not urgent">not urgent</option>
+                </select>
                 <textarea
                   className={styles.textarea}
                   name="description"
@@ -477,6 +496,7 @@ export default function UserMapPage() {
                 <input type="hidden" id="latitude" name="latitude" />
                 <input type="hidden" id="longitude" name="longitude" />
                 <div id="modal-map" className={styles.modalMap}></div>
+
               </div>
 
               <div className={styles.submitRow}>

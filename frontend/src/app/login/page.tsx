@@ -186,6 +186,13 @@ export default function LoginPage() {
               </button>
             </div>
 
+            {/* Forgot password link for Resident */}
+            <div className={styles.helperRow}>
+              <Link href="/forgot-password" className={styles.forgotLink}>
+                Forgot password?
+              </Link>
+            </div>
+
             <button className={styles.loginBtn} type="submit">
               Log in
             </button>
@@ -232,6 +239,13 @@ export default function LoginPage() {
               >
                 {showAdminPassword ? "👁️" : "🙈"}
               </button>
+            </div>
+
+            {/* Forgot password link for Admin */}
+            <div className={styles.helperRow}>
+              <Link href="/admin-forgot-password" className={styles.forgotLink}>
+                Forgot password?
+              </Link>
             </div>
 
             <button className={styles.loginBtn} type="submit">
