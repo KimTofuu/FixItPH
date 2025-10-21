@@ -11,7 +11,7 @@ async function loginUser(formData: {
   email: string;
   password: string;
 }) {
-  // Use /users/login if that's your actual route
+ 
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -37,14 +37,14 @@ export default function LoginPage() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  // --- ADMIN LOGIN LOGIC ---
+  
   const [adminEmail, setAdminEmail] = useState("");
   const [adminPassword, setAdminPassword] = useState("");
 
   const handleAdminSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      // Also remove /api from the admin login path
+      
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/login`, {
         method: "POST",
         headers: {
@@ -95,9 +95,9 @@ export default function LoginPage() {
   };
 
   useEffect(() => {
-    // add class to body while this page is mounted so background and body visuals are page-scoped
+    
     document.body.classList.add("login-page-bg");
-    // trigger entrance animation on container
+    
     const el = document.querySelector(`.${styles.container}`);
     if (el) el.classList.add(styles.enter);
     return () => {
@@ -186,6 +186,12 @@ export default function LoginPage() {
               </button>
             </div>
 
+            <div className={styles.forgotRow}>
+              <Link href="/user-forgotpassword" className={styles.forgotBtn} aria-label="Forgot resident password">
+                Forgot password?
+              </Link>
+            </div>
+
             <button className={styles.loginBtn} type="submit">
               Log in
             </button>
@@ -200,12 +206,12 @@ export default function LoginPage() {
             <label className={styles.floatingLabel}>
               <input
                 type="email"
-                name="email" // Changed from 'username' to 'email'
+                name="email"
                 placeholder=" "
                 required
                 className={styles.input}
-                value={adminEmail} // --- ADD THIS ---
-                onChange={(e) => setAdminEmail(e.target.value)} // --- ADD THIS ---
+                value={adminEmail}
+                onChange={(e) => setAdminEmail(e.target.value)}
               />
               <span className={styles.labelText}>Admin Email</span>
             </label>
@@ -218,8 +224,8 @@ export default function LoginPage() {
                   placeholder=" "
                   required
                   className={styles.input}
-                  value={adminPassword} // --- ADD THIS ---
-                  onChange={(e) => setAdminPassword(e.target.value)} // --- ADD THIS ---
+                  value={adminPassword}
+                  onChange={(e) => setAdminPassword(e.target.value)}
                 />
                 <span className={styles.labelText}>Password</span>
               </label>
@@ -232,6 +238,12 @@ export default function LoginPage() {
               >
                 {showAdminPassword ? "👁️" : "🙈"}
               </button>
+            </div>
+
+            <div className={styles.forgotRow}>
+              <Link href="/admin-forgotpassword" className={styles.forgotBtn} aria-label="Forgot admin password">
+                Forgot password?
+              </Link>
             </div>
 
             <button className={styles.loginBtn} type="submit">

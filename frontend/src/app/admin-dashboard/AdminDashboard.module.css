@@ -1,7 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Poppins:wght@400;600;700&display=swap');
 
-/* Module-scoped variables and wrapper */
-.adminReportsRoot {
+/* -- Shared design tokens (based on Admin Map CSS) -- */
+.adminReportsRoot,
+.adminRoot {
   --ar-bg: #f6f8fb;
   --ar-surface: #ffffff;
   --ar-muted: #6b7280;
@@ -18,18 +19,20 @@
   --font-sans: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
   --font-display: 'Poppins', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
   font-family: var(--font-sans);
-  height: 100vh;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   color: var(--ar-ink);
   box-sizing: border-box;
   position: relative;
+  background: linear-gradient(180deg, rgba(37,99,235,0.02), transparent);
 }
 
-/* Reset-like base for this module */
-.adminReportsRoot * { box-sizing: inherit; }
+/* Ensure module reset */
+.adminReportsRoot * ,
+.adminRoot * { box-sizing: inherit; }
 
-/* Header / nav */
+/* ---------- Header / Nav (shared with Admin Map) ---------- */
 .header {
   position: sticky;
   top: 0;
@@ -50,10 +53,11 @@
   margin: 0 auto;
   width: 100%;
 }
+
 .navLeft { display:flex; align-items:center; gap:12px; }
 .logo { width:160px; height:40px; object-fit:contain; }
 
-/* Hamburger button (updated) */
+/* Hamburger (responsive) */
 .hamburger {
   display: none;
   width:46px;
@@ -67,8 +71,6 @@
   padding: 6px;
   transition: background 160ms ease;
 }
-
-/* three bars inside the button */
 .bar {
   display:block;
   width:22px;
@@ -78,25 +80,15 @@
   transition: transform 220ms ease, opacity 220ms ease;
   border-radius: 2px;
 }
-
-/* hover & focus affordances */
 .hamburger:hover { background: rgba(2,6,23,0.03); }
 .hamburger:focus { outline: 3px solid rgba(37,99,235,0.14); outline-offset: 3px; }
+.hamburger.open .bar:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+.hamburger.open .bar:nth-child(2) { opacity: 0; transform: scaleX(0); }
+.hamburger.open .bar:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
 
-/* open state transforms bars into X using parent .open */
-.hamburger.open .bar:nth-child(1) {
-  transform: translateY(6px) rotate(45deg);
-}
-.hamburger.open .bar:nth-child(2) {
-  opacity: 0;
-  transform: scaleX(0);
-}
-.hamburger.open .bar:nth-child(3) {
-  transform: translateY(-6px) rotate(-45deg);
-}
-
-/* Nav list */
-.navListUserSide {
+/* Nav lists and links */
+.navListUserSide,
+.navList {
   display:flex;
   align-items:center;
   gap:12px;
@@ -109,10 +101,10 @@
 .adminProfileLink { display:inline-flex; align-items:center; }
 .adminProfilePic { width:36px; height:36px; border-radius:999px; object-fit:cover; border:1px solid rgba(2,6,23,0.06); }
 
-/* Main layout */
+/* ---------- Map / Fullscreen map compatibility (kept from Admin Map CSS) ---------- */
 .reportsPage {
   background: var(--ar-bg);
-  padding: 0; /* remove internal padding so map touches edges if used */
+  padding: 0;
   flex: 1 1 auto;
   overflow: hidden;
 }
@@ -123,7 +115,7 @@
   flex-direction:column;
 }
 
-/* Card kept for layout parity but hide its spacing so content can be fullscreen */
+/* Keep contentCard behavior (map uses full area) */
 .contentCard {
   background: transparent;
   border-radius: 0;
@@ -135,7 +127,7 @@
   overflow: visible;
 }
 
-/* Stats + map wrapper */
+/* Stats + map wrapper (map-specific classes preserved for reuse) */
 .statsAndMap {
   display: block;
   width: 100%;
@@ -143,16 +135,15 @@
   position: relative;
 }
 
-/* Floating stats: vertical column on the left, centered vertically */
-.reportsStats {
+/* Floating stats (from map) but usable for dashboard stat column too */
+.reportsStats,
+.floatingStats {
   display:flex;
   flex-direction:column;
   gap: 12px;
   width: auto;
   flex: 0 0 auto;
 }
-
-/* Floating modifier */
 .floatingStats {
   position: fixed;
   left: 18px;
@@ -166,7 +157,7 @@
   pointer-events: auto;
 }
 
-/* Ensure the stat cards are compact and accessible */
+/* Stat cards (map) reused for dashboard's small floating summary if needed */
 .statCard {
   border-radius: 12px;
   padding: 14px 18px;
@@ -181,15 +172,13 @@
 }
 .statCard h3 { margin:0; font-size:0.95rem; color: rgba(255,255,255,0.95); }
 .statCard h1 { margin:0; font-size:1.25rem; }
-
-/* Hover and active */
 .statCard:hover { transform: translateY(-4px); }
 .activeCard {
   box-shadow: 0 12px 36px rgba(2,6,23,0.08);
   transform: translateY(-2px);
 }
 
-/* Map — base style */
+/* Map base and full classes for compatibility */
 .map {
   width: 100%;
   height: 100%;
@@ -198,110 +187,180 @@
   background: linear-gradient(180deg,#eef2ff,#ffffff);
   border: none;
 }
-
-/* Full-page map under header */
 .mapFull {
   position: fixed;
-  top: calc(var(--header-height)); /* header is sticky at top */
+  top: calc(var(--header-height));
   left: 0;
   right: 0;
   bottom: 0;
   z-index: 1;
 }
-
-/* Leaflet compatibility — ensure the map container and tiles fill the area */
 #map, .map, .mapFull { width: 100%; height: 100%; }
-
-/* Make sure floating stats sit above the map tiles */
 .floatingStats .statCard { z-index: 120; }
 
-/* Accessibility: focus outlines */
-.navLink:focus,
-.statCard:focus {
-  outline: 3px solid rgba(37,99,235,0.14);
-  outline-offset: 3px;
+/* ---------- Dashboard-specific layout and classes (use names from Admin Dashboard TSX) ---------- */
+.dashboardMain,
+.dashboardGrid,
+.grid,
+.mainContainer,
+.contentCard { /* ensure names exist and won't conflict */ }
+
+/* Top-level dashboard container (matches earlier TSX class adminRoot) */
+.dashboardMain {
+  max-width: 1200px;
+  margin: 22px auto 80px;
+  padding: 0 20px;
+  box-sizing: border-box;
 }
 
-/* --- Media queries: cover many breakpoints --- */
+/* Grid used by the AdminDashboard.tsx earlier */
+.grid {
+  display:grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+}
 
-/* Extra large screens (>= 1600px) */
+/* Metrics row using earlier class statsCardRow */
+.statsCardRow,
+.metricsRow {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+/* Metric cards (names used in TSX) */
+.metricCard {
+  background: var(--ar-surface);
+  border-radius: var(--ar-radius);
+  padding: 16px;
+  box-shadow: var(--ar-shadow);
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  min-height:92px;
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+.metricCard:hover { transform: translateY(-4px); }
+.metricHeader {
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  align-items:center;
+}
+.metricHeader h4 { margin:0; font-family: var(--font-display); font-weight:600; font-size:14px; color:var(--ar-ink); }
+.metricSub { font-size:12px; color:var(--ar-muted); margin-top:6px; }
+.metricValue { font-size:28px; font-weight:800; color:var(--ar-ink); margin-top:10px; }
+
+/* Colored accents to match map stat colors */
+.metricAwaiting,
+.awaiting { border-left:6px solid #7c3aed; }
+.metricReported,
+.reported { border-left:6px solid var(--ar-danger); }
+.metricProcessing,
+.processing { border-left:6px solid #f59e0b; }
+.metricResolved,
+.resolved { border-left:6px solid var(--ar-success); }
+
+/* Widgets and chart layout (classes used in TSX: largeCard, chartPanel, cardHeader, cardBody, etc.) */
+.largeCard,
+.chartCard {
+  background: var(--ar-surface);
+  border-radius: var(--ar-radius);
+  padding: 16px;
+  box-shadow: var(--ar-shadow);
+}
+
+.cardHeader {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  margin-bottom:10px;
+}
+.cardHeader h3 { margin:0; font-family: var(--font-display); font-size:16px; }
+.cardSub { color: var(--ar-muted); font-size:13px; }
+
+/* Chart body and panels */
+.cardBody,
+.cardBodyRow {
+  display:flex;
+  gap:12px;
+  align-items:flex-start;
+  justify-content:space-between;
+  flex-wrap:wrap;
+}
+.areaSummary {
+  flex:1 1 320px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.areaName { font-size:18px; font-weight:700; color:var(--ar-ink); }
+.areaCount { color:var(--ar-muted); font-size:14px; }
+.sparkSvg { width:100%; height:60px; }
+
+.chartPanel { flex:1 1 320px; }
+.barChart { width:100%; height:150px; display:block; }
+.lineChart { width:100%; height:140px; display:block; }
+
+/* Resolution card specifics (classes used in TSX: resolutionOverview, resolutionStat, etc.) */
+.resolutionOverview { display:flex; gap:16px; align-items:center; flex-wrap:wrap; }
+.resolutionStat { min-width:120px; background: linear-gradient(180deg,#f8fffb,#ffffff); border-radius:10px; padding:12px; text-align:center; }
+.resolutionValue { font-size:28px; font-weight:800; color:var(--ar-success); }
+.resolutionLabel { color:var(--ar-muted); font-size:13px; }
+.resolutionNotes { font-size:13px; color:var(--ar-muted); line-height:1.35; }
+
+/* Small widgets (class names preserved: additionalWidgets, smallWidget, widgetNumber) */
+.additionalWidgets,
+.smallWidgets { display:flex; gap:12px; flex-wrap:wrap; margin-top:12px; }
+.smallWidget { background: var(--ar-glass); padding:10px 12px; border-radius:10px; min-width:140px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.6); }
+.widgetNumber { font-weight:700; font-size:16px; color:var(--ar-ink); margin-top:6px; }
+
+/* Utility rule (kept) */
+.rule { height:1px; background: linear-gradient(90deg, rgba(2,6,23,0.04), transparent); border:0; margin:12px 0; }
+
+/* ---------- Responsive breakpoints (merge of both files) ---------- */
+@media (min-width: 900px) {
+  .grid { grid-template-columns: 1fr; }
+  .statsCardRow { grid-template-columns: repeat(4, 1fr); }
+  .chartsRow { display:flex; flex-direction:row; gap:18px; }
+  .chartPanel { min-width: 0; }
+}
+
+@media (min-width: 1200px) {
+  .mainContainer { padding: 20px; }
+  .chartPanel { min-width: 360px; }
+}
+
 @media (min-width: 1600px) {
   .floatingStats { left: 32px; }
   .statCard { min-width: 180px; padding: 16px 20px; }
   .statCard h1 { font-size: 1.6rem; }
 }
 
-/* Large desktop (1441 - 1599) */
-@media (min-width: 1441px) and (max-width: 1599px) {
-  .floatingStats { left: 28px; }
-  .statCard { min-width: 170px; }
-  .mapFull { top: calc(var(--header-height)); }
+/* Mobile behavior (hamburger shown on small widths) */
+@media (max-width: 640px) {
+  .hamburger { display:flex; }
+  .navListUserSide { display:none; }
+  .navListUserSide.open { display:flex; flex-direction:column; gap:8px; background:var(--ar-surface); padding:8px; border-radius:8px; }
+  .statsCardRow { grid-template-columns: repeat(2, 1fr); }
+  .metricsRow { grid-template-columns: repeat(2, 1fr); }
 }
 
-/* Desktop (1025 - 1440) */
-@media (min-width: 1025px) and (max-width: 1440px) {
-  .floatingStats { left: 22px; }
-  .statCard { min-width: 160px; }
+@media (max-width: 420px) {
+  .statsCardRow { grid-template-columns: 1fr; }
+  .areaSummary { order: 2; }
 }
 
-/* Small laptops / large tablets (769 - 1024) */
-@media (min-width: 769px) and (max-width: 1024px) {
-  .floatingStats { left: 18px; }
-  .statCard { min-width: 150px; }
+/* Accessibility focus outlines reused */
+.navLink:focus,
+.metricCard:focus,
+.statCard:focus {
+  outline: 3px solid rgba(37,99,235,0.14);
+  outline-offset: 3px;
 }
 
-/* Tablets portrait / small screens (641 - 768) */
-@media (min-width: 641px) and (max-width: 768px) {
-  .floatingStats { left: 12px; transform: translateY(-50%); }
-  .statCard { min-width: 140px; padding: 12px 14px; }
-  .mapFull { top: calc(var(--header-height)); }
-}
-
-/* Mobile landscape (481 - 640) */
-@media (min-width: 481px) and (max-width: 640px) {
-  .floatingStats {
-    left: 10px;
-    gap: 10px;
-  }
-  .statCard { min-width: 120px; padding: 10px 12px; }
-  .hamburger { display: flex; }
-  .navListUserSide { display: none; }
-  .navListUserSide.open { display: flex; flex-direction: column; }
-}
-
-/* Mobile portrait (<= 480px) — collapse to a compact vertical pill stack */
-@media (max-width: 480px) {
-  .floatingStats {
-    left: 8px;
-    gap: 8px;
-  }
-  .statCard {
-    min-width: 110px;
-    padding: 10px 12px;
-    border-radius: 10px;
-    box-shadow: 0 6px 18px rgba(2,6,23,0.06);
-  }
-  .statCard h3 { font-size: 0.9rem; }
-  .statCard h1 { font-size: 1rem; }
-  .hamburger { display: flex; }
-  .navListUserSide { display: none; }
-  .navListUserSide.open { display: flex; flex-direction: column; }
-}
-
-/* Narrow phones and very small devices (<= 360px) */
-@media (max-width: 360px) {
-  .floatingStats { left: 6px; gap: 6px; }
-  .statCard { min-width: 100px; padding: 8px 10px; }
-  .statCard h3 { font-size: 0.82rem; }
-  .statCard h1 { font-size: 0.95rem; }
-}
-
-/* Legacy compatibility: map fallback inside normal flow */
-@media (min-width: 1025px) {
-  /* keep default behavior */
-}
-
-/* Utility placeholders */
+/* Placeholder utility classes preserved */
 .status_pending { }
 .status_in_progress { }
 .status_resolved { }
