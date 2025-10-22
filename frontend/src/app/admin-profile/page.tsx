@@ -1,55 +1,162 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
+import { toast } from "react-toastify";
 import styles from "./admin-profile.module.css";
 
 interface ProfileData {
-  firstName: string;
-  lastName: string;
-  email: string;
+  barangayName: string;
+  officialEmail: string;
   password: string;
-  barangay: string;
+  barangayAddress: string;
   municipality: string;
-  contact: string;
+  officialContact: string;
 }
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState<ProfileData>({
-    firstName: "Juan",
-    lastName: "Dela Cruz",
-    email: "juan.delacruz@email.com",
+    barangayName: "",
+    officialEmail: "",
     password: "",
-    barangay: "San Isidro",
-    municipality: "Quezon City",
-    contact: "09123456789",
+    barangayAddress: "",
+    municipality: "",
+    officialContact: "",
   });
 
   const [isEditing, setIsEditing] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const profilePic = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+  const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+
+  // Fetch admin profile data on mount
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          toast.error("Please log in first");
+          window.location.href = "/login";
+          return;
+        }
+
+        const res = await fetch(`${API}/admin/profile`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          setProfile({
+            barangayName: data.barangayName || "",
+            officialEmail: data.officialEmail || "",
+            password: "", // Don't populate password field
+            barangayAddress: data.barangayAddress || "",
+            municipality: data.municipality || "",
+            officialContact: data.officialContact || "",
+          });
+        } else if (res.status === 401 || res.status === 403) {
+          toast.error("Session expired. Please log in again.");
+          localStorage.removeItem("token");
+          window.location.href = "/login";
+        } else {
+          toast.error("Failed to load profile");
+        }
+      } catch (error) {
+        console.error("Fetch profile error:", error);
+        toast.error("An error occurred while loading your profile");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, [API]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setProfile((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSave = () => {
-    setIsEditing(false);
-    alert("Profile updated successfully!\n\n" + JSON.stringify(profile, null, 2));
-    console.log("Saved profile:", profile);
+  const handleSave = async () => {
+    try {
+      const token = localStorage.getItem("token");
+
+      // Prepare update data (only send fields that are not empty)
+      const updateData: any = {
+        barangayName: profile.barangayName,
+        barangayAddress: profile.barangayAddress,
+        municipality: profile.municipality,
+        officialContact: profile.officialContact,
+      };
+
+      // Only include password if it was changed
+      if (profile.password) {
+        updateData.password = profile.password;
+      }
+
+      const res = await fetch(`${API}/admin/profile`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(updateData),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        toast.success("Profile updated successfully!");
+        setIsEditing(false);
+
+        // Clear password field after save
+        setProfile((prev) => ({ ...prev, password: "" }));
+      } else {
+        const errorData = await res.json();
+        toast.error(errorData.message || "Failed to update profile");
+      }
+    } catch (error) {
+      console.error("Save profile error:", error);
+      toast.error("An error occurred while saving your profile");
+    }
   };
 
   const handleLogout = () => {
-    const confirmed = true; // called only after modal confirmation
-    if (confirmed) {
-      localStorage.clear();
-      console.log("User logged out");
-      window.location.href = "/login";
-    }
+    localStorage.clear();
+    toast.success("Logged out successfully");
+    window.location.href = "/login";
   };
+
+  if (isLoading) {
+    return (
+      <div className={styles.adminReportsRoot}>
+        <header className={styles.header}>
+          <nav className={styles.adminNav}>
+            <div className={styles.navLeft}>
+              <Image
+                src="/images/Fix-it_logo_3.png"
+                alt="Fixit Logo"
+                className={styles.logo}
+                width={160}
+                height={40}
+              />
+            </div>
+          </nav>
+        </header>
+        <div className={styles.reportsPage}>
+          <main className={styles.mainContainer}>
+            <div className={styles.contentCard}>
+              <p style={{ textAlign: "center", padding: "2rem" }}>Loading profile...</p>
+            </div>
+          </main>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.adminReportsRoot}>
@@ -110,60 +217,132 @@ export default function ProfilePage() {
                 <div className={styles.profileAvatar}>
                   <img
                     src={profilePic}
-                    alt={`${profile.firstName} ${profile.lastName}`}
+                    alt={profile.barangayName}
                     className={styles.profileAvatarImg}
                     width={96}
                     height={96}
                   />
                 </div>
                 <div className={styles.profileName}>
-                  <h2 className={styles.profileFullName}>{profile.firstName} {profile.lastName}</h2>
-                  <p className={styles.profileEmail}>{profile.email}</p>
+                  <h2 className={styles.profileFullName}>{profile.barangayName}</h2>
+                  <p className={styles.profileEmail}>{profile.officialEmail}</p>
                 </div>
               </div>
 
-              {[
-                { id: "firstName", type: "text", value: profile.firstName, label: "First name" },
-                { id: "lastName", type: "text", value: profile.lastName, label: "Last name" },
-                { id: "email", type: "email", value: profile.email, label: "Email" },
-                { id: "password", type: "password", value: profile.password, label: "Password", placeholder: "••••••••" },
-                { id: "barangay", type: "text", value: profile.barangay, label: "Barangay" },
-                { id: "municipality", type: "text", value: profile.municipality, label: "Municipality" },
-                { id: "contact", type: "tel", value: profile.contact, label: "Contact" },
-              ].map(({ id, type, value, placeholder, label }) => (
-                <div key={id} className={styles.profileField}>
-                  <label htmlFor={id} className={styles.fieldLabel}>{label}</label>
+              {/*
+                Using a more flexible approach to render profile fields.
+                This allows easier modifications and additions in the future.
+              */}
+              <div className={styles.profileFields}>
+                <div className={styles.profileField}>
+                  <label htmlFor="barangayName" className={styles.fieldLabel}>Barangay Name</label>
                   <input
-                    id={id}
-                    name={id}
-                    type={type}
-                    value={value}
+                    id="barangayName"
+                    name="barangayName"
+                    type="text"
+                    value={profile.barangayName}
                     disabled={!isEditing}
                     onChange={handleChange}
-                    placeholder={placeholder}
                     className={styles.inputField}
                   />
                 </div>
-              ))}
+
+                <div className={styles.profileField}>
+                  <label htmlFor="officialEmail" className={styles.fieldLabel}>Email</label>
+                  <input
+                    id="officialEmail"
+                    name="officialEmail"
+                    type="email"
+                    value={profile.officialEmail}
+                    disabled
+                    className={styles.inputField}
+                  />
+                </div>
+
+                <div className={styles.profileField}>
+                  <label htmlFor="password" className={styles.fieldLabel}>Password</label>
+                  <input
+                    id="password"
+                    name="password"
+                    type="password"
+                    value={profile.password}
+                    disabled={!isEditing}
+                    onChange={handleChange}
+                    placeholder="**********"
+                    className={styles.inputField}
+                  />
+                </div>
+
+                <div className={styles.profileField}>
+                  <label htmlFor="barangayAddress" className={styles.fieldLabel}>Barangay Address</label>
+                  <input
+                    id="barangayAddress"
+                    name="barangayAddress"
+                    type="text"
+                    value={profile.barangayAddress}
+                    disabled={!isEditing}
+                    onChange={handleChange}
+                    className={styles.inputField}
+                  />
+                </div>
+
+                <div className={styles.profileField}>
+                  <label htmlFor="municipality" className={styles.fieldLabel}>Municipality</label>
+                  <input
+                    id="municipality"
+                    name="municipality"
+                    type="text"
+                    value={profile.municipality}
+                    disabled={!isEditing}
+                    onChange={handleChange}
+                    className={styles.inputField}
+                  />
+                </div>
+
+                <div className={styles.profileField}>
+                  <label htmlFor="officialContact" className={styles.fieldLabel}>Contact Number</label>
+                  <input
+                    id="officialContact"
+                    name="officialContact"
+                    type="tel"
+                    value={profile.officialContact}
+                    disabled={!isEditing}
+                    onChange={handleChange}
+                    className={styles.inputField}
+                  />
+                </div>
+              </div>
 
               <div className={styles.profileActions}>
-                <button
-                  type="button"
-                  onClick={() => setIsEditing(true)}
-                  className={styles.editBtn}
-                  aria-pressed={isEditing}
-                >
-                  Edit
-                </button>
-
-                <button
-                  type="button"
-                  onClick={handleSave}
-                  className={styles.saveBtn}
-                  disabled={!isEditing}
-                >
-                  Save
-                </button>
+                {!isEditing ? (
+                  <button
+                    type="button"
+                    onClick={() => setIsEditing(true)}
+                    className={styles.editBtn}
+                  >
+                    Edit
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsEditing(false);
+                        setProfile((prev) => ({ ...prev, password: "" }));
+                      }}
+                      className={styles.editBtn}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleSave}
+                      className={styles.saveBtn}
+                    >
+                      Save
+                    </button>
+                  </>
+                )}
 
                 <button
                   type="button"
