@@ -61,7 +61,7 @@ export default function LoginPage() {
       if (res.ok) {
         toast.success(data.message);
         localStorage.setItem("token", data.token);
-        router.push("/admin-reports");
+        router.push("/admin-dashboard");
       } else {
         toast.error(data.message || "Admin login failed");
       }
