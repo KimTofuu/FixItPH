@@ -43,6 +43,8 @@ router.patch('/:id', authenticateToken, upload.single('image'), reportController
 // --- ADMIN ROUTES ---
 router.get('/admin/reports-for-approval', authenticateToken, isAdmin, reportController.getReportsForApproval);
 router.patch('/admin/reports/:id/approve', authenticateToken, isAdmin, reportController.approveReport);
-router.delete('/admin/reports/:id/reject', authenticateToken, isAdmin, reportController.rejectReport); // Add this line
+router.delete('/admin/reports/:id/reject', authenticateToken, isAdmin, reportController.rejectReport);
+router.get('/admin/resolved-reports', authenticateToken, isAdmin, reportController.getResolvedReports);
+router.patch('/admin/reports/:id/status', authenticateToken, isAdmin, reportController.updateReportStatus);
 
 module.exports = router;
