@@ -181,7 +181,8 @@ export default function AdminReportsPage() {
     try {
       const token = localStorage.getItem("token");
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/admin/reports/${reportId}/status`,
+        // FIX: Add /reports prefix to match backend route
+        `${process.env.NEXT_PUBLIC_API_URL}/reports/admin/reports/${reportId}/status`,
         {
           method: "PATCH",
           headers: {
