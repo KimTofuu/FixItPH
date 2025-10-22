@@ -360,3 +360,43 @@ exports.rejectReport = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+// Get all resolved reports (for admins) - FIXED VERSION
+exports.getResolvedReports = async (req, res) => {
+  try {
+    const reports = await Report.find({ status: 'resolved' })
+      .populate('user', 'fName lName email profilePicture')
+      .sort({ createdAt: -1 });
+    res.json(reports);
+  } catch (err) {
+    console.error('getResolvedReports error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Update report status (for admins) - ADD THIS NEW FUNCTION
+exports.updateReportStatus = async (req, res) => {
+  try {
+    const { status } = req.body;
+    const reportId = req.params.id;
+
+    if (!['pending', 'in-progress', 'resolved'].includes(status)) {
+      return res.status(400).json({ message: 'Invalid status value' });
+    }
+
+    const report = await Report.findByIdAndUpdate(
+      reportId,
+      { status },
+      { new: true }
+    ).populate('user', 'fName lName email profilePicture');
+
+    if (!report) {
+      return res.status(404).json({ message: 'Report not found' });
+    }
+
+    res.json(report);
+  } catch (err) {
+    console.error('Update status error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
