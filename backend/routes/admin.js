@@ -1,24 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const adminController = require('../controllers/adminController');
-const authenticateToken = require('../middleware/authenticateToken');
-const ResolvedReport = require('../models/ResolvedReport');
+const { authenticateToken, isAdmin } = require('../middleware/authenticateToken');
 
-router.post('/login', adminController.login);
 router.post('/register', adminController.register);
-router.patch('/reports/:reportId/status', adminController.updateReportStatus);
+router.post('/login', adminController.login);
 
-// Get all resolved reports
-router.get('/resolved-reports', async (req, res) => {
-  try {
-    const resolvedReports = await ResolvedReport.find()
-      .populate('user', 'fName lName email')
-      .sort({ resolvedAt: -1 });
-    res.json(resolvedReports);
-  } catch (err) {
-    res.status(500).json({ message: 'Server error' });
-  }
-});
+router.get('/profile', authenticateToken, isAdmin, adminController.getProfile);
+router.patch('/profile', authenticateToken, isAdmin, adminController.updateProfile);
 
+router.patch('/reports/:reportId/status', authenticateToken, isAdmin, adminController.updateReportStatus);
 
 module.exports = router;

@@ -118,3 +118,56 @@ exports.rejectReport = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+// Get admin profile
+exports.getProfile = async (req, res) => {
+  try {
+    const adminId = req.user.userId; // From JWT token
+    const admin = await Admin.findById(adminId).select('-password'); // Exclude password
+    
+    if (!admin) {
+      return res.status(404).json({ message: 'Admin not found' });
+    }
+
+    res.json(admin);
+  } catch (err) {
+    console.error('Get admin profile error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Update admin profile
+exports.updateProfile = async (req, res) => {
+  try {
+    const adminId = req.user.userId;
+    const { barangayName, barangayAddress, municipality, officialContact, password } = req.body;
+
+    const updateData = {
+      barangayName,
+      barangayAddress,
+      municipality,
+      officialContact,
+    };
+
+    // If password is provided, hash it
+    if (password) {
+      const salt = await bcrypt.genSalt(10);
+      updateData.password = await bcrypt.hash(password, salt);
+    }
+
+    const admin = await Admin.findByIdAndUpdate(
+      adminId,
+      updateData,
+      { new: true }
+    ).select('-password');
+
+    if (!admin) {
+      return res.status(404).json({ message: 'Admin not found' });
+    }
+
+    res.json({ message: 'Profile updated successfully', admin });
+  } catch (err) {
+    console.error('Update admin profile error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
