@@ -273,7 +273,6 @@ exports.updateReport = async (req, res) => {
     if (longitude !== undefined) report.longitude = longitude;
     if (category !== undefined) report.category = category;
 
-    // handle file upload -> Cloudinary
     if (req.file) {
       try {
         const result = await cloudinary.uploader.upload(req.file.path, {
@@ -284,11 +283,8 @@ exports.updateReport = async (req, res) => {
           ],
         });
 
-        // set image url from Cloudinary
         report.image = result.secure_url;
 
-        // optional: store public_id for future deletion (uncomment if model has cloudinaryId)
-        // report.cloudinaryId = result.public_id;
       } catch (uploadErr) {
         console.error('Cloudinary upload error:', uploadErr);
         return res.status(500).json({ error: 'Failed to upload image' });
@@ -302,8 +298,6 @@ exports.updateReport = async (req, res) => {
       }
     } else if (removeImage === 'true' || removeImage === true) {
       report.image = null;
-      // optional: destroy previous Cloudinary asset if you stored public_id
-      // if (report.cloudinaryId) { await cloudinary.uploader.destroy(report.cloudinaryId); report.cloudinaryId = undefined; }
     }
 
     await report.save();
@@ -314,11 +308,10 @@ exports.updateReport = async (req, res) => {
   }
 };
 
-// Get all reports awaiting approval (for admins)
 exports.getReportsForApproval = async (req, res) => {
   try {
     const reports = await Report.find({ status: 'awaiting-approval' })
-      .populate('user', 'fName lName email profilePicture') // Added profilePicture
+      .populate('user', 'fName lName email profilePicture') 
       .sort({ createdAt: -1 });
     res.json(reports);
   } catch (err) {
@@ -334,10 +327,39 @@ exports.approveReport = async (req, res) => {
       req.params.id,
       { status: 'pending' },
       { new: true }
-    );
+    ).populate('user', 'fName lName email');
+    
     if (!report) {
       return res.status(404).json({ message: 'Report not found' });
     }
+
+    try {
+      const emailMessage = `
+        <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+          <h2>Report Approved!</h2>
+          <p>Hi ${report.user.fName},</p>
+          <p>Great news! Your report has been approved by our administrators and is now publicly visible.</p>
+          <h3>Report Details:</h3>
+          <ul>
+            <li><strong>Report ID:</strong> ${report._id}</li>
+            <li><strong>Title:</strong> ${report.title}</li>
+            <li><strong>Status:</strong> Pending</li>
+          </ul>
+          <p>Our team will now review and work on resolving this issue. You will be notified of any updates.</p>
+          <p>Thank you for helping improve our community!</p>
+        </div>
+      `;
+      
+      await sendEmail({
+        to: report.user.email,
+        subject: `Your FixItPH Report Has Been Approved (ID: ${report._id})`,
+        html: emailMessage,
+      });
+      console.log('Approval email sent successfully to:', report.user.email);
+    } catch (emailError) {
+      console.error('Failed to send approval email:', emailError);
+    }
+
     res.json({ message: 'Report approved successfully', report });
   } catch (err) {
     console.error('approveReport error:', err);
@@ -345,13 +367,54 @@ exports.approveReport = async (req, res) => {
   }
 };
 
-// Reject (Delete) a report (for admins)
 exports.rejectReport = async (req, res) => {
   try {
-    const report = await Report.findByIdAndDelete(req.params.id);
+    const report = await Report.findById(req.params.id).populate('user', 'fName lName email');
     
     if (!report) {
       return res.status(404).json({ message: 'Report not found' });
+    }
+
+    const userInfo = {
+      fName: report.user.fName,
+      email: report.user.email,
+    };
+    const reportTitle = report.title;
+    const reportId = report._id;
+
+    await Report.findByIdAndDelete(req.params.id);
+
+    try {
+      const emailMessage = `
+        <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+          <h2>Report Not Approved</h2>
+          <p>Hi ${userInfo.fName},</p>
+          <p>We regret to inform you that your report was not approved for public posting.</p>
+          <h3>Report Details:</h3>
+          <ul>
+            <li><strong>Report ID:</strong> ${reportId}</li>
+            <li><strong>Title:</strong> ${reportTitle}</li>
+          </ul>
+          <p><strong>Possible reasons for rejection:</strong></p>
+          <ul>
+            <li>The report did not meet our community guidelines</li>
+            <li>The issue was duplicate or already reported</li>
+            <li>Insufficient information provided</li>
+            <li>The issue is outside the scope of our service</li>
+          </ul>
+          <p>If you believe this was a mistake or would like to resubmit with more details, please feel free to create a new report.</p>
+          <p>Thank you for your understanding.</p>
+        </div>
+      `;
+      
+      await sendEmail({
+        to: userInfo.email,
+        subject: `Your FixItPH Report Was Not Approved (ID: ${reportId})`,
+        html: emailMessage,
+      });
+      console.log('Rejection email sent successfully to:', userInfo.email);
+    } catch (emailError) {
+      console.error('Failed to send rejection email:', emailError);
     }
     
     res.json({ message: 'Report rejected and deleted successfully' });
@@ -361,7 +424,6 @@ exports.rejectReport = async (req, res) => {
   }
 };
 
-// Get all resolved reports (for admins) - FIXED VERSION
 exports.getResolvedReports = async (req, res) => {
   try {
     const reports = await Report.find({ status: 'resolved' })
