@@ -5,7 +5,7 @@ import Head from "next/head";
 import Image from "next/image";
 import styles from "./AdminDashboard.module.css";
 
-type ReportStatus = "Awaiting" | "Reported" | "Processing" | "Resolved";
+type ReportStatus = "awaiting-approval" | "pending" | "in-progress" | "resolved";
 
 interface DashboardCounts {
   awaiting: number;
@@ -24,39 +24,132 @@ interface LocationVolume {
   count: number;
 }
 
+interface Report {
+  _id: string;
+  status: ReportStatus;
+  category: string;
+  location: string;
+}
+
 export default function AdminDashboardPage() {
+  const [reports, setReports] = useState<Report[]>([]);
   const [counts, setCounts] = useState<DashboardCounts>({
-    awaiting: 12,
-    reported: 134,
-    processing: 28,
-    resolved: 412,
+    awaiting: 0,
+    reported: 0,
+    processing: 0,
+    resolved: 0,
   });
 
-  const [issueTypes, setIssueTypes] = useState<IssueTypeVolume[]>([
-    { type: "Pothole", count: 120 },
-    { type: "Streetlight", count: 90 },
-    { type: "Garbage", count: 80 },
-    { type: "Flooding", count: 56 },
-  ]);
-
-  const [locations, setLocations] = useState<LocationVolume[]>([
-    { location: "Brgy. A", count: 140 },
-    { location: "Brgy. B", count: 110 },
-    { location: "Brgy. C", count: 90 },
-    { location: "Brgy. D", count: 50 },
-  ]);
-
+  const [issueTypes, setIssueTypes] = useState<IssueTypeVolume[]>([]);
+  const [locations, setLocations] = useState<LocationVolume[]>([]);
   const [avgResolutionHours, setAvgResolutionHours] = useState<number>(48.3);
 
-  // Simulate live updates or fetches for dashboard widgets
+  // Fetch all reports from backend
   useEffect(() => {
-    // no network calls here; this hook can be replaced with real data fetching
-    const t = setInterval(() => {
-      // small mock update to show dynamic feel
-      setCounts((c) => ({ ...c, awaiting: Math.max(0, c.awaiting + (Math.random() > 0.7 ? 1 : 0)) }));
-    }, 8000);
-    return () => clearInterval(t);
+    const fetchDashboardData = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        
+        // Fetch all reports (including awaiting approval and resolved)
+        const [pendingRes, awaitingRes, resolvedRes] = await Promise.all([
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/reports`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/reports/admin/reports-for-approval`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/reports/admin/resolved-reports`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+        ]);
+
+        if (pendingRes.ok && awaitingRes.ok && resolvedRes.ok) {
+          const pendingData = await pendingRes.json();
+          const awaitingData = await awaitingRes.json();
+          const resolvedData = await resolvedRes.json();
+
+          // Combine all reports
+          const allReports = [...pendingData, ...awaitingData, ...resolvedData];
+          setReports(allReports);
+
+          // Calculate counts by status
+          const newCounts = {
+            awaiting: awaitingData.length,
+            reported: pendingData.filter((r: Report) => r.status === 'pending').length,
+            processing: pendingData.filter((r: Report) => r.status === 'in-progress').length,
+            resolved: resolvedData.length,
+          };
+          setCounts(newCounts);
+        }
+      } catch (error) {
+        console.error("Failed to fetch dashboard data:", error);
+      }
+    };
+
+    fetchDashboardData();
   }, []);
+
+  // Process reports to get issue types (categories)
+  useEffect(() => {
+    if (reports.length === 0) return;
+
+    const typeMap = new Map<string, number>();
+    reports.forEach((report) => {
+      const category = report.category || "Others";
+      typeMap.set(category, (typeMap.get(category) || 0) + 1);
+    });
+
+    const types = Array.from(typeMap.entries())
+      .map(([type, count]) => ({ type, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 4); // Top 4 categories
+
+    setIssueTypes(types);
+  }, [reports]);
+
+  // Process reports to get locations by barangay
+  useEffect(() => {
+    if (reports.length === 0) return;
+
+    const locationMap = new Map<string, number>();
+    
+    reports.forEach((report) => {
+      // Extract barangay from location
+      // Expected format: "Street, Barangay Name, City"
+      const barangay = extractBarangay(report.location);
+      if (barangay) {
+        locationMap.set(barangay, (locationMap.get(barangay) || 0) + 1);
+      }
+    });
+
+    const locs = Array.from(locationMap.entries())
+      .map(([location, count]) => ({ location, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 4); // Top 4 barangays
+
+    setLocations(locs);
+  }, [reports]);
+
+  // Helper function to extract barangay from address
+  const extractBarangay = (address: string): string => {
+    if (!address) return "Unknown";
+    
+    // Split by comma and get the second part (barangay)
+    const parts = address.split(',').map(p => p.trim());
+    
+    if (parts.length >= 2) {
+      // Return the barangay part (second element)
+      return parts[1];
+    }
+    
+    // If format is different, try to find "Barangay" or "Brgy"
+    const barangayMatch = address.match(/(?:Barangay|Brgy\.?)\s+([^,]+)/i);
+    if (barangayMatch && barangayMatch[1]) {
+      return barangayMatch[1].trim();
+    }
+    
+    return "Unknown";
+  };
 
   // Derived: top problematic area (location with highest count)
   const topProblematic = useMemo(() => {
@@ -158,7 +251,7 @@ export default function AdminDashboardPage() {
             <section className={styles.largeCard} aria-label="Most problematic area and sparkline">
               <div className={styles.cardHeader}>
                 <h3>Most Problematic Area</h3>
-                <span className={styles.cardSub}>Area with highest issue volume</span>
+                <span className={styles.cardSub}>Barangay with highest issue volume</span>
               </div>
 
               <div className={styles.cardBodyRow}>
@@ -201,8 +294,8 @@ export default function AdminDashboardPage() {
                 </div>
 
                 <div className={styles.chartPanel}>
-                  <h4 className={styles.chartTitle}>By Location</h4>
-                  <svg viewBox={`0 0 360 140`} className={styles.barChart} role="img" aria-label="Issues by location">
+                  <h4 className={styles.chartTitle}>By Barangay</h4>
+                  <svg viewBox={`0 0 360 140`} className={styles.barChart} role="img" aria-label="Issues by barangay">
                     {locations.map((l, i) => {
                       const barMaxHeight = 100;
                       const h = Math.round((l.count / maxLocCount) * barMaxHeight);
@@ -244,7 +337,7 @@ export default function AdminDashboardPage() {
                       />
                     </svg>
                     <div className={styles.resolutionNotes}>
-                      <div><strong>Tips</strong>: Prioritize high-volume locations and types for faster impact.</div>
+                      <div><strong>Tips</strong>: Prioritize high-volume barangays and types for faster impact.</div>
                       <div><strong>Suggested action</strong>: Create a fast-response team for top 3 barangays.</div>
                     </div>
                   </div>
