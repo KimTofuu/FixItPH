@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import styles from "./user-myreports.module.css";
 import { toast } from "react-toastify";
+import { useRouter } from "next/navigation";
 
 interface Report {
   _id: string;
@@ -25,10 +26,16 @@ interface Report {
   longitude?: string | number;
   comments?: { author: string; text: string }[];
   priority?: "urgent" | "not urgent" | string;
-  category?: string; // UI-only property (displayed in card)
+  category?: string;
 }
 
 interface UserProfile {
+  fName?: string;
+  lName?: string;
+  email?: string;
+  barangay?: string;
+  municipality?: string;
+  contact?: string;
   profilePicture?: {
     url?: string;
     public_id?: string;
@@ -36,10 +43,12 @@ interface UserProfile {
 }
 
 export default function UserMyReportsPage() {
+  const router = useRouter();
   const [search, setSearch] = useState("");
   const [reports, setReports] = useState<Report[]>([]);
   const [menuOpen, setMenuOpen] = useState(false);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [showProfileBanner, setShowProfileBanner] = useState(false);
 
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
@@ -56,7 +65,7 @@ export default function UserMyReportsPage() {
     imagePreview: "" as string,
     removeImage: false,
     priority: "not urgent",
-    category: "", // added category to edit form for UI editing
+    category: "",
   });
 
   const editMapRef = useRef<HTMLDivElement | null>(null);
@@ -64,12 +73,10 @@ export default function UserMyReportsPage() {
   const [editMap, setEditMap] = useState<any>(null);
   const [editMarker, setEditMarker] = useState<any>(null);
 
-  // Add missing constants used elsewhere
   const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
   const defaultProfilePic = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
   const profilePicUrl = userProfile?.profilePicture?.url || defaultProfilePic;
 
-  // Normalize incoming status strings to one of: Pending, Reported, Processing, Resolved
   const normalizeStatus = (s?: string): Report["status"] => {
     if (!s) return "Reported";
     const lower = s.toLowerCase();
@@ -83,6 +90,30 @@ export default function UserMyReportsPage() {
     if (lower === "resolved") return "Resolved";
     return s;
   };
+
+  // Fetch current user profile
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch(`${API}/users/me`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        });
+        if (res.ok) {
+          const data = await res.json();
+          console.log("✅ User profile loaded:", data);
+          setUserProfile(data);
+
+          // Check if profile is incomplete
+          const isIncomplete = !data.barangay || !data.municipality || !data.contact;
+          setShowProfileBanner(isIncomplete);
+        }
+      } catch (err) {
+        console.error("Failed to fetch user profile", err);
+      }
+    };
+    fetchUserProfile();
+  }, [API]);
 
   useEffect(() => {
     const fetchReports = async () => {
@@ -114,31 +145,25 @@ export default function UserMyReportsPage() {
     })();
   }, []);
 
-  // Initialize and handle Edit Report modal map
   useEffect(() => {
     if (!LRef) return;
 
-    // When modal opens
     if (editModalVisible && editMapRef.current) {
       const L = LRef;
 
-      // Clean up any existing map in container to prevent "already initialized" issues
       if (editMapRef.current.innerHTML !== "") {
         editMapRef.current.innerHTML = "";
       }
 
-      // Default to report's coordinates, or Olongapo City if missing
       const lat = Number(editForm.latitude) || 14.8292;
       const lng = Number(editForm.longitude) || 120.2828;
 
-      // Initialize map
       const map = L.map(editMapRef.current).setView([lat, lng], 14);
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         attribution: "&copy; OpenStreetMap contributors",
       }).addTo(map);
       setEditMap(map);
 
-      // Create the pin icon
       const customPin = L.icon({
         iconUrl: "/images/pin.png",
         iconSize: [25, 41],
@@ -146,18 +171,13 @@ export default function UserMyReportsPage() {
         popupAnchor: [1, -34],
       });
 
-      // Place the existing marker (the one from the report)
       let marker = L.marker([lat, lng], { icon: customPin }).addTo(map);
       setEditMarker(marker);
 
-      // On map click: move marker and update form
       map.on("click", async (e: any) => {
         const { lat, lng } = e.latlng;
-
-        // Move the existing marker instead of creating a new one
         marker.setLatLng([lat, lng]);
 
-        // Reverse geocode for address
         const address = await getAddressFromCoords(lat, lng);
         setEditForm((prev) => ({
           ...prev,
@@ -230,7 +250,6 @@ export default function UserMyReportsPage() {
   };
 
   const handleDelete = async (reportId: string, index: number) => {
-    // Confirmation is handled by the confirmation modal; this function only performs deletion.
     const token = localStorage.getItem("token");
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reports/${reportId}`, {
@@ -262,7 +281,7 @@ export default function UserMyReportsPage() {
       imagePreview: (report.image as string) || "/images/broken-streetlights.jpg",
       removeImage: false,
       priority: (report.priority as string) || "not urgent",
-      category: (report.category as string) || "", // carry existing category into edit form if present
+      category: (report.category as string) || "",
     });
 
     setEditModalVisible(true);
@@ -386,7 +405,6 @@ export default function UserMyReportsPage() {
 
   return (
     <div className={styles.pageWrap}>
-      {/* HEADER (nav + toolbar) */}
       <header className={styles.headerWrap}>
         <nav className={styles.nav}>
           <div className={styles.brand}>
@@ -407,17 +425,46 @@ export default function UserMyReportsPage() {
             <li><Link href="/user-myreports" className={styles.navLink}>My Reports</Link></li>
             <li>
               <Link href="/user-profile" className={styles.profileLink}>
-                <Image 
+                <img 
                   src={profilePicUrl} 
                   alt="User Profile" 
-                  className={styles.profilePic} 
-                  width={38} 
-                  height={38} 
+                  className={styles.profilePic}
+                  style={{ 
+                    width: '38px', 
+                    height: '38px', 
+                    borderRadius: '50%',
+                    objectFit: 'cover'
+                  }}
                 />
               </Link>
             </li>
           </ul>
         </nav>
+
+        {/* Profile Completion Banner */}
+        {showProfileBanner && (
+          <div className={styles.profileBanner}>
+            <div className={styles.bannerContent}>
+              <i className="fa-solid fa-circle-exclamation" style={{ marginRight: '10px', fontSize: '18px' }}></i>
+              <span>
+                Your profile is incomplete. Please update your barangay, municipality, and contact information.
+              </span>
+              <button 
+                className={styles.bannerBtn}
+                onClick={() => router.push('/user-profile')}
+              >
+                Complete Profile
+              </button>
+              <button 
+                className={styles.bannerClose}
+                onClick={() => setShowProfileBanner(false)}
+                aria-label="Dismiss"
+              >
+                ✖
+              </button>
+            </div>
+          </div>
+        )}
 
         <div className={styles.toolbar} role="toolbar" aria-label="Reports toolbar">
           <div className={styles.toolbarInner}>
@@ -439,7 +486,6 @@ export default function UserMyReportsPage() {
         </div>
       </header>
 
-      {/* MY REPORTS */}
       <main className={styles.feedContainer}>
         <section className={styles.feedList} id="user-myreports">
           <div className={styles.myreportsColumn}>
@@ -454,19 +500,22 @@ export default function UserMyReportsPage() {
                       <div className={styles.reportRow}>
                         <div className={styles.reportContent}>
                           <div className={styles.reportHeader}>
-                            <Image 
+                            <img 
                               src={reportUserPic} 
                               alt="Avatar" 
-                              className={styles.reportAvatar} 
-                              width={32} 
-                              height={32} 
+                              className={styles.reportAvatar}
+                              style={{ 
+                                width: '32px', 
+                                height: '32px', 
+                                borderRadius: '50%',
+                                objectFit: 'cover'
+                              }}
                             />
                             <span className={styles.reportUser}>{report.user.fName} {report.user.lName}</span>
                           </div>
 
                           <h3 className={styles.reportTitle}>{report.title}</h3>
 
-                          {/* Category displayed under title */}
                           <p className={styles.reportCategory}>
                             {report.category ?? "Uncategorized"}
                           </p>
@@ -521,7 +570,7 @@ export default function UserMyReportsPage() {
         </section>
       </main>
 
-      {/* EDIT MODAL styled like Add Report modal */}
+      {/* Edit Modal and Delete Modal remain the same */}
       {editModalVisible && (
         <div className={styles.modal} role="dialog" aria-modal="true">
           <div className={styles.modalContent}>
@@ -615,7 +664,6 @@ export default function UserMyReportsPage() {
         </div>
       )}
 
-      {/* DELETE CONFIRMATION MODAL */}
       {deleteModalVisible && (
         <div className={styles.modal} role="dialog" aria-modal="true">
           <div className={styles.confirmModal}>

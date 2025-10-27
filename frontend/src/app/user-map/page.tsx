@@ -10,6 +10,12 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useLoader } from "@/context/LoaderContext";
 
 interface UserProfile {
+  fName?: string;
+  lName?: string;
+  email?: string;
+  barangay?: string;
+  municipality?: string;
+  contact?: string;
   profilePicture?: {
     url?: string;
     public_id?: string;
@@ -31,18 +37,20 @@ interface Report {
   status: string;
   location: string;
   category: string;
-  isUrgent?: boolean; // Add to interface
+  isUrgent?: boolean;
   image?: string;
   latitude?: string | number;
   longitude?: string | number;
 }
 
 export default function UserMapPage() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const [modalOpen, setModalOpen] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [showProfileBanner, setShowProfileBanner] = useState(false);
   const { showLoader, hideLoader } = useLoader();
 
   const feedMapRef = useRef<L.Map | null>(null);
@@ -66,7 +74,7 @@ export default function UserMapPage() {
     title: "",
     description: "",
     category: "",
-    isUrgent: false, // Add to form state
+    isUrgent: false,
     image: null as File | null,
     address: "",
     latitude: "",
@@ -88,6 +96,10 @@ export default function UserMapPage() {
           console.log("✅ User profile loaded:", data);
           console.log("📸 Profile picture URL:", data.profilePicture?.url);
           setUserProfile(data);
+
+          // Check if profile is incomplete
+          const isIncomplete = !data.barangay || !data.municipality || !data.contact;
+          setShowProfileBanner(isIncomplete);
         }
       } catch (err) {
         console.error("Failed to fetch user profile", err);
@@ -233,14 +245,14 @@ export default function UserMapPage() {
       toast.error("Please select a category.");
       return;
     }
-    showLoader(); // Show the loader
+    showLoader();
 
     try {
       const formData = new FormData();
       formData.append("title", reportForm.title);
       formData.append("description", reportForm.description);
       formData.append("category", reportForm.category);
-      formData.append("isUrgent", String(reportForm.isUrgent)); // Add this line
+      formData.append("isUrgent", String(reportForm.isUrgent));
       if (reportForm.image) formData.append("image", reportForm.image);
       formData.append("location", reportForm.address);
       formData.append("latitude", reportForm.latitude);
@@ -260,7 +272,6 @@ export default function UserMapPage() {
         toast.success("Report submitted successfully!");
         setModalOpen(false);
         
-        // Refresh reports after submission
         const refreshRes = await fetch(`${API}/reports`);
         if (refreshRes.ok) {
           const data = await refreshRes.json();
@@ -273,18 +284,15 @@ export default function UserMapPage() {
     } catch (error) {
       toast.error("An error occurred while submitting the report.");
     } finally {
-      hideLoader(); // Hide the loader
+      hideLoader();
     }
   };
 
   useEffect(() => {
-    // Check for token from Google OAuth redirect
     const tokenFromUrl = searchParams.get('token');
     
     if (tokenFromUrl) {
-      // Save token from URL parameter
       localStorage.setItem('token', tokenFromUrl);
-      // Remove token from URL for security
       window.history.replaceState({}, '', '/user-map');
     }
   }, [searchParams]);
@@ -366,6 +374,31 @@ export default function UserMapPage() {
             </li>
           </ul>
         </nav>
+
+        {/* Profile Completion Banner */}
+        {showProfileBanner && (
+          <div className={styles.profileBanner}>
+            <div className={styles.bannerContent}>
+              <i className="fa-solid fa-circle-exclamation" style={{ marginRight: '10px', fontSize: '18px' }}></i>
+              <span>
+                Your profile is incomplete. Please update your barangay, municipality, and contact information.
+              </span>
+              <button 
+                className={styles.bannerBtn}
+                onClick={() => router.push('/user-profile')}
+              >
+                Complete Profile
+              </button>
+              <button 
+                className={styles.bannerClose}
+                onClick={() => setShowProfileBanner(false)}
+                aria-label="Dismiss"
+              >
+                ✖
+              </button>
+            </div>
+          </div>
+        )}
       </header>
 
       <main className={styles.fullMapWrap}>
@@ -491,7 +524,7 @@ export default function UserMapPage() {
                 <input type="hidden" id="longitude" name="longitude" />
                 <div id="modal-map" className={styles.modalMap}></div>
 
-                    <div className={styles.urgentToggle}>
+                <div className={styles.urgentToggle}>
                   <input
                     type="checkbox"
                     id="isUrgent"
