@@ -1,10 +1,32 @@
 "use client";
 
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import './welcome.css';
 
 export default function WelcomePage() {
+  const router = useRouter();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    // Check if user is authenticated
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+      // No token found, redirect to login
+      router.push('/login');
+    } else {
+      setIsAuthenticated(true);
+    }
+  }, [router]);
+
+  // Don't render anything until we verify authentication
+  if (!isAuthenticated) {
+    return null;
+  }
+
   return (
     <>
       <header>
@@ -24,7 +46,7 @@ export default function WelcomePage() {
             </span>
           </p>
           <Link href="/user-map">
-                <button className="continue-btn">Continue</button>
+            <button className="continue-btn">Continue</button>
           </Link>
         </div>
       </div>
