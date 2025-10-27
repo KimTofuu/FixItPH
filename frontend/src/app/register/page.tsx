@@ -123,9 +123,33 @@ export default function RegisterPage() {
       const registerData = await registerRes.json();
 
       if (registerRes.ok && registerData.success) {
-        toast.success("Registration successful! Please log in.");
+        toast.success("Registration successful!");
         setShowOtpModal(false);
-        setTimeout(() => router.push("/welcome"), 1000);
+        
+        // Auto-login: Create token for the new user
+        const loginRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ 
+            email: form.email, 
+            password: form.password 
+          }),
+        });
+
+        const loginData = await loginRes.json();
+
+        if (loginRes.ok && loginData.token) {
+          // Save token
+          localStorage.setItem("token", loginData.token);
+          
+          // Redirect to welcome page
+          toast.success("Welcome to FixItPH!");
+          setTimeout(() => router.push("/welcome"), 1000);
+        } else {
+          // If auto-login fails, redirect to login page
+          toast.info("Please log in to continue");
+          setTimeout(() => router.push("/login"), 1000);
+        }
       } else {
         toast.error(registerData.message || "Registration failed");
       }
