@@ -186,10 +186,10 @@
 
 /* report header */
 .reportHeader {
-  display:flex;
-  align-items:center;
-  gap:0.6rem;
-  margin-bottom: 0.35rem;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
 }
 
 .reportAvatar {
@@ -200,8 +200,8 @@
 }
 
 .reportUser {
-  font-weight:700;
-  font-size:0.95rem;
+  font-weight: 600;
+  color: #1e293b;
 }
 
 .bookmarkBtn {
@@ -224,13 +224,34 @@
   margin: 0.25rem 0;
 }
 
+/* Status badge styles */
 .reportStatus {
-  display:inline-block;
-  padding: 0.25rem 0.5rem;
-  border-radius: 8px;
-  background: #f1f5f9;
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
   font-weight: 600;
-  font-size: 0.85rem;
+  margin-bottom: 8px;
+}
+
+.reportStatus.awaiting-approval {
+  background-color: #f59e0b;
+  color: white;
+}
+
+.reportStatus.pending {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.reportStatus.in-progress {
+  background-color: #8b5cf6;
+  color: white;
+}
+
+.reportStatus.resolved {
+  background-color: #10b981;
+  color: white;
 }
 
 .reportDetails {
@@ -627,4 +648,88 @@
   .previewLink { max-width:160px; }
   .submitRow { padding:0.6rem; }
   .submitBtn { padding:0.78rem 0.9rem; }
+}
+
+/* Add to user-feed.module.css */
+
+.reputationBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: transform 0.2s;
+}
+
+.reputationBadge:hover {
+  transform: scale(1.05);
+  cursor: help;
+}
+
+.reportActions {
+  display: flex;
+  gap: 12px;
+  padding: 12px 16px;
+  border-top: 1px solid #e5e7eb;
+  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: 12px;
+}
+
+.helpfulBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background-color: #f3f4f6;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.helpfulBtn:hover:not(:disabled) {
+  background-color: #3b82f6;
+  color: white;
+  border-color: #3b82f6;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+.helpfulBtn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.helpfulBtn.voted {
+  background-color: #3b82f6;
+  color: white;
+  border-color: #3b82f6;
+}
+
+.helpfulBtn i {
+  font-size: 16px;
+}
+
+.voteCount {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 6px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.helpfulBtn:not(.voted) .voteCount {
+  background-color: #e5e7eb;
+  color: #374151;
 }

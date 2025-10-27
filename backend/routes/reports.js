@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const reportController = require('../controllers/reportController');
+const reputationController = require('../controllers/reputationController');
 const { authenticateToken, isAdmin } = require('../middleware/authenticateToken');
 
 // --- Configure Multer for File Uploads ---
@@ -46,5 +47,8 @@ router.patch('/admin/reports/:id/approve', authenticateToken, isAdmin, reportCon
 router.delete('/admin/reports/:id/reject', authenticateToken, isAdmin, reportController.rejectReport);
 router.get('/admin/resolved-reports', authenticateToken, isAdmin, reportController.getResolvedReports);
 router.patch('/admin/reports/:id/status', authenticateToken, isAdmin, reportController.updateReportStatus);
+
+// --- VOTE ROUTES ---
+router.post('/:reportId/vote-helpful', authenticateToken, reputationController.voteHelpful);
 
 module.exports = router;
