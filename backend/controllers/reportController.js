@@ -2,11 +2,21 @@ const Report = require('../models/Report');
 const User = require('../models/Users');
 const cloudinary = require('../config/cloudinary');
 const { sendEmail } = require('../utils/emailService'); 
+const reputationController = require('./reputationController');
+
 // Create a new report
 exports.createReport = async (req, res) => {
   try {
+    console.log('📝 Creating report...');
+    console.log('Decoded Token:', req.user);
+    console.log('req.user.userId:', req.user?.userId);
+
     const { title, description, location, latitude, longitude, category, isUrgent } = req.body;
-    const userId = req.user.userId;
+    const userId = req.user?.userId || req.userId; // Fixed: use req.user.userId
+
+    if (!userId) {
+      return res.status(401).json({ message: 'Unauthorized: User ID not found' });
+    }
 
     const user = await User.findById(userId);
     if (!user) {
@@ -18,15 +28,19 @@ exports.createReport = async (req, res) => {
 
     let imageUrl = null;
     if (req.file) {
-      // Upload image to Cloudinary if provided
-      const result = await cloudinary.uploader.upload(req.file.path, {
-        folder: 'fixit-reports',
-        transformation: [
-          { width: 800, height: 600, crop: 'limit' },
-          { quality: 'auto' }
-        ]
-      });
-      imageUrl = result.secure_url;
+      try {
+        const result = await cloudinary.uploader.upload(req.file.path, {
+          folder: 'fixit-reports',
+          transformation: [
+            { width: 800, height: 600, crop: 'limit' },
+            { quality: 'auto' }
+          ]
+        });
+        imageUrl = result.secure_url;
+      } catch (uploadError) {
+        console.error('Cloudinary upload error:', uploadError);
+        return res.status(500).json({ message: 'Failed to upload image' });
+      }
     }
 
     const newReport = new Report({
@@ -43,8 +57,21 @@ exports.createReport = async (req, res) => {
     });
 
     await newReport.save();
+    console.log('✅ Report saved to database');
 
-    // --- Update Email Acknowledgement ---
+    // Award reputation BEFORE sending response
+    if (reputationController && typeof reputationController.awardReportCreation === 'function') {
+      try {
+        console.log('🏆 Awarding reputation points...');
+        const reputation = await reputationController.awardReportCreation(userId);
+        console.log('✅ Reputation awarded:', reputation);
+      } catch (repError) {
+        console.error('❌ Reputation award error:', repError);
+        // Don't fail the request if reputation fails
+      }
+    }
+
+    // Send email acknowledgement
     const emailStatus = isUrgentBool ? 'Pending' : 'Awaiting Approval';
     const emailDetails = isUrgentBool
       ? 'Your urgent report has been posted and is now pending review by our team.'
@@ -70,16 +97,89 @@ exports.createReport = async (req, res) => {
         subject: `Your FixItPH Report is ${emailStatus} (ID: ${newReport._id})`,
         html: emailMessage,
       });
-      console.log('Acknowledgement email sent successfully to:', user.email);
+      console.log('📧 Acknowledgement email sent successfully to:', user.email);
     } catch (emailError) {
-      console.error('Failed to send acknowledgement email:', emailError);
+      console.error('❌ Failed to send acknowledgement email:', emailError);
     }
-    // --- End of Email Logic ---
 
-    const populatedReport = await Report.findById(newReport._id).populate('user', 'fName lName email profilePicture');
-    res.status(201).json({ message: 'Report created successfully', report: populatedReport });
+    // Populate user data with reputation before sending response
+    const populatedReport = await Report.findById(newReport._id)
+      .populate('user', 'fName lName email profilePicture reputation');
+
+    res.status(201).json({ 
+      message: 'Report created successfully', 
+      report: populatedReport 
+    });
   } catch (err) {
-    console.error(err);
+    console.error('❌ Create report error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Update report status (for admins)
+exports.updateReportStatus = async (req, res) => {
+  try {
+    const { status } = req.body;
+    const reportId = req.params.id;
+
+    if (!['pending', 'in-progress', 'resolved'].includes(status)) {
+      return res.status(400).json({ message: 'Invalid status value' });
+    }
+
+    const report = await Report.findByIdAndUpdate(
+      reportId,
+      { status },
+      { new: true }
+    ).populate('user', 'fName lName email profilePicture reputation');
+
+    if (!report) {
+      return res.status(404).json({ message: 'Report not found' });
+    }
+
+    // Award reputation if resolved
+    if (status === 'resolved') {
+      try {
+        await reputationController.awardResolvedReport(reportId);
+        console.log('✅ Reputation awarded for resolved report');
+      } catch (repError) {
+        console.error('❌ Reputation award error:', repError);
+      }
+    }
+
+    res.json(report);
+  } catch (err) {
+    console.error('Update status error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// When admin verifies a report
+exports.verifyReport = async (req, res) => {
+  try {
+    const { reportId } = req.params;
+    const userId = req.user?.userId || req.userId; // Fixed
+    
+    const report = await Report.findById(reportId);
+    if (!report) {
+      return res.status(404).json({ message: 'Report not found' });
+    }
+    
+    report.isVerified = true;
+    report.verifiedBy = userId;
+    report.verifiedAt = new Date();
+    await report.save();
+    
+    // Award reputation
+    try {
+      await reputationController.awardVerifiedReport(report.user);
+      console.log('✅ Reputation awarded for verified report');
+    } catch (repError) {
+      console.error('❌ Reputation award error:', repError);
+    }
+    
+    res.json({ message: 'Report verified', report });
+  } catch (err) {
+    console.error('Verify report error:', err);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -87,11 +187,9 @@ exports.createReport = async (req, res) => {
 // Get all reports with user details
 exports.getAllReports = async (req, res) => {
   try {
-    // Only fetch reports that are approved and public
     const reports = await Report.find({ status: { $ne: 'awaiting-approval' } })
-      .populate('user', 'fName lName email profilePicture')
+      .populate('user', 'fName lName email profilePicture reputation')
       .sort({ createdAt: -1 });
-
     return res.status(200).json(reports);
   } catch (err) {
     console.error('getAllReports error:', err);
@@ -102,7 +200,9 @@ exports.getAllReports = async (req, res) => {
 // Get all pending reports
 exports.getAllPendingReports = async (req, res) => {
   try {
-    const reports = await Report.find({ status: 'pending' }).select('-__v').populate('user', 'fName lName email');
+    const reports = await Report.find({ status: 'pending' })
+      .select('-__v')
+      .populate('user', 'fName lName email reputation');
     res.json(reports);
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
@@ -112,7 +212,9 @@ exports.getAllPendingReports = async (req, res) => {
 // Get all in-progress reports
 exports.getAllInProgressReports = async (req, res) => {
   try {
-    const reports = await Report.find({ status: 'in-progress' }).select('-__v').populate('user', 'fName lName email');
+    const reports = await Report.find({ status: 'in-progress' })
+      .select('-__v')
+      .populate('user', 'fName lName email reputation');
     res.json(reports);
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
@@ -122,7 +224,9 @@ exports.getAllInProgressReports = async (req, res) => {
 // Get all resolved reports
 exports.getAllResolvedReports = async (req, res) => {
   try {
-    const reports = await Report.find({ status: 'resolved' }).select('-__v').populate('user', 'fName lName email');
+    const reports = await Report.find({ status: 'resolved' })
+      .select('-__v')
+      .populate('user', 'fName lName email reputation');
     res.json(reports);
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
@@ -155,7 +259,9 @@ exports.getResolvedReportsCount = async (req, res) => {
 exports.getReport = async (req, res) => {
   try {
     const { id } = req.body;
-    const report = await Report.findById(id).select('-__v').populate('user', 'fName lName email');
+    const report = await Report.findById(id)
+      .select('-__v')
+      .populate('user', 'fName lName email reputation');
     if (!report) {
       return res.status(404).json({ message: 'Report not found' });
     }
@@ -173,7 +279,9 @@ exports.getReportByUser = async (req, res) => {
     if (!id) {
       return res.status(400).json({ message: 'userId is required' });
     }
-    const reports = await Report.find({ user: id }).select('-__v').populate('user', 'fName lName email');
+    const reports = await Report.find({ user: id })
+      .select('-__v')
+      .populate('user', 'fName lName email reputation');
     if (!reports || reports.length === 0) {
       return res.status(404).json({ message: 'No reports found for this user' });
     }
@@ -191,11 +299,9 @@ exports.getMyReports = async (req, res) => {
     if (!userId) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
-
     const reports = await Report.find({ user: userId })
-      .populate('user', 'fName lName email profilePicture') // Make sure profilePicture is included
+      .populate('user', 'fName lName email profilePicture reputation')
       .sort({ createdAt: -1 });
-
     return res.status(200).json(reports);
   } catch (err) {
     console.error('getMyReports error:', err);
@@ -207,17 +313,13 @@ exports.addComment = async (req, res) => {
   try {
     const reportId = req.params.id;
     const { text } = req.body;
-    const user = req.user.userId; // or req.user.email or name, depending on your JWT
-
-   
-    const userDoc = await User.findById(user);
-
+    const userId = req.user?.userId || req.userId;
+    const userDoc = await User.findById(userId);
     const comment = {
       user: `${userDoc.fName} ${userDoc.lName}`,
       text,
       createdAt: new Date()
     };
-
     const report = await Report.findByIdAndUpdate(
       reportId,
       { $push: { comments: comment } },
@@ -232,18 +334,14 @@ exports.addComment = async (req, res) => {
 exports.deleteReport = async (req, res) => {
   try {
     const reportId = req.params.id;
-    const userId = req.user.userId;
-    
+    const userId = req.user?.userId || req.userId;
     const report = await Report.findById(reportId);
     if (!report) {
       return res.status(404).json({ message: 'Report not found' });
     }
-    
-    // Check if user owns this report
     if (report.user.toString() !== userId) {
       return res.status(403).json({ message: 'Not authorized to delete this report' });
     }
-    
     await Report.findByIdAndDelete(reportId);
     res.status(200).json({ message: 'Report deleted successfully' });
   } catch (err) {
@@ -252,19 +350,15 @@ exports.deleteReport = async (req, res) => {
   }
 };
 
-// update report (PATCH /reports/:id)
 exports.updateReport = async (req, res) => {
   try {
     const id = req.params.id;
-    const userId = req.userId;
-
+    const userId = req.user?.userId || req.userId;
     const report = await Report.findById(id);
     if (!report) return res.status(404).json({ error: 'Not found' });
-
     if (userId && report.user && report.user.toString() !== userId) {
       return res.status(403).json({ error: 'Forbidden' });
     }
-
     const { title, description, location, latitude, longitude, removeImage, category } = req.body;
     if (title !== undefined) report.title = title;
     if (description !== undefined) report.description = description;
@@ -272,7 +366,6 @@ exports.updateReport = async (req, res) => {
     if (latitude !== undefined) report.latitude = latitude;
     if (longitude !== undefined) report.longitude = longitude;
     if (category !== undefined) report.category = category;
-
     if (req.file) {
       try {
         const result = await cloudinary.uploader.upload(req.file.path, {
@@ -282,24 +375,14 @@ exports.updateReport = async (req, res) => {
             { quality: 'auto' },
           ],
         });
-
         report.image = result.secure_url;
-
       } catch (uploadErr) {
         console.error('Cloudinary upload error:', uploadErr);
         return res.status(500).json({ error: 'Failed to upload image' });
-      } finally {
-        // remove temp file saved by multer
-        if (req.file && req.file.path) {
-          fs.unlink(req.file.path, (err) => {
-            if (err) console.warn('Failed to remove temp file:', err);
-          });
-        }
       }
     } else if (removeImage === 'true' || removeImage === true) {
       report.image = null;
     }
-
     await report.save();
     return res.json(report);
   } catch (err) {
@@ -311,7 +394,7 @@ exports.updateReport = async (req, res) => {
 exports.getReportsForApproval = async (req, res) => {
   try {
     const reports = await Report.find({ status: 'awaiting-approval' })
-      .populate('user', 'fName lName email profilePicture') 
+      .populate('user', 'fName lName email profilePicture reputation') 
       .sort({ createdAt: -1 });
     res.json(reports);
   } catch (err) {
@@ -320,19 +403,17 @@ exports.getReportsForApproval = async (req, res) => {
   }
 };
 
-// Approve a report (for admins)
 exports.approveReport = async (req, res) => {
   try {
     const report = await Report.findByIdAndUpdate(
       req.params.id,
       { status: 'pending' },
       { new: true }
-    ).populate('user', 'fName lName email');
+    ).populate('user', 'fName lName email reputation');
     
     if (!report) {
       return res.status(404).json({ message: 'Report not found' });
     }
-
     try {
       const emailMessage = `
         <div style="font-family: Arial, sans-serif; line-height: 1.6;">
@@ -349,17 +430,15 @@ exports.approveReport = async (req, res) => {
           <p>Thank you for helping improve our community!</p>
         </div>
       `;
-      
       await sendEmail({
         to: report.user.email,
         subject: `Your FixItPH Report Has Been Approved (ID: ${report._id})`,
         html: emailMessage,
       });
-      console.log('Approval email sent successfully to:', report.user.email);
+      console.log('📧 Approval email sent successfully to:', report.user.email);
     } catch (emailError) {
-      console.error('Failed to send approval email:', emailError);
+      console.error('❌ Failed to send approval email:', emailError);
     }
-
     res.json({ message: 'Report approved successfully', report });
   } catch (err) {
     console.error('approveReport error:', err);
@@ -369,21 +448,17 @@ exports.approveReport = async (req, res) => {
 
 exports.rejectReport = async (req, res) => {
   try {
-    const report = await Report.findById(req.params.id).populate('user', 'fName lName email');
-    
+    const report = await Report.findById(req.params.id).populate('user', 'fName lName email reputation');
     if (!report) {
       return res.status(404).json({ message: 'Report not found' });
     }
-
     const userInfo = {
       fName: report.user.fName,
       email: report.user.email,
     };
     const reportTitle = report.title;
     const reportId = report._id;
-
     await Report.findByIdAndDelete(req.params.id);
-
     try {
       const emailMessage = `
         <div style="font-family: Arial, sans-serif; line-height: 1.6;">
@@ -406,17 +481,15 @@ exports.rejectReport = async (req, res) => {
           <p>Thank you for your understanding.</p>
         </div>
       `;
-      
       await sendEmail({
         to: userInfo.email,
         subject: `Your FixItPH Report Was Not Approved (ID: ${reportId})`,
         html: emailMessage,
       });
-      console.log('Rejection email sent successfully to:', userInfo.email);
+      console.log('📧 Rejection email sent successfully to:', userInfo.email);
     } catch (emailError) {
-      console.error('Failed to send rejection email:', emailError);
+      console.error('❌ Failed to send rejection email:', emailError);
     }
-    
     res.json({ message: 'Report rejected and deleted successfully' });
   } catch (err) {
     console.error('Reject report error:', err);
@@ -427,38 +500,11 @@ exports.rejectReport = async (req, res) => {
 exports.getResolvedReports = async (req, res) => {
   try {
     const reports = await Report.find({ status: 'resolved' })
-      .populate('user', 'fName lName email profilePicture')
+      .populate('user', 'fName lName email profilePicture reputation')
       .sort({ createdAt: -1 });
     res.json(reports);
   } catch (err) {
     console.error('getResolvedReports error:', err);
-    res.status(500).json({ message: 'Server error' });
-  }
-};
-
-// Update report status (for admins) - ADD THIS NEW FUNCTION
-exports.updateReportStatus = async (req, res) => {
-  try {
-    const { status } = req.body;
-    const reportId = req.params.id;
-
-    if (!['pending', 'in-progress', 'resolved'].includes(status)) {
-      return res.status(400).json({ message: 'Invalid status value' });
-    }
-
-    const report = await Report.findByIdAndUpdate(
-      reportId,
-      { status },
-      { new: true }
-    ).populate('user', 'fName lName email profilePicture');
-
-    if (!report) {
-      return res.status(404).json({ message: 'Report not found' });
-    }
-
-    res.json(report);
-  } catch (err) {
-    console.error('Update status error:', err);
     res.status(500).json({ message: 'Server error' });
   }
 };
