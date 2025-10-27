@@ -7,24 +7,6 @@ import styles from "./RegisterPage.module.css";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 
-async function registerUser(formData: {
-  fName: string;
-  lName: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-  barangay: string;
-  municipality: string;
-  contact: string;
-}) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/register`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(formData),
-  });
-  return res.json();
-}
-
 export default function RegisterPage() {
   const router = useRouter();
 
@@ -44,14 +26,10 @@ export default function RegisterPage() {
   const [showConditions, setShowConditions] = useState(false);
   const [passwordError, setPasswordError] = useState("");
 
-  const [otpSent, setOtpSent] = useState(false);
   const [otp, setOtp] = useState("");
-  const [emailVerified, setEmailVerified] = useState(false);
-  const [sendingOtp, setSendingOtp] = useState(false);
-  const [verifyingOtp, setVerifyingOtp] = useState(false);
-
-  // modal control
   const [showOtpModal, setShowOtpModal] = useState(false);
+  const [verifyingOtp, setVerifyingOtp] = useState(false);
+  const [registering, setRegistering] = useState(false);
 
   const conditions = [
     { key: "length", text: "At least 8 characters", valid: form.password.length >= 8 },
@@ -72,77 +50,91 @@ export default function RegisterPage() {
     }
   };
 
-  const sendOtp = async () => {
-    if (!form.email) {
-      toast.error("Enter your email first");
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Validate password match
+    if (form.password !== form.confirmPassword) {
+      toast.error("Passwords do not match");
       return;
     }
+
+    // Validate password conditions
+    const allConditionsMet = conditions.every((c) => c.valid);
+    if (!allConditionsMet) {
+      toast.error("Password does not meet all requirements");
+      return;
+    }
+
     try {
-      setSendingOtp(true);
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/request-otp`, {
+      setRegistering(true);
+
+      // Step 1: Send OTP to user's email
+      const otpRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/request-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: form.email }),
       });
-      const data = await res.json();
-      if (res.ok) {
-        setOtpSent(true);
-        setShowOtpModal(true);
-        toast.success("OTP sent to your email");
-      } else {
-        toast.error(data.message || "Failed to send OTP");
+
+      const otpData = await otpRes.json();
+
+      if (!otpRes.ok) {
+        toast.error(otpData.message || "Failed to send OTP");
+        return;
       }
-    } catch {
-      toast.error("Network error sending OTP");
+
+      // Step 2: Show OTP modal for user to enter code
+      toast.success("OTP sent to your email");
+      setShowOtpModal(true);
+
+    } catch (error) {
+      console.error("Registration error:", error);
+      toast.error("Network error. Please try again.");
     } finally {
-      setSendingOtp(false);
+      setRegistering(false);
     }
   };
 
-  const verifyOtp = async () => {
+  const verifyOtpAndRegister = async () => {
     try {
       setVerifyingOtp(true);
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/verify-otp`, {
+
+      // Step 1: Verify OTP
+      const verifyRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/verify-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: form.email, otp }),
       });
-      const data = await res.json();
-      if (res.ok) {
-        setEmailVerified(true);
-        setShowOtpModal(false);
-        toast.success("Email verified");
-      } else {
-        toast.error(data.message || "Invalid OTP");
-      }
-    } catch {
-      toast.error("Network error verifying OTP");
-    } finally {
-      setVerifyingOtp(false);
-    }
-  };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!emailVerified) {
-      toast.error("Please verify your email first");
-      return;
-    }
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/register`, {
+      const verifyData = await verifyRes.json();
+
+      if (!verifyRes.ok) {
+        toast.error(verifyData.message || "Invalid OTP");
+        return;
+      }
+
+      // Step 2: If OTP is valid, proceed with registration
+      const registerRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
-      const result = await res.json();
-      if (res.ok && result.success) {
+
+      const registerData = await registerRes.json();
+
+      if (registerRes.ok && registerData.success) {
         toast.success("Registration successful! Please log in.");
-        setTimeout(() => router.push("/login"), 1000);
+        setShowOtpModal(false);
+        setTimeout(() => router.push("/welcome"), 1000);
       } else {
-        toast.error(result.message || "Registration failed");
+        toast.error(registerData.message || "Registration failed");
       }
-    } catch {
-      toast.error("Network error. Please try again.");
+
+    } catch (error) {
+      console.error("Verification error:", error);
+      toast.error("Network error verifying OTP");
+    } finally {
+      setVerifyingOtp(false);
     }
   };
 
@@ -153,7 +145,6 @@ export default function RegisterPage() {
     };
   }, []);
 
- 
   const redirectToGoogle = () => {
     window.location.href = "/api/auth/google";
   };
@@ -197,28 +188,18 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            <div className={styles.rowInline}>
-              <label className={styles.floatingLabel} style={{ flex: 1 }}>
-                <input
-                  name="email"
-                  type="email"
-                  placeholder=" "
-                  value={form.email}
-                  onChange={(e) => {
-                    setForm({ ...form, email: e.target.value });
-                    setEmailVerified(false);
-                    setOtpSent(false);
-                  }}
-                  required
-                  className={styles.input}
-                />
-                <span className={styles.labelText}>Email</span>
-              </label>
-
-              <button className={styles.otpBtn} type="button" onClick={sendOtp} disabled={sendingOtp || emailVerified}>
-                {sendingOtp ? "Sending..." : emailVerified ? "Verified" : "Send OTP"}
-              </button>
-            </div>
+            <label className={styles.floatingLabel}>
+              <input
+                name="email"
+                type="email"
+                placeholder=" "
+                value={form.email}
+                onChange={handleChange}
+                required
+                className={styles.input}
+              />
+              <span className={styles.labelText}>Email</span>
+            </label>
 
             <div className={styles.passwordWrapper}>
               <label className={styles.floatingLabel} style={{ flex: 1 }}>
@@ -293,11 +274,12 @@ export default function RegisterPage() {
               <span className={styles.labelText}>Contact number</span>
             </label>
 
-            <button className={styles.registerBtn} type="submit" disabled={!emailVerified}>
-              Register
+            <button className={styles.registerBtn} type="submit" disabled={registering}>
+              {registering ? "Sending OTP..." : "Register"}
             </button>
           </form>
-                    <div className={styles.socialRow}>
+
+          <div className={styles.socialRow}>
             <button
               type="button"
               className={styles.googleBtn}
@@ -318,24 +300,28 @@ export default function RegisterPage() {
         </div>
       </main>
 
+      {/* OTP Verification Modal */}
       {showOtpModal && (
         <div className={styles.otpModalOverlay}>
           <div className={styles.otpModal} role="dialog" aria-modal="true">
-            <h2>Verify OTP</h2>
-            <p>Enter the 6-digit code sent to <b>{form.email}</b></p>
+            <h2>Verify Your Email</h2>
+            <p>We've sent a 6-digit code to <b>{form.email}</b></p>
             <input
               type="text"
               placeholder="Enter OTP"
               value={otp}
-              onChange={(e) => setOtp(e.target.value)}
+              onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
               maxLength={6}
               className={styles.input}
+              autoFocus
             />
             <div className={styles.otpModalButtons}>
-              <button onClick={verifyOtp} disabled={verifyingOtp} className={styles.primaryBtn}>
-                {verifyingOtp ? "Verifying..." : "Verify"}
+              <button onClick={verifyOtpAndRegister} disabled={verifyingOtp || otp.length !== 6} className={styles.primaryBtn}>
+                {verifyingOtp ? "Verifying..." : "Verify & Register"}
               </button>
-              <button onClick={() => setShowOtpModal(false)} className={styles.secondaryBtn}>Cancel</button>
+              <button onClick={() => setShowOtpModal(false)} className={styles.secondaryBtn} disabled={verifyingOtp}>
+                Cancel
+              </button>
             </div>
           </div>
         </div>
