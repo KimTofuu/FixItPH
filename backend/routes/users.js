@@ -2,10 +2,8 @@ const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/userController');
 const { authenticateToken } = require('../middleware/authenticateToken');
-const { uploadProfilePicture } = require("../config/multer");
+const upload = require('../middleware/upload');
 const otpController = require('../controllers/otpController');
-
-require('dotenv').config();
 
 // Public auth routes
 router.post('/register', userController.register);
@@ -24,8 +22,12 @@ router.patch('/me', authenticateToken, userController.updateProfile);
 // Password management
 router.post('/change-password', authenticateToken, userController.changePassword);
 
+// Password reset routes
+router.post('/forgot-password', userController.forgotPassword);
+router.post('/reset-password', userController.resetPassword);
+
 // Profile picture routes
-router.post('/me/profile-picture', authenticateToken, uploadProfilePicture.single('profilePicture'), userController.uploadProfilePicture);
+router.post('/me/profile-picture', authenticateToken, upload.single('profilePicture'), userController.uploadProfilePicture);
 router.delete('/me/profile-picture', authenticateToken, userController.deleteProfilePicture);
 
 // OTP routes
