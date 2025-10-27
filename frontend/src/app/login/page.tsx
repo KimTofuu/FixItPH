@@ -92,10 +92,6 @@ export default function LoginPage() {
 
   const toggleForm = () => setIsResident(!isResident);
 
-  const handleGoogleAuth = async () => {
-    toast.info("Redirecting to Google...");
-  };
-
   const redirectToGoogle = () => {
     window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
   };
@@ -223,6 +219,26 @@ export default function LoginPage() {
             <button className={styles.loginBtn} type="submit">
               Log in
             </button>
+
+            {/* Google Login Button - Only for Residents */}
+            <div className={styles.socialRow}>
+              <button
+                type="button"
+                className={styles.googleBtn}
+                onClick={redirectToGoogle}
+                aria-label="Continue with Google"
+              >
+                <span className={styles.googleIcon} aria-hidden>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" focusable="false" aria-hidden="true">
+                    <path d="M21.6 12.23c0-.68-.06-1.34-.18-1.97H12v3.73h5.48c-.24 1.33-.94 2.46-2 3.22v2.66h3.23c1.88-1.73 2.97-4.28 2.97-7.64z" fill="#4285F4"/>
+                    <path d="M12 22c2.7 0 4.96-.89 6.62-2.42l-3.23-2.66c-.9.6-2.06.96-3.39.96-2.6 0-4.8-1.76-5.59-4.14H2.98v2.6C4.64 19.9 8.04 22 12 22z" fill="#34A853"/>
+                    <path d="M6.41 13.74A6.972 6.972 0 0 1 6 12c0-.62.1-1.22.29-1.75V7.65H2.98A9.998 9.998 0 0 0 1 12c0 1.63.39 3.17 1.07 4.55l4.34-2.81z" fill="#FBBC05"/>
+                    <path d="M12 6.5c1.47 0 2.8.5 3.85 1.49L19.06 5c-1.66-1.18-3.9-1.84-7.06-1.84-3.96 0-7.36 2.1-9.02 5.14l4.34 2.81C7.2 8.26 9.4 6.5 12 6.5z" fill="#EA4335"/>
+                  </svg>
+                </span>
+                <span className={styles.googleText}>Continue with Google</span>
+              </button>
+            </div>
           </form>
 
           <form
