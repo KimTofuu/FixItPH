@@ -19,6 +19,19 @@ interface Report {
       url?: string;
       public_id?: string;
     };
+    reputation?: {
+      points: number;
+      level: string;
+      badges: Array<{
+        name: string;
+        icon: string;
+        earnedAt: string;
+      }>;
+      totalReports: number;
+      verifiedReports: number;
+      resolvedReports: number;
+      helpfulVotes: number;
+    };
   } | null;
   title: string;
   description: string;
@@ -27,6 +40,8 @@ interface Report {
   category: string;
   isUrgent?: boolean;
   image: string;
+  helpfulVotes?: number; // Add this
+  votedBy?: string[]; // Add this
   comments?: { user: string; text: string; createdAt?: string }[];
 }
 
@@ -42,6 +57,63 @@ interface UserProfile {
     public_id?: string;
   };
 }
+
+const getLevelIcon = (level: string) => {
+  switch (level) {
+    case 'Newcomer': return '🌱';
+    case 'Contributor': return '📝';
+    case 'Trusted': return '⭐';
+    case 'Expert': return '🏆';
+    case 'Guardian': return '👑';
+    default: return '🌱';
+  }
+};
+
+const getLevelColor = (level: string) => {
+  switch (level) {
+    case 'Newcomer': return '#94a3b8';
+    case 'Contributor': return '#3b82f6';
+    case 'Trusted': return '#8b5cf6';
+    case 'Expert': return '#f59e0b';
+    case 'Guardian': return '#ef4444';
+    default: return '#94a3b8';
+  }
+};
+
+const handleHelpfulVote = async (reportId: string, setReports: React.Dispatch<React.SetStateAction<Report[]>>) => {
+  const token = localStorage.getItem("token");
+  const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+  
+  try {
+    const res = await fetch(`${API}/reports/${reportId}/vote-helpful`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      toast.success("Voted as helpful! +5 points to report author 🎉");
+      
+      // Update the report in state
+      setReports((prev) =>
+        prev.map((r) =>
+          r._id === reportId 
+            ? { ...r, helpfulVotes: data.helpfulVotes, votedBy: data.votedBy }
+            : r
+        )
+      );
+    } else {
+      toast.error(data.message || "Failed to vote");
+    }
+  } catch (error) {
+    console.error("Vote error:", error);
+    toast.error("Network error");
+  }
+};
 
 export default function UserFeedPage() {
   const router = useRouter();
@@ -311,6 +383,27 @@ export default function UserFeedPage() {
 
   const profilePicUrl = userProfile?.profilePicture?.url || defaultProfilePic;
 
+  // Add this helper to check if current user voted
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchUserId = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch(`${API}/users/me`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setCurrentUserId(data._id);
+        }
+      } catch (err) {
+        console.error("Failed to fetch user ID", err);
+      }
+    };
+    fetchUserId();
+  }, [API]);
+
   return (
     <>
       <Head>
@@ -428,15 +521,14 @@ export default function UserFeedPage() {
 
       <main className={styles.pageWrap}>
         <div className={styles.feedContainer}>
-          <aside className={styles.feedSidebar}>
-            {/* reserved space or additional widgets */}
-          </aside>
-
           <section className={styles.feedMain}>
             <section id="reportList" className={styles.feedList}>
               {filteredReports.length > 0 ? (
                 filteredReports.map((r) => {
                   const reportUserPic = r.user?.profilePicture?.url || defaultProfilePic;
+                  const hasVoted = Boolean(r.votedBy?.includes(currentUserId || ''));
+                  const isOwnReport = Boolean(r.user && currentUserId && r.user.email === userProfile?.email);
+                  const isDisabled = hasVoted || isOwnReport;
                   
                   return (
                     <article className={styles.reportCard} key={r._id}>
@@ -457,9 +549,32 @@ export default function UserFeedPage() {
                                 (e.target as HTMLImageElement).src = defaultProfilePic;
                               }}
                             />
-                            <span className={styles.reportUser}>
-                              {r.user ? `${r.user.fName} ${r.user.lName}` : "Unknown User"}
-                            </span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
+                              <span className={styles.reportUser}>
+                                {r.user ? `${r.user.fName} ${r.user.lName}` : "Unknown User"}
+                              </span>
+                              {r.user?.reputation && (
+                                <div 
+                                  className={styles.reputationBadge}
+                                  style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '4px',
+                                    padding: '2px 8px',
+                                    backgroundColor: getLevelColor(r.user.reputation.level),
+                                    color: 'white',
+                                    borderRadius: '12px',
+                                    fontSize: '11px',
+                                    fontWeight: '600',
+                                    whiteSpace: 'nowrap'
+                                  }}
+                                  title={`${r.user.reputation.level} - ${r.user.reputation.points} points`}
+                                >
+                                  <span>{getLevelIcon(r.user.reputation.level)}</span>
+                                  <span>{r.user.reputation.level}</span>
+                                </div>
+                              )}
+                            </div>
                             <button
                               id={`bookmark-${r._id}`}
                               className={styles.bookmarkBtn}
@@ -489,6 +604,29 @@ export default function UserFeedPage() {
                         <div className={styles.reportImage}>
                           <ReportImage src={r.image} alt="Report Image" />
                         </div>
+                      </div>
+
+                      {/* Update the Helpful Vote Button section */}
+                      <div className={styles.reportActions}>
+                        <button
+                          type="button"
+                          className={`${styles.helpfulBtn} ${hasVoted ? styles.voted : ''}`}
+                          onClick={() => !isDisabled && handleHelpfulVote(r._id, setReports)}
+                          disabled={isDisabled}
+                          title={
+                            isOwnReport 
+                              ? "You can't vote your own report" 
+                              : hasVoted 
+                                ? "You already voted this as helpful" 
+                                : "Vote as helpful"
+                          }
+                        >
+                          <i className={`fa-${hasVoted ? 'solid' : 'regular'} fa-thumbs-up`}></i>
+                          <span>Helpful</span>
+                          <span className={styles.voteCount}>
+                            {r.helpfulVotes || 0}
+                          </span>
+                        </button>
                       </div>
 
                       <div className={styles.reportComments}>
