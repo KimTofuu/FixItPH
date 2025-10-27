@@ -5,17 +5,25 @@ function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 
-  // Send JSON for missing token
   if (!token) {
     return res.status(401).json({ message: 'Unauthorized: Token required' });
   }
 
-  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-    // Send JSON for invalid token
+  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
     if (err) {
+      console.error('JWT Verification Error:', err.message);
       return res.status(403).json({ message: 'Forbidden: Invalid or expired token' });
     }
-    req.user = user;
+    
+    // DEBUG: Log what's in the token
+    console.log('Decoded Token:', decoded);
+    
+    // Set req.user to the decoded payload
+    req.user = decoded;
+    
+    // DEBUG: Log what userController will see
+    console.log('req.user.userId:', req.user.userId);
+    
     next();
   });
 }
