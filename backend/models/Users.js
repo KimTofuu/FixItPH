@@ -16,22 +16,22 @@ const userSchema = new mongoose.Schema({
   },
   contact: {
     type: String,
-    required: false, // Changed to optional
+    required: false,
     default: '',
   },
   password: {
     type: String,
-    required: false, // Changed to optional (Google users don't have password)
+    required: false,
     default: '',
   },
   barangay: {
     type: String,
-    required: false, // Changed to optional
+    required: false,
     default: '',
   },
   municipality: {
     type: String,
-    required: false, // Changed to optional
+    required: false,
     default: '',
   },
   profilePicture: {
@@ -42,6 +42,13 @@ const userSchema = new mongoose.Schema({
     type: String,
     enum: ['user', 'admin'],
     default: 'user',
+  },
+  // Add these fields for password reset
+  resetPasswordToken: {
+    type: String,
+  },
+  resetPasswordExpires: {
+    type: Date,
   },
   createdAt: {
     type: Date,
