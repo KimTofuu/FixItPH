@@ -1,40 +1,28 @@
 const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/userController');
-const jwt = require('jsonwebtoken');
-const { upload, uploadProfilePicture } = require("../config/multer");
+const { authenticateToken } = require('../middleware/authenticateToken');
+const { uploadProfilePicture } = require("../config/multer");
 const otpController = require('../controllers/otpController');
-
-// JWT authentication middleware
-function authenticateToken(req, res, next) {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-  if (!token) return res.sendStatus(401);
-
-  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-    if (err) return res.sendStatus(403);
-    req.user = user;
-    next();
-  });
-}
 
 require('dotenv').config();
 
-// Auth routes
+// Public auth routes
 router.post('/register', userController.register);
 router.post('/login', userController.login);
 router.post('/logout', userController.logout);
 
-// User routes
+// Admin/utility routes
 router.get('/getAllUsers', userController.getAllUsers);
 router.post('/getUser', userController.getUser);
 router.get('/protected', authenticateToken, userController.protected);
 
-// Current user profile routes
-router.get('/me', authenticateToken, userController.getMe);
-router.patch('/me', authenticateToken, userController.updateMe);
-router.get('/profile', authenticateToken, userController.getProfile);
-router.patch('/profile', authenticateToken, userController.updateProfile);
+// Current user profile routes (use /me only)
+router.get('/me', authenticateToken, userController.getProfile);
+router.patch('/me', authenticateToken, userController.updateProfile);
+
+// Password management
+router.post('/change-password', authenticateToken, userController.changePassword);
 
 // Profile picture routes
 router.post('/me/profile-picture', authenticateToken, uploadProfilePicture.single('profilePicture'), userController.uploadProfilePicture);
