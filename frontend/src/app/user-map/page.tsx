@@ -6,7 +6,7 @@ import "leaflet/dist/leaflet.css";
 import styles from "./user-map.module.css";
 import Image from "next/image";
 import { toast } from "react-toastify";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useLoader } from "@/context/LoaderContext";
 
 interface UserProfile {
@@ -38,6 +38,7 @@ interface Report {
 }
 
 export default function UserMapPage() {
+  const searchParams = useSearchParams();
   const [modalOpen, setModalOpen] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -275,6 +276,18 @@ export default function UserMapPage() {
       hideLoader(); // Hide the loader
     }
   };
+
+  useEffect(() => {
+    // Check for token from Google OAuth redirect
+    const tokenFromUrl = searchParams.get('token');
+    
+    if (tokenFromUrl) {
+      // Save token from URL parameter
+      localStorage.setItem('token', tokenFromUrl);
+      // Remove token from URL for security
+      window.history.replaceState({}, '', '/user-map');
+    }
+  }, [searchParams]);
 
   const profilePicUrl = userProfile?.profilePicture?.url || defaultProfilePic;
 

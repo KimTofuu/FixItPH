@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import styles from "./LoginPage.module.css";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
@@ -21,6 +22,7 @@ async function loginUser(formData: {
 }
 
 export default function LoginPage() {
+  const searchParams = useSearchParams();
   const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
   const [form, setForm] = useState({
@@ -94,6 +96,10 @@ export default function LoginPage() {
     toast.info("Redirecting to Google...");
   };
 
+  const redirectToGoogle = () => {
+    window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
+  };
+
   useEffect(() => {
     
     document.body.classList.add("login-page-bg");
@@ -105,6 +111,28 @@ export default function LoginPage() {
       if (el) el.classList.remove(styles.enter);
     };
   }, []);
+
+  useEffect(() => {
+    // Check for error from Google OAuth
+    const error = searchParams.get('error');
+    const details = searchParams.get('details');
+    
+    if (error) {
+      const errorMessages: Record<string, string> = {
+        'auth_failed': 'Google authentication failed. Please try again.',
+        'no_code': 'Authorization code not received from Google.',
+        'no_email': 'Email not provided by Google account.',
+        'no_user': 'User account not found.',
+        'token_failed': 'Failed to generate authentication token.',
+      };
+      
+      const message = errorMessages[error] || 'An error occurred during login.';
+      toast.error(details ? `${message} (${details})` : message);
+      
+      // Clean up URL
+      window.history.replaceState({}, '', '/login');
+    }
+  }, [searchParams]);
 
   return (
     <>

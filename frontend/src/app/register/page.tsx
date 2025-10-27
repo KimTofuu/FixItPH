@@ -170,7 +170,8 @@ export default function RegisterPage() {
   }, []);
 
   const redirectToGoogle = () => {
-    window.location.href = "/api/auth/google";
+    // This will redirect to your backend which handles Google OAuth
+    window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
   };
 
   return (
