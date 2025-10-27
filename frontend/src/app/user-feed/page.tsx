@@ -7,6 +7,7 @@ import styles from "./user-feed.module.css";
 import Image from "next/image";
 import { toast } from "react-toastify";
 import { useLoader } from "@/context/LoaderContext";
+import { useRouter } from "next/navigation";
 
 interface Report {
   _id: string;
@@ -23,13 +24,19 @@ interface Report {
   description: string;
   status: string;
   location: string;
-  category: string; // Add category to interface
-  isUrgent?: boolean; // Add isUrgent to interface
+  category: string;
+  isUrgent?: boolean;
   image: string;
   comments?: { user: string; text: string; createdAt?: string }[];
 }
 
 interface UserProfile {
+  fName?: string;
+  lName?: string;
+  email?: string;
+  barangay?: string;
+  municipality?: string;
+  contact?: string;
   profilePicture?: {
     url?: string;
     public_id?: string;
@@ -37,6 +44,7 @@ interface UserProfile {
 }
 
 export default function UserFeedPage() {
+  const router = useRouter();
   const modalMapRef = useRef<HTMLDivElement>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [modalMarker, setModalMarker] = useState<any>(null);
@@ -46,8 +54,8 @@ export default function UserFeedPage() {
   const [reportForm, setReportForm] = useState({
     title: "",
     description: "",
-    category: "", // Add category to form state
-    isUrgent: false, // Add isUrgent to form state
+    category: "",
+    isUrgent: false,
     image: null as File | null,
     address: "",
     latitude: "",
@@ -58,6 +66,7 @@ export default function UserFeedPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [showProfileBanner, setShowProfileBanner] = useState(false);
   const { showLoader, hideLoader } = useLoader();
 
   const defaultProfilePic = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
@@ -82,6 +91,10 @@ export default function UserFeedPage() {
           console.log("✅ User profile loaded:", data);
           console.log("📸 Nav profile picture URL:", data.profilePicture?.url);
           setUserProfile(data);
+
+          // Check if profile is incomplete
+          const isIncomplete = !data.barangay || !data.municipality || !data.contact;
+          setShowProfileBanner(isIncomplete);
         }
       } catch (err) {
         console.error("Failed to fetch user profile", err);
@@ -123,12 +136,10 @@ export default function UserFeedPage() {
   useEffect(() => {
     if (!modalVisible || !LRef) return;
 
-    // Wait a bit for modal to render fully before attaching map
     setTimeout(() => {
       const mapContainer = document.getElementById("modal-map");
       if (!mapContainer) return;
 
-      // Clear any previous map instance (important when reopening modal)
       if (mapContainer.innerHTML !== "") {
         mapContainer.innerHTML = "";
       }
@@ -149,7 +160,6 @@ export default function UserFeedPage() {
 
       let marker: any = null;
 
-      // Add marker on click, update its position if already added
       map.on("click", async (e: any) => {
         const { lat, lng } = e.latlng;
 
@@ -177,7 +187,6 @@ export default function UserFeedPage() {
         }));
       });
 
-      // Fix map resizing inside modal
       setTimeout(() => map.invalidateSize(), 200);
     }, 100);
   }, [modalVisible, LRef]);
@@ -247,14 +256,14 @@ export default function UserFeedPage() {
       return;
     }
 
-    showLoader(); // Show the loader
+    showLoader();
 
     try {
       const formData = new FormData();
       formData.append("title", reportForm.title);
       formData.append("description", reportForm.description);
-      formData.append("category", reportForm.category); // Add category
-      formData.append("isUrgent", String(reportForm.isUrgent)); // Add isUrgent
+      formData.append("category", reportForm.category);
+      formData.append("isUrgent", String(reportForm.isUrgent));
       if (reportForm.image) formData.append("image", reportForm.image);
       formData.append("location", reportForm.address);
       formData.append("latitude", reportForm.latitude);
@@ -273,7 +282,6 @@ export default function UserFeedPage() {
       if (res.ok) {
         toast.success("Report submitted successfully!");
         setModalVisible(false);
-        // Reset form
         setReportForm({
           title: "",
           description: "",
@@ -285,8 +293,6 @@ export default function UserFeedPage() {
           longitude: "",
         });
 
-        
-        // Refresh reports after submission
         const refreshRes = await fetch(`${API}/reports`);
         if (refreshRes.ok) {
           const data = await refreshRes.json();
@@ -299,7 +305,7 @@ export default function UserFeedPage() {
       console.error("Submission error:", error);
       toast.error("An error occurred while submitting the report.");
     } finally {
-      hideLoader(); // Hide the loader
+      hideLoader();
     }
   };
 
@@ -375,6 +381,31 @@ export default function UserFeedPage() {
           </ul>
         </nav>
 
+        {/* Profile Completion Banner */}
+        {showProfileBanner && (
+          <div className={styles.profileBanner}>
+            <div className={styles.bannerContent}>
+              <i className="fa-solid fa-circle-exclamation" style={{ marginRight: '10px', fontSize: '18px' }}></i>
+              <span>
+                Your profile is incomplete. Please update your barangay, municipality, and contact information.
+              </span>
+              <button 
+                className={styles.bannerBtn}
+                onClick={() => router.push('/user-profile')}
+              >
+                Complete Profile
+              </button>
+              <button 
+                className={styles.bannerClose}
+                onClick={() => setShowProfileBanner(false)}
+                aria-label="Dismiss"
+              >
+                ✖
+              </button>
+            </div>
+          </div>
+        )}
+
         <div className={styles.toolbar} role="toolbar" aria-label="Reports toolbar">
           <div className={styles.toolbarInner}>
             <button
@@ -406,7 +437,6 @@ export default function UserFeedPage() {
               {filteredReports.length > 0 ? (
                 filteredReports.map((r) => {
                   const reportUserPic = r.user?.profilePicture?.url || defaultProfilePic;
-                  console.log(`📸 Report ${r._id} user pic:`, reportUserPic);
                   
                   return (
                     <article className={styles.reportCard} key={r._id}>
@@ -424,7 +454,6 @@ export default function UserFeedPage() {
                                 objectFit: 'cover'
                               }}
                               onError={(e) => {
-                                console.error('Failed to load image:', reportUserPic);
                                 (e.target as HTMLImageElement).src = defaultProfilePic;
                               }}
                             />
@@ -532,7 +561,6 @@ export default function UserFeedPage() {
                   required
                 />
 
-                {/* Add Category Dropdown */}
                 <select
                   className={styles.input}
                   name="category"
@@ -600,7 +628,6 @@ export default function UserFeedPage() {
 
                 <div id="modal-map" ref={modalMapRef} className={styles.modalMap}></div>
              
-                     {/* Add Urgent Checkbox */}
                 <div className={styles.urgentToggle}>
                   <input
                     type="checkbox"
