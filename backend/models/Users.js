@@ -1,23 +1,52 @@
 const mongoose = require('mongoose');
 
-const UserSchema = new mongoose.Schema({
-    fName: { type: String, required: true, index: true },
-    lName: { type: String, required: true, index: true },
-    email: { type: String, required: true, unique: true, index: true },
-    contact: { type: String, required: true },
-    password: { type: String, required: true },
-    barangay: { type: String, required: true },
-    municipality: { type: String, required: true },
-    contactVerified: {
-    type: Boolean,
-    default: false,
-    },
+const userSchema = new mongoose.Schema({
+  fName: {
+    type: String,
+    required: true,
+  },
+  lName: {
+    type: String,
+    required: true,
+  },
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  contact: {
+    type: String,
+    required: false, // Changed to optional
+    default: '',
+  },
+  password: {
+    type: String,
+    required: false, // Changed to optional (Google users don't have password)
+    default: '',
+  },
+  barangay: {
+    type: String,
+    required: false, // Changed to optional
+    default: '',
+  },
+  municipality: {
+    type: String,
+    required: false, // Changed to optional
+    default: '',
+  },
+  profilePicture: {
+    url: { type: String, default: '' },
+    public_id: { type: String, default: '' },
+  },
+  role: {
+    type: String,
+    enum: ['user', 'admin'],
+    default: 'user',
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+});
 
-    // Optional profile picture
-    profilePicture: {
-        url: { type: String, default: "" },       // Cloudinary URL
-        public_id: { type: String, default: "" }, // Cloudinary public_id for update/delete
-    }
-}, { collection: 'users' });
-
-module.exports = mongoose.model('User', UserSchema);
+module.exports = mongoose.model('User', userSchema);
