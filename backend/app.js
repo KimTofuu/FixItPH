@@ -2,6 +2,7 @@ const express = require('express');
 const morgan = require('morgan');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
+const reputationRoutes = require('./routes/reputation');
 require('dotenv').config();
 
 const connectDB = require('./config/mongodb'); 
@@ -26,6 +27,7 @@ app.use('/users', usersRouter);
 app.use('/reports', reportsRouter);
 app.use('/admin', adminRouter);
 app.use('/auth', require('./routes/auth'));
+app.use('/reputation', reputationRoutes);
 
 // 404 handler
 app.use((req, res, next) => {
