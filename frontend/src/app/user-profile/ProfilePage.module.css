@@ -312,3 +312,280 @@
   .rightActions{ gap:6px; }
   .modal{ width:94%; padding:0.9rem; }
 }
+
+/* Add these to your existing ProfilePage.module.css */
+
+/* Tab Navigation */
+.tabNav {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  background: white;
+  padding: 8px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.tab {
+  flex: 1;
+  padding: 12px 24px;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tab:hover {
+  background: #f1f5f9;
+  color: #334155;
+}
+
+.tabActive {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white !important;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+/* Reputation Header */
+.reputationHeader {
+  margin-bottom: 32px;
+}
+
+.levelCard {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 16px;
+  color: white;
+  margin-bottom: 20px;
+}
+
+.levelIcon {
+  font-size: 64px;
+  line-height: 1;
+}
+
+.levelTitle {
+  font-size: 32px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.levelSubtitle {
+  font-size: 16px;
+  opacity: 0.9;
+  margin: 4px 0 0 0;
+}
+
+/* Progress Bar */
+.progressSection {
+  background: #f8fafc;
+  padding: 20px;
+  border-radius: 12px;
+}
+
+.progressHeader {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.progressLabel {
+  font-size: 14px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.progressValue {
+  font-size: 14px;
+  color: #1e293b;
+  font-weight: 600;
+}
+
+.progressBar {
+  height: 12px;
+  background: #e2e8f0;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  border-radius: 6px;
+  transition: width 0.3s ease;
+}
+
+/* Stats Grid */
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.statCard {
+  background: #f8fafc;
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.statCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.statIcon {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+
+.statValue {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 4px;
+}
+
+.statLabel {
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+/* Badges Section */
+.badgesSection {
+  margin-bottom: 32px;
+}
+
+.sectionTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 16px;
+}
+
+.badgesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 16px;
+}
+
+.badge {
+  background: white;
+  border: 2px solid #e2e8f0;
+  padding: 16px;
+  border-radius: 12px;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.badge:hover {
+  border-color: #667eea;
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(102, 126, 234, 0.15);
+}
+
+.badgeIcon {
+  font-size: 40px;
+  margin-bottom: 8px;
+}
+
+.badgeName {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 4px;
+}
+
+.badgeDate {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+/* Empty State */
+.emptyState {
+  text-align: center;
+  padding: 48px 24px;
+  background: #f8fafc;
+  border-radius: 12px;
+}
+
+.emptyIcon {
+  font-size: 64px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.emptyText {
+  font-size: 15px;
+  color: #64748b;
+  margin: 0;
+}
+
+/* Earn Points Section */
+.earnPointsSection {
+  background: #f8fafc;
+  padding: 24px;
+  border-radius: 12px;
+}
+
+.earnList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.earnItem {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px;
+  background: white;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.earnItem:hover {
+  transform: translateX(4px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+}
+
+.earnPoints {
+  font-size: 18px;
+  font-weight: 700;
+  color: #667eea;
+  min-width: 60px;
+}
+
+.earnDesc {
+  font-size: 14px;
+  color: #475569;
+}
+
+@media (max-width: 768px) {
+  .levelCard {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .badgesGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .tabNav {
+    flex-direction: column;
+  }
+}

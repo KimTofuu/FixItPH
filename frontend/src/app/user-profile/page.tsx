@@ -19,6 +19,19 @@ interface ProfileData {
     url?: string;
     public_id?: string;
   };
+  reputation?: {
+    points: number;
+    level: string;
+    badges: Array<{
+      name: string;
+      icon: string;
+      earnedAt: string;
+    }>;
+    totalReports: number;
+    verifiedReports: number;
+    resolvedReports: number;
+    helpfulVotes: number;
+  };
 }
 
 export default function ProfilePage() {
@@ -26,6 +39,7 @@ export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [activeTab, setActiveTab] = useState<'profile' | 'reputation'>('profile');
 
   // Change password modal state
   const [showChangePassModal, setShowChangePassModal] = useState(false);
@@ -72,6 +86,15 @@ export default function ProfilePage() {
           contact: data.contact || "",
           contactVerified: data.contactVerified || false,
           profilePicture: data.profilePicture || { url: "", public_id: "" },
+          reputation: data.reputation || {
+            points: 0,
+            level: 'Newcomer',
+            badges: [],
+            totalReports: 0,
+            verifiedReports: 0,
+            resolvedReports: 0,
+            helpfulVotes: 0,
+          },
         });
       } catch (err) {
         console.error("Error fetching profile:", err);
@@ -350,6 +373,49 @@ export default function ProfilePage() {
     }
   };
 
+  // Get level color
+  const getLevelColor = (level: string) => {
+    switch (level) {
+      case 'Newcomer': return '#94a3b8';
+      case 'Contributor': return '#3b82f6';
+      case 'Trusted': return '#8b5cf6';
+      case 'Expert': return '#f59e0b';
+      case 'Guardian': return '#ef4444';
+      default: return '#94a3b8';
+    }
+  };
+
+  // Get level icon
+  const getLevelIcon = (level: string) => {
+    switch (level) {
+      case 'Newcomer': return '🌱';
+      case 'Contributor': return '📝';
+      case 'Trusted': return '⭐';
+      case 'Expert': return '🏆';
+      case 'Guardian': return '👑';
+      default: return '🌱';
+    }
+  };
+
+  // Calculate progress to next level
+  const getProgressToNextLevel = () => {
+    const points = profile?.reputation?.points || 0;
+    if (points >= 1000) return 100;
+    if (points >= 500) return ((points - 500) / 500) * 100;
+    if (points >= 200) return ((points - 200) / 300) * 100;
+    if (points >= 50) return ((points - 50) / 150) * 100;
+    return (points / 50) * 100;
+  };
+
+  const getNextLevelPoints = () => {
+    const points = profile?.reputation?.points || 0;
+    if (points >= 1000) return null;
+    if (points >= 500) return 1000;
+    if (points >= 200) return 500;
+    if (points >= 50) return 200;
+    return 50;
+  };
+
   if (!profile) return <div className={styles.loading}>Loading profile...</div>;
 
   const profilePicUrl = profile?.profilePicture?.url || defaultProfilePic;
@@ -415,63 +481,54 @@ export default function ProfilePage() {
       </header>
 
       <main className={styles.container}>
-        <section className={styles.card}>
-          <div className={styles.headerRow}>
-            <div className={styles.avatarWrap} style={{ position: 'relative' }}>
-              <Image
-                src={profilePicUrl}
-                alt="avatar"
-                width={88}
-                height={88}
-                className={styles.largeAvatar}
-              />
-              
-              {/* Upload/Delete buttons */}
-              <div style={{ 
-                position: 'absolute', 
-                bottom: '-8px', 
-                right: '-8px',
-                display: 'flex',
-                gap: '6px'
-              }}>
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={uploadingPicture}
-                  style={{
-                    width: '36px',
-                    height: '36px',
-                    borderRadius: '50%',
-                    backgroundColor: '#3b82f6',
-                    color: 'white',
-                    border: '2px solid white',
-                    cursor: uploadingPicture ? 'not-allowed' : 'pointer',
-                    fontSize: '18px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-                    transition: 'all 0.2s'
-                  }}
-                  title={uploadingPicture ? "Uploading..." : "Upload picture"}
-                  onMouseOver={(e) => !uploadingPicture && (e.currentTarget.style.transform = 'scale(1.1)')}
-                  onMouseOut={(e) => (e.currentTarget.style.transform = 'scale(1)')}
-                >
-                  {uploadingPicture ? '...' : '📷'}
-                </button>
+        {/* Tab Navigation */}
+        <div className={styles.tabNav}>
+          <button
+            className={`${styles.tab} ${activeTab === 'profile' ? styles.tabActive : ''}`}
+            onClick={() => setActiveTab('profile')}
+          >
+            👤 Profile
+          </button>
+          <button
+            className={`${styles.tab} ${activeTab === 'reputation' ? styles.tabActive : ''}`}
+            onClick={() => setActiveTab('reputation')}
+          >
+            🏆 Reputation
+          </button>
+        </div>
+
+        {/* Profile Tab */}
+        {activeTab === 'profile' && (
+          <section className={styles.card}>
+            <div className={styles.headerRow}>
+              <div className={styles.avatarWrap} style={{ position: 'relative' }}>
+                <Image
+                  src={profilePicUrl}
+                  alt="avatar"
+                  width={88}
+                  height={88}
+                  className={styles.largeAvatar}
+                />
                 
-                {profile?.profilePicture?.url && (
+                <div style={{ 
+                  position: 'absolute', 
+                  bottom: '-8px', 
+                  right: '-8px',
+                  display: 'flex',
+                  gap: '6px'
+                }}>
                   <button
                     type="button"
-                    onClick={handleDeleteProfilePicture}
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploadingPicture}
                     style={{
                       width: '36px',
                       height: '36px',
                       borderRadius: '50%',
-                      backgroundColor: '#ef4444',
+                      backgroundColor: '#3b82f6',
                       color: 'white',
                       border: '2px solid white',
-                      cursor: 'pointer',
+                      cursor: uploadingPicture ? 'not-allowed' : 'pointer',
                       fontSize: '18px',
                       display: 'flex',
                       alignItems: 'center',
@@ -479,172 +536,335 @@ export default function ProfilePage() {
                       boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
                       transition: 'all 0.2s'
                     }}
-                    title="Delete picture"
-                    onMouseOver={(e) => (e.currentTarget.style.transform = 'scale(1.1)')}
+                    title={uploadingPicture ? "Uploading..." : "Upload picture"}
+                    onMouseOver={(e) => !uploadingPicture && (e.currentTarget.style.transform = 'scale(1.1)')}
                     onMouseOut={(e) => (e.currentTarget.style.transform = 'scale(1)')}
                   >
-                    🗑️
+                    {uploadingPicture ? '...' : '📷'}
+                  </button>
+                  
+                  {profile?.profilePicture?.url && (
+                    <button
+                      type="button"
+                      onClick={handleDeleteProfilePicture}
+                      style={{
+                        width: '36px',
+                        height: '36px',
+                        borderRadius: '50%',
+                        backgroundColor: '#ef4444',
+                        color: 'white',
+                        border: '2px solid white',
+                        cursor: 'pointer',
+                        fontSize: '18px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                        transition: 'all 0.2s'
+                      }}
+                      title="Delete picture"
+                      onMouseOver={(e) => (e.currentTarget.style.transform = 'scale(1.1)')}
+                      onMouseOut={(e) => (e.currentTarget.style.transform = 'scale(1)')}
+                    >
+                      🗑️
+                    </button>
+                  )}
+                </div>
+
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleProfilePictureUpload}
+                  style={{ display: 'none' }}
+                />
+              </div>
+
+              <div className={styles.identity}>
+                <h2 className={styles.name}>{profile.fName} {profile.lName}</h2>
+                <p className={styles.email}>{profile.email}</p>
+                
+                {/* Quick reputation badge */}
+                <div style={{ 
+                  display: 'inline-flex', 
+                  alignItems: 'center', 
+                  gap: '6px',
+                  marginTop: '8px',
+                  padding: '4px 12px',
+                  backgroundColor: getLevelColor(profile.reputation?.level || 'Newcomer'),
+                  color: 'white',
+                  borderRadius: '20px',
+                  fontSize: '13px',
+                  fontWeight: '600'
+                }}>
+                  <span>{getLevelIcon(profile.reputation?.level || 'Newcomer')}</span>
+                  <span>{profile.reputation?.level || 'Newcomer'}</span>
+                  <span>•</span>
+                  <span>{profile.reputation?.points || 0} pts</span>
+                </div>
+              </div>
+
+              <div className={styles.headerActions}>
+                {!isEditing && (
+                  <button
+                    onClick={() => setIsEditing(true)}
+                    className={styles.primary}
+                  >
+                    Edit
+                  </button>
+                )}
+                {isEditing && (
+                  <button
+                    onClick={handleSave}
+                    className={styles.primaryDark}
+                  >
+                    Save
                   </button>
                 )}
               </div>
-
-              {/* Hidden file input */}
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleProfilePictureUpload}
-                style={{ display: 'none' }}
-              />
             </div>
 
-            <div className={styles.identity}>
-              <h2 className={styles.name}>{profile.fName} {profile.lName}</h2>
-              <p className={styles.email}>{profile.email}</p>
-            </div>
-
-            <div className={styles.headerActions}>
-              {!isEditing && (
-                <button
-                  onClick={() => setIsEditing(true)}
-                  className={styles.primary}
-                >
-                  Edit
-                </button>
-              )}
-              {isEditing && (
-                <button
-                  onClick={handleSave}
-                  className={styles.primaryDark}
-                >
-                  Save
-                </button>
-              )}
-            </div>
-          </div>
-
-          <div className={styles.grid}>
-            <div className={styles.field}>
-              <label className={styles.label}>First name</label>
-              <input
-                name="fName"
-                type="text"
-                value={profile.fName}
-                disabled={!isEditing}
-                onChange={handleChange}
-                className={styles.input}
-              />
-            </div>
-
-            <div className={styles.field}>
-              <label className={styles.label}>Last name</label>
-              <input
-                name="lName"
-                type="text"
-                value={profile.lName}
-                disabled={!isEditing}
-                onChange={handleChange}
-                className={styles.input}
-              />
-            </div>
-
-            <div className={styles.fieldFull}>
-              <label className={styles.label}>Email</label>
-              <input
-                name="email"
-                type="email"
-                value={profile.email}
-                disabled={!isEditing}
-                onChange={handleChange}
-                className={styles.input}
-              />
-            </div>
-
-            <div className={styles.field}>
-              <label className={styles.label}>Barangay</label>
-              <input
-                name="barangay"
-                type="text"
-                value={profile.barangay || ""}
-                disabled={!isEditing}
-                onChange={handleChange}
-                className={styles.input}
-              />
-            </div>
-
-            <div className={styles.field}>
-              <label className={styles.label}>Municipality</label>
-              <input
-                name="municipality"
-                type="text"
-                value={profile.municipality || ""}
-                disabled={!isEditing}
-                onChange={handleChange}
-                className={styles.input}
-              />
-            </div>
-
-            <div className={styles.fieldFull}>
-              <label className={styles.label}>Contact Number</label>
-              <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+            <div className={styles.grid}>
+              <div className={styles.field}>
+                <label className={styles.label}>First name</label>
                 <input
-                  name="contact"
-                  type="tel"
-                  value={profile.contact || ""}
+                  name="fName"
+                  type="text"
+                  value={profile.fName}
                   disabled={!isEditing}
                   onChange={handleChange}
                   className={styles.input}
-                  placeholder="+639XXXXXXXXX or 09XXXXXXXXX"
-                  style={{ flex: 1 }}
                 />
-                {profile.contactVerified ? (
-                  <span style={{ color: "#22c55e", fontSize: "14px", fontWeight: 500, whiteSpace: "nowrap" }}>
-                    ✓ Verified
-                  </span>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={handleRequestSmsOtp}
-                    disabled={sendingOtp || !profile.contact}
-                    style={{
-                      padding: "8px 16px",
-                      backgroundColor: profile.contact ? "#3b82f6" : "#d1d5db",
-                      color: "white",
-                      border: "none",
-                      borderRadius: "6px",
-                      cursor: profile.contact ? "pointer" : "not-allowed",
-                      fontSize: "14px",
-                      fontWeight: 500,
-                      whiteSpace: "nowrap"
-                    }}
-                  >
-                    {sendingOtp ? "Sending..." : "Verify"}
-                  </button>
-                )}
+              </div>
+
+              <div className={styles.field}>
+                <label className={styles.label}>Last name</label>
+                <input
+                  name="lName"
+                  type="text"
+                  value={profile.lName}
+                  disabled={!isEditing}
+                  onChange={handleChange}
+                  className={styles.input}
+                />
+              </div>
+
+              <div className={styles.fieldFull}>
+                <label className={styles.label}>Email</label>
+                <input
+                  name="email"
+                  type="email"
+                  value={profile.email}
+                  disabled={!isEditing}
+                  onChange={handleChange}
+                  className={styles.input}
+                />
+              </div>
+
+              <div className={styles.field}>
+                <label className={styles.label}>Barangay</label>
+                <input
+                  name="barangay"
+                  type="text"
+                  value={profile.barangay || ""}
+                  disabled={!isEditing}
+                  onChange={handleChange}
+                  className={styles.input}
+                />
+              </div>
+
+              <div className={styles.field}>
+                <label className={styles.label}>Municipality</label>
+                <input
+                  name="municipality"
+                  type="text"
+                  value={profile.municipality || ""}
+                  disabled={!isEditing}
+                  onChange={handleChange}
+                  className={styles.input}
+                />
+              </div>
+
+              <div className={styles.fieldFull}>
+                <label className={styles.label}>Contact Number</label>
+                <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                  <input
+                    name="contact"
+                    type="tel"
+                    value={profile.contact || ""}
+                    disabled={!isEditing}
+                    onChange={handleChange}
+                    className={styles.input}
+                    placeholder="+639XXXXXXXXX or 09XXXXXXXXX"
+                    style={{ flex: 1 }}
+                  />
+                  {profile.contactVerified ? (
+                    <span style={{ color: "#22c55e", fontSize: "14px", fontWeight: 500, whiteSpace: "nowrap" }}>
+                      ✓ Verified
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handleRequestSmsOtp}
+                      disabled={sendingOtp || !profile.contact}
+                      style={{
+                        padding: "8px 16px",
+                        backgroundColor: profile.contact ? "#3b82f6" : "#d1d5db",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "6px",
+                        cursor: profile.contact ? "pointer" : "not-allowed",
+                        fontSize: "14px",
+                        fontWeight: 500,
+                        whiteSpace: "nowrap"
+                      }}
+                    >
+                      {sendingOtp ? "Sending..." : "Verify"}
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className={styles.actionsRow}>
-            <button
-              type="button"
-              onClick={() => setShowChangePassModal(true)}
-              className={styles.linkButton}
-            >
-              Change Password
-            </button>
-
-            <div className={styles.rightActions}>
+            <div className={styles.actionsRow}>
               <button
                 type="button"
-                onClick={() => setShowLogoutModal(true)}
-                className={styles.danger}
+                onClick={() => setShowChangePassModal(true)}
+                className={styles.linkButton}
               >
-                Log Out
+                Change Password
               </button>
+
+              <div className={styles.rightActions}>
+                <button
+                  type="button"
+                  onClick={() => setShowLogoutModal(true)}
+                  className={styles.danger}
+                >
+                  Log Out
+                </button>
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
+
+        {/* Reputation Tab */}
+        {activeTab === 'reputation' && (
+          <section className={styles.card}>
+            <div className={styles.reputationHeader}>
+              <div className={styles.levelCard}>
+                <div className={styles.levelIcon}>{getLevelIcon(profile.reputation?.level || 'Newcomer')}</div>
+                <div>
+                  <h3 className={styles.levelTitle}>{profile.reputation?.level || 'Newcomer'}</h3>
+                  <p className={styles.levelSubtitle}>{profile.reputation?.points || 0} Reputation Points</p>
+                </div>
+              </div>
+
+              {/* Progress to next level */}
+              {getNextLevelPoints() && (
+                <div className={styles.progressSection}>
+                  <div className={styles.progressHeader}>
+                    <span className={styles.progressLabel}>Progress to next level</span>
+                    <span className={styles.progressValue}>
+                      {profile.reputation?.points || 0} / {getNextLevelPoints()}
+                    </span>
+                  </div>
+                  <div className={styles.progressBar}>
+                    <div 
+                      className={styles.progressFill} 
+                      style={{ 
+                        width: `${getProgressToNextLevel()}%`,
+                        backgroundColor: getLevelColor(profile.reputation?.level || 'Newcomer')
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Stats Grid */}
+            <div className={styles.statsGrid}>
+              <div className={styles.statCard}>
+                <div className={styles.statIcon}>📊</div>
+                <div className={styles.statValue}>{profile.reputation?.totalReports || 0}</div>
+                <div className={styles.statLabel}>Total Reports</div>
+              </div>
+
+              <div className={styles.statCard}>
+                <div className={styles.statIcon}>✅</div>
+                <div className={styles.statValue}>{profile.reputation?.verifiedReports || 0}</div>
+                <div className={styles.statLabel}>Verified Reports</div>
+              </div>
+
+              <div className={styles.statCard}>
+                <div className={styles.statIcon}>🔧</div>
+                <div className={styles.statValue}>{profile.reputation?.resolvedReports || 0}</div>
+                <div className={styles.statLabel}>Resolved Reports</div>
+              </div>
+
+              <div className={styles.statCard}>
+                <div className={styles.statIcon}>💡</div>
+                <div className={styles.statValue}>{profile.reputation?.helpfulVotes || 0}</div>
+                <div className={styles.statLabel}>Helpful Votes</div>
+              </div>
+            </div>
+
+            {/* Badges Section */}
+            <div className={styles.badgesSection}>
+              <h3 className={styles.sectionTitle}>🏆 Achievements ({profile.reputation?.badges?.length || 0})</h3>
+              
+              {profile.reputation?.badges && profile.reputation.badges.length > 0 ? (
+                <div className={styles.badgesGrid}>
+                  {profile.reputation.badges.map((badge, index) => (
+                    <div key={index} className={styles.badge}>
+                      <div className={styles.badgeIcon}>{badge.icon}</div>
+                      <div className={styles.badgeName}>{badge.name}</div>
+                      <div className={styles.badgeDate}>
+                        {new Date(badge.earnedAt).toLocaleDateString()}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className={styles.emptyState}>
+                  <div className={styles.emptyIcon}>🎯</div>
+                  <p className={styles.emptyText}>No badges yet. Start reporting to earn achievements!</p>
+                </div>
+              )}
+            </div>
+
+            {/* How to Earn Points */}
+            <div className={styles.earnPointsSection}>
+              <h3 className={styles.sectionTitle}>💎 How to Earn Points</h3>
+              <div className={styles.earnList}>
+                <div className={styles.earnItem}>
+                  <span className={styles.earnPoints}>+10</span>
+                  <span className={styles.earnDesc}>Create a report</span>
+                </div>
+                <div className={styles.earnItem}>
+                  <span className={styles.earnPoints}>+20</span>
+                  <span className={styles.earnDesc}>First report bonus</span>
+                </div>
+                <div className={styles.earnItem}>
+                  <span className={styles.earnPoints}>+50</span>
+                  <span className={styles.earnDesc}>Report gets verified</span>
+                </div>
+                <div className={styles.earnItem}>
+                  <span className={styles.earnPoints}>+100</span>
+                  <span className={styles.earnDesc}>Report gets resolved</span>
+                </div>
+                <div className={styles.earnItem}>
+                  <span className={styles.earnPoints}>+150</span>
+                  <span className={styles.earnDesc}>Urgent report resolved</span>
+                </div>
+                <div className={styles.earnItem}>
+                  <span className={styles.earnPoints}>+5</span>
+                  <span className={styles.earnDesc}>Receive helpful vote</span>
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
       </main>
 
       {/* LOGOUT CONFIRMATION MODAL */}
