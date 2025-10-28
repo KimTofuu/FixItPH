@@ -60,6 +60,7 @@ const reportSchema = new mongoose.Schema({
   votedBy: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
+    default: []
   }],
   comments: [{
     author: String,
