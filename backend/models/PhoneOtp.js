@@ -23,6 +23,6 @@ const PhoneOtpSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 // TTL index to auto-delete expired OTPs
-PhoneOtpSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+PhoneOtpSchema.index({ expireAfterSeconds: 0 });
 
 module.exports = mongoose.model('PhoneOtp', PhoneOtpSchema);
