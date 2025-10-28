@@ -102,43 +102,120 @@ exports.awardResolvedReport = async (reportId) => {
 exports.voteHelpful = async (req, res) => {
   try {
     const { reportId } = req.params;
-    const voterId = req.userId;
-    
-    const report = await Report.findById(reportId).populate('user');
-    
+    const userId = req.user?.userId || req.userId;
+
+    console.log('🗳️ Vote request:', { reportId, userId });
+
+    if (!userId) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const report = await Report.findById(reportId).populate('user', '_id fName lName email');
+
     if (!report) {
       return res.status(404).json({ message: 'Report not found' });
     }
+
+    console.log('📄 Report found:', {
+      reportId: report._id,
+      authorId: report.user._id,
+      currentVotes: report.helpfulVotes,
+      votedBy: report.votedBy
+    });
+
+    // Check if user is voting their own report
+    const reportAuthorId = report.user._id.toString();
+    const voterUserId = userId.toString();
+
+    if (reportAuthorId === voterUserId) {
+      console.log('❌ User trying to vote own report');
+      return res.status(400).json({ message: "You can't vote your own report" });
+    }
+
+    // Initialize votedBy array if it doesn't exist
+    if (!report.votedBy) {
+      report.votedBy = [];
+    }
+
+    // Check if user already voted (convert all IDs to strings for comparison)
+    const hasVoted = report.votedBy.some(id => id.toString() === voterUserId);
     
-    // Check if user already voted
-    if (report.votedBy.includes(voterId)) {
+    if (hasVoted) {
+      console.log('❌ User already voted');
       return res.status(400).json({ message: 'You already voted this report as helpful' });
     }
-    
-    // Can't vote own report
-    if (report.user._id.toString() === voterId) {
-      return res.status(400).json({ message: 'You cannot vote your own report' });
-    }
-    
+
     // Add vote
-    report.helpfulVotes += 1;
-    report.votedBy.push(voterId);
+    report.helpfulVotes = (report.helpfulVotes || 0) + 1;
+    report.votedBy.push(userId);
+    
     await report.save();
-    
+
+    console.log('✅ Vote saved:', {
+      newVoteCount: report.helpfulVotes,
+      votedBy: report.votedBy
+    });
+
     // Award reputation to report author
-    const user = report.user;
-    user.reputation.helpfulVotes += 1;
-    await user.addReputationPoints(REPUTATION_POINTS.HELPFUL_VOTE, 'Received helpful vote');
-    await user.checkAndAwardBadges();
-    
+    try {
+      await awardHelpfulVote(report.user._id);
+      console.log('✅ Reputation awarded to author');
+    } catch (repError) {
+      console.error('❌ Reputation award error:', repError);
+      // Don't fail the whole request if reputation fails
+    }
+
+    // Return the updated data with IDs as strings
     res.json({
-      message: 'Voted as helpful',
+      message: 'Vote recorded',
       helpfulVotes: report.helpfulVotes,
-      reputation: user.reputation,
+      votedBy: report.votedBy.map(id => id.toString()) // Convert ObjectIds to strings
     });
   } catch (err) {
-    console.error('Vote helpful error:', err);
-    res.status(500).json({ message: 'Server error' });
+    console.error('❌ Vote helpful error:', err);
+    res.status(500).json({ 
+      message: 'Server error',
+      error: process.env.NODE_ENV === 'development' ? err.message : undefined
+    });
+  }
+};
+
+// Make sure awardHelpfulVote function exists
+const awardHelpfulVote = async (userId) => {
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    // Initialize reputation if it doesn't exist
+    if (!user.reputation) {
+      user.reputation = {
+        points: 0,
+        level: 'Newcomer',
+        badges: [],
+        totalReports: 0,
+        verifiedReports: 0,
+        resolvedReports: 0,
+        helpfulVotes: 0
+      };
+    }
+
+    // Award points
+    user.reputation.points += REPUTATION_POINTS.HELPFUL_VOTE; // 5 points
+    user.reputation.helpfulVotes = (user.reputation.helpfulVotes || 0) + 1;
+
+    // Update level based on points
+    user.reputation.level = calculateLevel(user.reputation.points);
+
+    await user.save();
+
+    console.log(`✅ ${user.fName} ${user.lName} earned ${REPUTATION_POINTS.HELPFUL_VOTE} points for: Receiving a helpful vote`);
+
+    return user.reputation;
+  } catch (error) {
+    console.error('Award helpful vote error:', error);
+    throw error;
   }
 };
 
