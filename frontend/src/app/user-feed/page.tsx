@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation";
 interface Report {
   _id: string;
   user: { 
+    _id?: string; // ADD THIS
     fName: string; 
     lName: string; 
     email: string;
@@ -85,6 +86,8 @@ const handleHelpfulVote = async (reportId: string, setReports: React.Dispatch<Re
   const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
   
   try {
+    console.log('🗳️ Attempting to vote:', reportId);
+    
     const res = await fetch(`${API}/reports/${reportId}/vote-helpful`, {
       method: "POST",
       headers: {
@@ -94,24 +97,31 @@ const handleHelpfulVote = async (reportId: string, setReports: React.Dispatch<Re
     });
 
     const data = await res.json();
+    
+    console.log('📥 Vote response:', { status: res.status, data });
 
     if (res.ok) {
       toast.success("Voted as helpful! +5 points to report author 🎉");
       
-      // Update the report in state
+      // Update the report in state immediately
       setReports((prev) =>
         prev.map((r) =>
           r._id === reportId 
-            ? { ...r, helpfulVotes: data.helpfulVotes, votedBy: data.votedBy }
+            ? { 
+                ...r, 
+                helpfulVotes: data.helpfulVotes, 
+                votedBy: data.votedBy || [] // Ensure it's always an array
+              }
             : r
         )
       );
     } else {
+      console.error('❌ Vote failed:', data.message);
       toast.error(data.message || "Failed to vote");
     }
   } catch (error) {
-    console.error("Vote error:", error);
-    toast.error("Network error");
+    console.error("❌ Vote error:", error);
+    toast.error("Network error. Please try again.");
   }
 };
 
@@ -526,9 +536,25 @@ export default function UserFeedPage() {
               {filteredReports.length > 0 ? (
                 filteredReports.map((r) => {
                   const reportUserPic = r.user?.profilePicture?.url || defaultProfilePic;
-                  const hasVoted = Boolean(r.votedBy?.includes(currentUserId || ''));
-                  const isOwnReport = Boolean(r.user && currentUserId && r.user.email === userProfile?.email);
+                  
+                  // FIX: Check if current user's ID is in votedBy array
+                  const hasVoted = Boolean(currentUserId && r.votedBy?.includes(currentUserId));
+                  
+                  // FIX: Check if current user is the report author by comparing IDs
+                  const reportUserId = typeof r.user === 'object' && r.user !== null ? r.user._id : String(r.user);
+                  const isOwnReport = Boolean(currentUserId && reportUserId === currentUserId);
+                  
                   const isDisabled = hasVoted || isOwnReport;
+                  
+                  console.log('Vote Debug:', {
+                    reportId: r._id,
+                    currentUserId,
+                    reportUserId,
+                    votedBy: r.votedBy,
+                    hasVoted,
+                    isOwnReport,
+                    isDisabled
+                  });
                   
                   return (
                     <article className={styles.reportCard} key={r._id}>
