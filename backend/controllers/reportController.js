@@ -4,6 +4,21 @@ const cloudinary = require('../config/cloudinary');
 const { sendEmail } = require('../utils/emailService'); 
 const reputationController = require('./reputationController');
 
+// Helper function to format reports with string IDs
+const formatReportsWithStringIds = (reports) => {
+  return reports.map(report => {
+    const reportObj = report.toObject ? report.toObject() : report;
+    return {
+      ...reportObj,
+      votedBy: (reportObj.votedBy || []).map(id => id.toString()),
+      user: reportObj.user ? {
+        ...reportObj.user,
+        _id: reportObj.user._id ? reportObj.user._id.toString() : undefined
+      } : null
+    };
+  });
+};
+
 // Create a new report
 exports.createReport = async (req, res) => {
   try {
@@ -189,16 +204,9 @@ exports.getAllReports = async (req, res) => {
   try {
     const reports = await Report.find({ status: { $ne: 'awaiting-approval' } })
       .populate('user', '_id fName lName email profilePicture reputation')
-      .populate('votedBy', '_id') // Populate votedBy to ensure IDs are available
       .sort({ createdAt: -1 });
     
-    // Convert votedBy ObjectIds to strings
-    const reportsWithStringIds = reports.map(report => ({
-      ...report.toObject(),
-      votedBy: (report.votedBy || []).map(id => id.toString())
-    }));
-    
-    res.json(reportsWithStringIds);
+    res.json(formatReportsWithStringIds(reports));
   } catch (err) {
     console.error('getAllReports error:', err);
     res.status(500).json({ message: 'Server error' });

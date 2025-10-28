@@ -41,8 +41,8 @@ interface Report {
   category: string;
   isUrgent?: boolean;
   image: string;
-  helpfulVotes?: number; // Add this
-  votedBy?: string[]; // Add this
+  helpfulVotes?: number;
+  votedBy?: (string | any)[]; 
   comments?: { user: string; text: string; createdAt?: string }[];
 }
 
@@ -103,14 +103,14 @@ const handleHelpfulVote = async (reportId: string, setReports: React.Dispatch<Re
     if (res.ok) {
       toast.success("Voted as helpful! +5 points to report author 🎉");
       
-      // Update the report in state immediately
+      // Update the report in state immediately with string IDs
       setReports((prev) =>
         prev.map((r) =>
           r._id === reportId 
             ? { 
                 ...r, 
                 helpfulVotes: data.helpfulVotes, 
-                votedBy: data.votedBy || [] // Ensure it's always an array
+                votedBy: (data.votedBy || []).map((id: any) => String(id)) // Ensure strings
               }
             : r
         )
@@ -537,20 +537,25 @@ export default function UserFeedPage() {
                 filteredReports.map((r) => {
                   const reportUserPic = r.user?.profilePicture?.url || defaultProfilePic;
                   
-                  // FIX: Check if current user's ID is in votedBy array
-                  const hasVoted = Boolean(currentUserId && r.votedBy?.includes(currentUserId));
+                  // Ensure both IDs are strings and compare
+                  const hasVoted = Boolean(
+                    currentUserId && 
+                    r.votedBy && 
+                    r.votedBy.some(voterId => String(voterId) === String(currentUserId))
+                  );
                   
-                  // FIX: Check if current user is the report author by comparing IDs
-                  const reportUserId = typeof r.user === 'object' && r.user !== null ? r.user._id : String(r.user);
-                  const isOwnReport = Boolean(currentUserId && reportUserId === currentUserId);
+                  // Get report user ID safely and convert to string
+                  const reportUserId = r.user?._id ? String(r.user._id) : null;
+                  const isOwnReport = Boolean(currentUserId && reportUserId && String(reportUserId) === String(currentUserId));
                   
                   const isDisabled = hasVoted || isOwnReport;
                   
                   console.log('Vote Debug:', {
                     reportId: r._id,
-                    currentUserId,
+                    currentUserId: String(currentUserId),
                     reportUserId,
                     votedBy: r.votedBy,
+                    votedByTypes: r.votedBy?.map(id => typeof id),
                     hasVoted,
                     isOwnReport,
                     isDisabled
@@ -632,12 +637,15 @@ export default function UserFeedPage() {
                         </div>
                       </div>
 
-                      {/* Update the Helpful Vote Button section */}
                       <div className={styles.reportActions}>
                         <button
                           type="button"
                           className={`${styles.helpfulBtn} ${hasVoted ? styles.voted : ''}`}
-                          onClick={() => !isDisabled && handleHelpfulVote(r._id, setReports)}
+                          onClick={() => {
+                            if (!isDisabled) {
+                              handleHelpfulVote(r._id, setReports);
+                            }
+                          }}
                           disabled={isDisabled}
                           title={
                             isOwnReport 
