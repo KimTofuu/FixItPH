@@ -26,10 +26,19 @@ interface Report {
   location: string;
   timestamp: string;
   description: string;
+  category?: string; // ADDED
   imageUrl?: string;
   image?: string;
+  images?: string[]; // ADDED
+  videos?: string[]; // ADDED
+  isUrgent?: boolean; // ADDED
   user?: User;
   comments?: Comment[];
+  summary?: string;
+  resolvedAt?: string;
+  originalReportId?: string;
+  createdAt?: string;
+  updatedAt?: string; // ADDED
 }
 
 type AdminStatusFilter = "awaiting-approval" | "pending" | "in-progress" | "resolved";

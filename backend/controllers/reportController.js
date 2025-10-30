@@ -1,5 +1,6 @@
 const Report = require('../models/Report');
 const User = require('../models/Users');
+const ResolvedReport = require('../models/ResolvedReport'); // 1. Add this import
 const cloudinary = require('../config/cloudinary');
 const { sendEmail } = require('../utils/emailService'); 
 const reputationController = require('./reputationController');
@@ -137,34 +138,114 @@ exports.updateReportStatus = async (req, res) => {
     const { status } = req.body;
     const reportId = req.params.id;
 
-    if (!['pending', 'in-progress', 'resolved'].includes(status)) {
-      return res.status(400).json({ message: 'Invalid status value' });
+    // Handle non-resolved status updates normally
+    if (status !== 'resolved') {
+      if (!['pending', 'in-progress'].includes(status)) {
+        return res.status(400).json({ message: 'Invalid status value' });
+      }
+      const report = await Report.findByIdAndUpdate(
+        reportId,
+        { status },
+        { new: true }
+      ).populate('user', 'fName lName email profilePicture reputation');
+
+      if (!report) {
+        return res.status(404).json({ message: 'Report not found' });
+      }
+      return res.json(report);
     }
 
-    const report = await Report.findByIdAndUpdate(
-      reportId,
-      { status },
-      { new: true }
-    ).populate('user', 'fName lName email profilePicture reputation');
-
-    if (!report) {
-      return res.status(404).json({ message: 'Report not found' });
+    // --- Handle 'resolved' status: Move the report ---
+    console.log(`📦 Attempting to resolve and move report ID: ${reportId}`);
+    
+    // Find the original report
+    const originalReport = await Report.findById(reportId).lean();
+    if (!originalReport) {
+      return res.status(404).json({ message: 'Original report not found to resolve' });
     }
 
-    // Award reputation if resolved
-    if (status === 'resolved') {
+    console.log('📄 Original report found:', {
+      id: originalReport._id,
+      title: originalReport.title,
+      category: originalReport.category,
+      user: originalReport.user,
+      hasImages: originalReport.images?.length || 0,
+      hasVideos: originalReport.videos?.length || 0,
+      hasComments: originalReport.comments?.length || 0
+    });
+
+    // Create a new ResolvedReport document with ALL necessary fields
+    const resolvedReportData = {
+      originalReportId: originalReport._id,
+      title: originalReport.title,
+      description: originalReport.description,
+      category: originalReport.category, // ADDED
+      image: originalReport.image || (originalReport.images?.[0]) || null,
+      images: originalReport.images || [], // ADDED
+      videos: originalReport.videos || [], // ADDED
+      location: originalReport.location,
+      latitude: originalReport.latitude || null,
+      longitude: originalReport.longitude || null,
+      isUrgent: originalReport.isUrgent || false, // ADDED
+      user: originalReport.user,
+      comments: (originalReport.comments || []).map(c => ({
+        author: c.author || 'Unknown', // FIXED: Now uses 'author' consistently
+        text: c.text || '',
+        createdAt: c.createdAt || new Date()
+      })),
+      createdAt: originalReport.createdAt || new Date(),
+      updatedAt: originalReport.updatedAt || new Date(), // ADDED
+      resolvedAt: new Date(),
+    };
+
+    console.log('💾 Creating ResolvedReport with data:', {
+      originalReportId: resolvedReportData.originalReportId,
+      title: resolvedReportData.title,
+      category: resolvedReportData.category,
+      user: resolvedReportData.user,
+      imagesCount: resolvedReportData.images.length,
+      videosCount: resolvedReportData.videos.length,
+      commentsCount: resolvedReportData.comments.length
+    });
+
+    const newResolvedReport = new ResolvedReport(resolvedReportData);
+    
+    // Save the new ResolvedReport
+    await newResolvedReport.save();
+    console.log(`✅ Report ${reportId} successfully saved to ResolvedReport collection.`);
+
+    // Delete the original report from the main collection
+    await Report.findByIdAndDelete(reportId);
+    console.log(`✅ Original report ${reportId} deleted from Report collection.`);
+
+    // Award reputation points to the user who reported it
+    if (reputationController?.awardResolvedReport) {
       try {
-        await reputationController.awardResolvedReport(reportId);
+        await reputationController.awardResolvedReport(originalReport.user);
         console.log('✅ Reputation awarded for resolved report');
       } catch (repError) {
         console.error('❌ Reputation award error:', repError);
       }
     }
 
-    res.json(report);
+    // Populate the user field before returning
+    const populatedReport = await ResolvedReport.findById(newResolvedReport._id)
+      .populate('user', 'fName lName email profilePicture reputation');
+
+    console.log('🎉 Report successfully resolved and archived!');
+
+    // Return a success response
+    res.json({
+      message: 'Report marked as resolved and archived successfully.',
+      resolvedReport: populatedReport,
+    });
+
   } catch (err) {
-    console.error('Update status error:', err);
-    res.status(500).json({ message: 'Server error' });
+    console.error('❌ Update status error:', err);
+    res.status(500).json({ 
+      message: 'Server error', 
+      error: process.env.NODE_ENV === 'development' ? err.message : undefined 
+    });
   }
 };
 
@@ -515,12 +596,27 @@ exports.rejectReport = async (req, res) => {
 
 exports.getResolvedReports = async (req, res) => {
   try {
-    const reports = await Report.find({ status: 'resolved' })
+    const resolvedReports = await ResolvedReport.find()
       .populate('user', 'fName lName email profilePicture reputation')
-      .sort({ createdAt: -1 });
-    res.json(reports);
+      .sort({ resolvedAt: -1 }); // Sort by resolved date, newest first
+    
+    console.log(`📊 Fetched ${resolvedReports.length} resolved reports from ResolvedReport collection`);
+    res.json(resolvedReports);
   } catch (err) {
     console.error('getResolvedReports error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Update the existing getAllResolvedReports to use the same logic
+exports.getAllResolvedReports = async (req, res) => {
+  try {
+    const resolvedReports = await ResolvedReport.find()
+      .populate('user', 'fName lName email profilePicture reputation')
+      .sort({ resolvedAt: -1 });
+    res.json(resolvedReports);
+  } catch (err) {
+    console.error('getAllResolvedReports error:', err);
     res.status(500).json({ message: 'Server error' });
   }
 };
