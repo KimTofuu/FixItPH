@@ -1,7 +1,9 @@
 const bcrypt = require('bcryptjs');
 const Admin = require('../models/Admins');
 const jwt = require('jsonwebtoken');
-const Report = require('../models/Report'); // Needed for updateReportStatus
+const Report = require('../models/Report');
+const User = require('../models/Users'); // Add this
+const { sendEmail, emailTemplates } = require('../config/emailConfig'); // Add this
 
 // --- Admin Registration ---
 exports.register = async (req, res) => {
@@ -175,31 +177,68 @@ exports.updateProfile = async (req, res) => {
 exports.deleteFlaggedReport = async (req, res) => {
   try {
     const { reportId } = req.params;
+    const { reason } = req.body; // Get reason from request body
     const adminId = req.user.userId;
 
     console.log(`🗑️ Admin ${adminId} attempting to delete report ${reportId}`);
 
-    const report = await Report.findById(reportId);
+    // Populate both user and flags.userId to get email addresses
+    const report = await Report.findById(reportId)
+      .populate('user', 'fName lName email')
+      .populate('flags.userId', 'fName lName email');
     
     if (!report) {
       console.log('❌ Report not found');
       return res.status(404).json({ message: 'Report not found' });
     }
 
-    // Log report details before deletion
-    console.log(`📋 Deleting report: "${report.title}" by user ${report.user}`);
+    // Store data before deletion
+    const reportOwner = report.user;
+    const reportTitle = report.title;
+    const flaggers = report.flags || [];
+    const removalReason = reason || 'This report violated our community guidelines and was flagged multiple times by community members.';
+
+    console.log(`📋 Deleting report: "${reportTitle}" by user ${reportOwner.fName} ${reportOwner.lName}`);
     console.log(`🚩 Flag count: ${report.flagCount || 0}`);
 
+    // Delete the report
     await Report.findByIdAndDelete(reportId);
-    
     console.log(`✅ Report ${reportId} deleted successfully by admin ${adminId}`);
-    
+
+    // Send email to report owner
+    if (reportOwner && reportOwner.email) {
+      const ownerName = `${reportOwner.fName} ${reportOwner.lName}`;
+      const ownerEmail = emailTemplates.reportRemoved(ownerName, reportTitle, removalReason);
+      
+      console.log(`📧 Sending removal notification to ${reportOwner.email}`);
+      await sendEmail(reportOwner.email, ownerEmail.subject, ownerEmail.html);
+    }
+
+    // Send thank you emails to all flaggers
+    const emailPromises = flaggers.map(async (flag) => {
+      if (flag.userId && flag.userId.email) {
+        const flaggerName = `${flag.userId.fName} ${flag.userId.lName}`;
+        const thankYouEmail = emailTemplates.thankFlagger(flaggerName, reportTitle);
+        
+        console.log(`📧 Sending thank you email to ${flag.userId.email}`);
+        return sendEmail(flag.userId.email, thankYouEmail.subject, thankYouEmail.html);
+      }
+    });
+
+    // Wait for all emails to be sent
+    await Promise.all(emailPromises);
+    console.log(`✅ All notification emails sent`);
+
     res.json({ 
-      message: 'Flagged report deleted successfully',
+      message: 'Flagged report deleted successfully and notifications sent',
       deletedReport: {
         id: reportId,
-        title: report.title,
+        title: reportTitle,
         flagCount: report.flagCount
+      },
+      emailsSent: {
+        owner: reportOwner?.email ? true : false,
+        flaggers: flaggers.filter(f => f.userId?.email).length
       }
     });
 
