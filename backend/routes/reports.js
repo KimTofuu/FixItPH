@@ -22,6 +22,18 @@ const upload = multer({ storage, fileFilter });
 // --- End of Multer Config ---
 
 
+// --- ADMIN ROUTES  ---
+router.get('/admin/flagged-reports', authenticateToken, isAdmin, reportController.getFlaggedReports);
+router.get('/admin/reports-for-approval', authenticateToken, isAdmin, reportController.getReportsForApproval);
+router.get('/admin/resolved-reports', authenticateToken, isAdmin, reportController.getResolvedReports);
+
+router.patch('/admin/reports/:id/approve', authenticateToken, isAdmin, reportController.approveReport);
+router.patch('/admin/reports/:id/status', authenticateToken, isAdmin, reportController.updateReportStatus);
+
+router.delete('/admin/reports/:id/reject', authenticateToken, isAdmin, reportController.rejectReport);
+router.delete('/admin/:reportId/dismiss-flag', authenticateToken, isAdmin, reportController.dismissFlag);
+router.delete('/admin/:reportId/dismiss-all-flags', authenticateToken, isAdmin, reportController.dismissAllFlags);
+
 // --- USER ROUTES ---
 router.get('/', reportController.getAllReports);
 router.post('/', authenticateToken, upload.single('image'), reportController.createReport);
@@ -42,15 +54,6 @@ router.delete('/:id', authenticateToken, reportController.deleteReport);
 router.patch('/:id', authenticateToken, upload.single('image'), reportController.updateReport);
 
 router.post('/:reportId/flag', authenticateToken, reportController.flagReport);
-
-// --- ADMIN ROUTES ---
-router.get('/admin/reports-for-approval', authenticateToken, isAdmin, reportController.getReportsForApproval);
-router.patch('/admin/reports/:id/approve', authenticateToken, isAdmin, reportController.approveReport);
-router.delete('/admin/reports/:id/reject', authenticateToken, isAdmin, reportController.rejectReport);
-router.get('/admin/resolved-reports', authenticateToken, isAdmin, reportController.getResolvedReports);
-router.patch('/admin/reports/:id/status', authenticateToken, isAdmin, reportController.updateReportStatus);
-
-// --- VOTE ROUTES ---
-router.post('/:reportId/vote-helpful', authenticateToken, reputationController.voteHelpful);
+router.post('/:reportId/vote-helpful', authenticateToken, reputationController.voteHelpful); // Add this line
 
 module.exports = router;

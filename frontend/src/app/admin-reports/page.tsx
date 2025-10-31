@@ -278,6 +278,9 @@ export default function AdminReportsPage() {
               <a href="/admin-reports" className={styles.navLink}>Reports</a>
             </li>
             <li>
+              <a href="/admin-flag" className={styles.navLink}>Flagged</a>
+            </li>
+            <li>
               <a href="/admin-profile" className={styles.adminProfileLink}>
                 <img
                   src={profilePicUrl}

@@ -60,9 +60,23 @@ export default function LoginPage() {
 
       const data = await res.json();
 
+      console.log("📡 Admin login response:", data); // Debug log
+
       if (res.ok) {
         toast.success(data.message);
+        
+        // FIX: Save all necessary data to localStorage
         localStorage.setItem("token", data.token);
+        localStorage.setItem("role", "admin"); // ✅ Add this line
+        localStorage.setItem("userId", data.admin.id); // ✅ Add this line
+        localStorage.setItem("adminEmail", data.admin.email); // Optional
+        localStorage.setItem("barangayName", data.admin.barangayName); // Optional
+        
+        console.log("✅ Saved to localStorage:");
+        console.log("  Token:", localStorage.getItem("token") ? "saved" : "missing");
+        console.log("  Role:", localStorage.getItem("role"));
+        console.log("  UserId:", localStorage.getItem("userId"));
+        
         router.push("/admin-dashboard");
       } else {
         toast.error(data.message || "Admin login failed");
@@ -78,8 +92,20 @@ export default function LoginPage() {
 
     try {
       const result = await loginUser(form);
+      
+      console.log("📡 User login response:", result); // Debug log
+      
       if (result.token) {
+        // FIX: Save all necessary data
         localStorage.setItem("token", result.token);
+        localStorage.setItem("role", result.role || "user"); // ✅ Add this line
+        localStorage.setItem("userId", result.userId); // ✅ Add this line
+        
+        console.log("✅ Saved to localStorage:");
+        console.log("  Token:", localStorage.getItem("token") ? "saved" : "missing");
+        console.log("  Role:", localStorage.getItem("role"));
+        console.log("  UserId:", localStorage.getItem("userId"));
+        
         toast.success("Login successful! Redirecting...");
         setTimeout(() => router.push("/user-feed"), 1000);
       } else {

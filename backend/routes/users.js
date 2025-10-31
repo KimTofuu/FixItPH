@@ -4,6 +4,8 @@ const userController = require('../controllers/userController');
 const { authenticateToken } = require('../middleware/authenticateToken');
 const upload = require('../middleware/upload');
 const otpController = require('../controllers/otpController');
+const reportController = require('../controllers/reportController');
+const reputationController = require('../controllers/reputationController');
 
 // Public auth routes
 router.post('/register', userController.register);
