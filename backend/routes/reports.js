@@ -41,6 +41,8 @@ router.post('/:id/comment', authenticateToken, reportController.addComment);
 router.delete('/:id', authenticateToken, reportController.deleteReport);
 router.patch('/:id', authenticateToken, upload.single('image'), reportController.updateReport);
 
+router.post('/:reportId/flag', authenticateToken, reportController.flagReport);
+
 // --- ADMIN ROUTES ---
 router.get('/admin/reports-for-approval', authenticateToken, isAdmin, reportController.getReportsForApproval);
 router.patch('/admin/reports/:id/approve', authenticateToken, isAdmin, reportController.approveReport);
