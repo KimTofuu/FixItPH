@@ -75,6 +75,31 @@ const reportSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  flags: [{
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true
+    },
+    reason: {
+      type: String,
+      required: true
+    },
+    description: {
+      type: String,
+      default: ''
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now
+    }
+  }],
+  flagCount: {
+    type: Number,
+    default: 0
+  }
+}, {
+  timestamps: true
 });
 
 module.exports = mongoose.model('Report', reportSchema);
