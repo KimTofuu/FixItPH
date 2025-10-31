@@ -58,7 +58,7 @@ const userSchema = new mongoose.Schema({
     },
     level: {
       type: String,
-      enum: ['Newcomer', 'Contributor', 'Trusted', 'Expert', 'Guardian'],
+      enum: ['Newcomer', 'Active', 'Contributor', 'Veteran', 'Expert', 'Legend'], 
       default: 'Newcomer',
     },
     badges: [{
