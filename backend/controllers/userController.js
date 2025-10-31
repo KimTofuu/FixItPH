@@ -39,28 +39,38 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
+
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(401).json({ message: 'Invalid email or password' });
+      return res.status(401).json({ message: "Invalid email or password" });
     }
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-      return res.status(401).json({ message: 'Invalid email or password' });
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: "Invalid email or password" });
     }
+
     const token = jwt.sign(
-      { 
-        userId: user._id.toString(), // Convert to string and use 'userId'
-        email: user.email,
-        role: user.role || 'user'
-      },
+      { userId: user._id, role: user.role || "user" }, // Include role in JWT
       process.env.JWT_SECRET,
-      { expiresIn: '7d' }
+      { expiresIn: "24h" }
     );
-    res.cookie('token', token, { httpOnly: true, secure: true, sameSite: 'strict' });
-    res.status(200).json({ message: 'Login successful', token });
-  } catch (err) {
-    res.status(500).json({ message: 'Server error' });
-    console.error(err);
+
+    console.log("✅ User logged in:", user.email, "Role:", user.role || "user");
+
+    // Return role in response
+    res.json({
+      message: "Login successful",
+      token,
+      userId: user._id,
+      role: user.role || "user", // ✅ Add this line
+      fName: user.fName,
+      lName: user.lName
+    });
+
+  } catch (error) {
+    console.error("Login error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 

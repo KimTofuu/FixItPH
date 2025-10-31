@@ -11,4 +11,9 @@ router.patch('/profile', authenticateToken, isAdmin, adminController.updateProfi
 
 router.patch('/reports/:reportId/status', authenticateToken, isAdmin, adminController.updateReportStatus);
 
+// Delete flagged reports (add these with your other admin routes)
+router.delete('/reports/:reportId/delete-flagged', authenticateToken, isAdmin, adminController.deleteFlaggedReport);
+router.post('/reports/batch-delete', authenticateToken, isAdmin, adminController.batchDeleteReports);
+router.delete('/reports/:reportId/delete-and-warn', authenticateToken, isAdmin, adminController.deleteReportAndWarnUser);
+
 module.exports = router;
