@@ -11,6 +11,16 @@ const REPUTATION_POINTS = {
   FIRST_REPORT: 20,
 };
 
+// Helper function to calculate level based on points
+const calculateLevel = (points) => {
+  if (points >= 1000) return 'Legend';
+  if (points >= 500) return 'Expert';
+  if (points >= 250) return 'Veteran';
+  if (points >= 100) return 'Contributor';
+  if (points >= 50) return 'Active';
+  return 'Newcomer';
+};
+
 // Get user reputation
 exports.getUserReputation = async (req, res) => {
   try {
@@ -98,6 +108,45 @@ exports.awardResolvedReport = async (reportId) => {
   }
 };
 
+// Award helpful vote reputation
+const awardHelpfulVote = async (userId) => {
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    // Initialize reputation if it doesn't exist
+    if (!user.reputation) {
+      user.reputation = {
+        points: 0,
+        level: 'Newcomer',
+        badges: [],
+        totalReports: 0,
+        verifiedReports: 0,
+        resolvedReports: 0,
+        helpfulVotes: 0
+      };
+    }
+
+    // Award points
+    user.reputation.points += REPUTATION_POINTS.HELPFUL_VOTE; // 5 points
+    user.reputation.helpfulVotes = (user.reputation.helpfulVotes || 0) + 1;
+
+    // Update level based on points
+    user.reputation.level = calculateLevel(user.reputation.points);
+
+    await user.save();
+
+    console.log(`✅ ${user.fName} ${user.lName} earned ${REPUTATION_POINTS.HELPFUL_VOTE} points for: Receiving a helpful vote`);
+
+    return user.reputation;
+  } catch (error) {
+    console.error('Award helpful vote error:', error);
+    throw error;
+  }
+};
+
 // Vote report as helpful
 exports.voteHelpful = async (req, res) => {
   try {
@@ -177,45 +226,6 @@ exports.voteHelpful = async (req, res) => {
       message: 'Server error',
       error: process.env.NODE_ENV === 'development' ? err.message : undefined
     });
-  }
-};
-
-// Make sure awardHelpfulVote function exists
-const awardHelpfulVote = async (userId) => {
-  try {
-    const user = await User.findById(userId);
-    if (!user) {
-      throw new Error('User not found');
-    }
-
-    // Initialize reputation if it doesn't exist
-    if (!user.reputation) {
-      user.reputation = {
-        points: 0,
-        level: 'Newcomer',
-        badges: [],
-        totalReports: 0,
-        verifiedReports: 0,
-        resolvedReports: 0,
-        helpfulVotes: 0
-      };
-    }
-
-    // Award points
-    user.reputation.points += REPUTATION_POINTS.HELPFUL_VOTE; // 5 points
-    user.reputation.helpfulVotes = (user.reputation.helpfulVotes || 0) + 1;
-
-    // Update level based on points
-    user.reputation.level = calculateLevel(user.reputation.points);
-
-    await user.save();
-
-    console.log(`✅ ${user.fName} ${user.lName} earned ${REPUTATION_POINTS.HELPFUL_VOTE} points for: Receiving a helpful vote`);
-
-    return user.reputation;
-  } catch (error) {
-    console.error('Award helpful vote error:', error);
-    throw error;
   }
 };
 
