@@ -208,26 +208,28 @@ export default function AdminMapPage() {
             </button>
 
             <ul className={`${styles.navListUserSide} ${menuOpen ? styles.open : ""}`}>
-              <li>
-                <a href="/admin-dashboard" className={styles.navLink}>Dashboard</a>
-              </li>
-              <li className={styles.activeNavItem}>
-                <a href="/admin-map" className={styles.navLink}>Map</a>
-              </li>
-              <li>
-                <a href="/admin-reports" className={styles.navLink}>Reports</a>
-              </li>
-
-              <li>
-                <a href="/admin-profile" className={styles.adminProfileLink}>
-                  <img
-                    src={profilePicUrl}
-                    alt="Admin Profile"
-                    className={styles.adminProfilePic}
-                  />
-                </a>
-              </li>
-            </ul>
+            <li>
+              <a href="/admin-dashboard" className={styles.navLink}>Dashboard</a>
+            </li>
+            <li className={styles.activeNavItem}>
+              <a href="/admin-map" className={styles.navLink}>Map</a>
+            </li>
+            <li>
+              <a href="/admin-reports" className={styles.navLink}>Reports</a>
+            </li>
+            <li>
+              <a href="/admin-flag" className={styles.navLink}>Flagged</a>
+            </li>
+            <li>
+              <a href="/admin-profile" className={styles.adminProfileLink}>
+                <img
+                  src={profilePicUrl}
+                  alt="Admin Profile"
+                  className={styles.adminProfilePic}
+                />
+              </a>
+            </li>
+          </ul>
           </nav>
         </header>
 

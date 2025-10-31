@@ -677,3 +677,70 @@ exports.flagReport = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+exports.getFlaggedReports = async (req, res) => {
+  try {
+    const flaggedReports = await Report.find({ 
+      flagCount: { $gt: 0 } 
+    })
+      .populate('user', 'fName lName email profilePicture')
+      .populate('flags.userId', 'fName lName email')
+      .sort({ flagCount: -1, createdAt: -1 });
+
+    console.log(`📊 Found ${flaggedReports.length} flagged reports`);
+    res.json(flaggedReports);
+  } catch (error) {
+    console.error('Get flagged reports error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Dismiss a specific flag
+exports.dismissFlag = async (req, res) => {
+  try {
+    const { reportId } = req.params;
+    const { flagUserId } = req.body;
+
+    const report = await Report.findById(reportId);
+    if (!report) {
+      return res.status(404).json({ message: 'Report not found' });
+    }
+
+    // Remove the specific flag
+    report.flags = report.flags.filter(
+      (flag) => flag.userId.toString() !== flagUserId
+    );
+    report.flagCount = report.flags.length;
+
+    await report.save();
+
+    console.log(`✅ Dismissed flag from user ${flagUserId} on report ${reportId}`);
+    res.json({ message: 'Flag dismissed successfully', flagCount: report.flagCount });
+  } catch (error) {
+    console.error('Dismiss flag error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Dismiss all flags for a report
+exports.dismissAllFlags = async (req, res) => {
+  try {
+    const { reportId } = req.params;
+
+    const report = await Report.findById(reportId);
+    if (!report) {
+      return res.status(404).json({ message: 'Report not found' });
+    }
+
+    report.flags = [];
+    report.flagCount = 0;
+
+    await report.save();
+
+    console.log(`✅ Dismissed all flags for report ${reportId}`);
+    res.json({ message: 'All flags dismissed successfully' });
+  } catch (error) {
+    console.error('Dismiss all flags error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};

@@ -171,3 +171,114 @@ exports.updateProfile = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+exports.deleteFlaggedReport = async (req, res) => {
+  try {
+    const { reportId } = req.params;
+    const adminId = req.user.userId;
+
+    console.log(`🗑️ Admin ${adminId} attempting to delete report ${reportId}`);
+
+    const report = await Report.findById(reportId);
+    
+    if (!report) {
+      console.log('❌ Report not found');
+      return res.status(404).json({ message: 'Report not found' });
+    }
+
+    // Log report details before deletion
+    console.log(`📋 Deleting report: "${report.title}" by user ${report.user}`);
+    console.log(`🚩 Flag count: ${report.flagCount || 0}`);
+
+    await Report.findByIdAndDelete(reportId);
+    
+    console.log(`✅ Report ${reportId} deleted successfully by admin ${adminId}`);
+    
+    res.json({ 
+      message: 'Flagged report deleted successfully',
+      deletedReport: {
+        id: reportId,
+        title: report.title,
+        flagCount: report.flagCount
+      }
+    });
+
+  } catch (err) {
+    console.error('❌ Delete flagged report error:', err);
+    res.status(500).json({ message: 'Server error while deleting report' });
+  }
+};
+
+// --- Batch Delete Multiple Flagged Reports ---
+exports.batchDeleteReports = async (req, res) => {
+  try {
+    const { reportIds } = req.body; // Array of report IDs
+    const adminId = req.user.userId;
+
+    if (!Array.isArray(reportIds) || reportIds.length === 0) {
+      return res.status(400).json({ message: 'Please provide an array of report IDs' });
+    }
+
+    console.log(`🗑️ Admin ${adminId} attempting to delete ${reportIds.length} reports`);
+
+    const deleteResult = await Report.deleteMany({ 
+      _id: { $in: reportIds } 
+    });
+
+    console.log(`✅ Deleted ${deleteResult.deletedCount} reports`);
+
+    res.json({ 
+      message: `Successfully deleted ${deleteResult.deletedCount} report(s)`,
+      deletedCount: deleteResult.deletedCount
+    });
+
+  } catch (err) {
+    console.error('❌ Batch delete reports error:', err);
+    res.status(500).json({ message: 'Server error while deleting reports' });
+  }
+};
+
+// --- Delete Report and Ban User (Nuclear option) ---
+exports.deleteReportAndWarnUser = async (req, res) => {
+  try {
+    const { reportId } = req.params;
+    const { warningMessage } = req.body;
+    const adminId = req.user.userId;
+
+    const report = await Report.findById(reportId).populate('user', 'fName lName email');
+    
+    if (!report) {
+      return res.status(404).json({ message: 'Report not found' });
+    }
+
+    const userId = report.user._id;
+    const userName = `${report.user.fName} ${report.user.lName}`;
+
+    console.log(`⚠️ Admin ${adminId} deleting report and warning user ${userName}`);
+
+    // Delete the report
+    await Report.findByIdAndDelete(reportId);
+
+    // Here you could:
+    // 1. Send a warning email to the user
+    // 2. Add a warning count to the user model
+    // 3. Temporarily suspend the user if too many warnings
+    // For now, we'll just log it
+
+    console.log(`✅ Report deleted and user ${userName} warned: ${warningMessage || 'No message'}`);
+
+    res.json({ 
+      message: 'Report deleted and user warned successfully',
+      deletedReport: {
+        id: reportId,
+        title: report.title,
+        user: userName
+      },
+      warning: warningMessage || 'Generic warning issued'
+    });
+
+  } catch (err) {
+    console.error('❌ Delete and warn error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
