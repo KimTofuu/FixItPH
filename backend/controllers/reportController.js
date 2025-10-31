@@ -620,3 +620,60 @@ exports.getAllResolvedReports = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+// Flag a report
+exports.flagReport = async (req, res) => {
+  try {
+    const { reportId } = req.params;
+    const { reason, description } = req.body;
+    const userId = req.user?.userId;
+
+    if (!userId) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const report = await Report.findById(reportId);
+    if (!report) {
+      return res.status(404).json({ message: 'Report not found' });
+    }
+
+    // Check if user already flagged this report
+    if (report.flags && report.flags.some((flag) => flag.userId.toString() === userId)) {
+      return res.status(400).json({ message: 'You have already flagged this report' });
+    }
+
+    // Initialize flags array if it doesn't exist
+    if (!report.flags) {
+      report.flags = [];
+    }
+
+    // Add the flag
+    report.flags.push({
+      userId,
+      reason,
+      description: description || '',
+      createdAt: new Date()
+    });
+
+    report.flagCount = report.flags.length;
+
+    await report.save();
+
+    console.log(`🚩 Report ${reportId} flagged by user ${userId}. Total flags: ${report.flagCount}`);
+
+    // If report has too many flags (e.g., 3+), notify admins or auto-hide
+    if (report.flagCount >= 3) {
+      console.log(`⚠️ Report ${reportId} has reached ${report.flagCount} flags. Consider review.`);
+      // You can add admin notification logic here
+    }
+
+    res.json({
+      message: 'Report flagged successfully',
+      flagCount: report.flagCount
+    });
+
+  } catch (error) {
+    console.error('Flag report error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};

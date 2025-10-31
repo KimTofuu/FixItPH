@@ -44,6 +44,13 @@ interface Report {
   helpfulVotes?: number;
   votedBy?: (string | any)[]; 
   comments?: { user: string; text: string; createdAt?: string }[];
+  flags?: Array<{ // Add this
+    userId: string;
+    reason: string;
+    description: string;
+    createdAt: string;
+  }>;
+  flagCount?: number;
 }
 
 interface UserProfile {
@@ -153,6 +160,23 @@ export default function UserFeedPage() {
 
   const defaultProfilePic = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
   const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+
+  const [flagModalVisible, setFlagModalVisible] = useState(false);
+  const [selectedReportId, setSelectedReportId] = useState<string | null>(null);
+  const [flagForm, setFlagForm] = useState({
+    reason: "",
+    description: ""
+  });
+
+  const flagReasons = [
+    "Spam or misleading information",
+    "Inappropriate content",
+    "Duplicate report",
+    "False or fabricated issue",
+    "Not a community issue",
+    "Already resolved",
+    "Other"
+  ];
 
   const filteredReports = reports.filter((r) =>
     `${r.user?.fName ?? ""} ${r.user?.lName ?? ""} ${r.title} ${r.location} ${r.description}`
@@ -389,6 +413,67 @@ export default function UserFeedPage() {
     } finally {
       hideLoader();
     }
+  };
+
+  const handleFlagSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!flagForm.reason) {
+      toast.error("Please select a reason for flagging.");
+      return;
+    }
+
+    if (flagForm.reason === "Other" && !flagForm.description.trim()) {
+      toast.error("Please provide a description for 'Other' reason.");
+      return;
+    }
+
+    showLoader();
+
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${API}/reports/${selectedReportId}/flag`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          reason: flagForm.reason,
+          description: flagForm.description
+        }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        toast.success("Report flagged successfully. Thank you for keeping our community safe!");
+        setFlagModalVisible(false);
+        setFlagForm({ reason: "", description: "" });
+        setSelectedReportId(null);
+
+        // Update the report in the list
+        setReports((prev) =>
+          prev.map((r) =>
+            r._id === selectedReportId
+              ? { ...r, flagCount: data.flagCount || (r.flagCount || 0) + 1 }
+              : r
+          )
+        );
+      } else {
+        toast.error(data.message || "Failed to flag report");
+      }
+    } catch (error) {
+      console.error("Flag submission error:", error);
+      toast.error("An error occurred while flagging the report.");
+    } finally {
+      hideLoader();
+    }
+  };
+
+  const openFlagModal = (reportId: string) => {
+    setSelectedReportId(reportId);
+    setFlagModalVisible(true);
   };
 
   const profilePicUrl = userProfile?.profilePicture?.url || defaultProfilePic;
@@ -661,6 +746,20 @@ export default function UserFeedPage() {
                             {r.helpfulVotes || 0}
                           </span>
                         </button>
+
+                        {/* Add Flag Button */}
+                        <button
+                          type="button"
+                          className={styles.flagBtn}
+                          onClick={() => openFlagModal(r._id)}
+                          title="Flag this report as inappropriate"
+                        >
+                          <i className="fa-regular fa-flag"></i>
+                          <span>Flag</span>
+                          {r.flagCount && r.flagCount > 0 && (
+                            <span className={styles.flagCount}>{r.flagCount}</span>
+                          )}
+                        </button>
                       </div>
 
                       <div className={styles.reportComments}>
@@ -813,6 +912,86 @@ export default function UserFeedPage() {
                </div>
               <div className={styles.submitRow}>
                 <button type="submit" className={styles.submitBtn}>Submit Report</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Flag Report Modal */}
+      {flagModalVisible && (
+        <div className={styles.modal} role="dialog" aria-modal="true">
+          <div className={styles.modalContent} style={{ maxWidth: '500px' }}>
+            <button
+              className={styles.close}
+              onClick={() => {
+                setFlagModalVisible(false);
+                setFlagForm({ reason: "", description: "" });
+                setSelectedReportId(null);
+              }}
+              aria-label="Close"
+            >
+              &times;
+            </button>
+            <h2 className={styles.modalTitle}>
+              <i className="fa-solid fa-flag" style={{ marginRight: '10px', color: '#ef4444' }}></i>
+              Flag Report
+            </h2>
+            <p style={{ marginBottom: '20px', color: '#64748b', fontSize: '14px' }}>
+              Help us maintain quality by flagging inappropriate or false reports.
+            </p>
+
+            <form onSubmit={handleFlagSubmit}>
+              <div style={{ marginBottom: '20px' }}>
+                <label className={styles.inputLabel} htmlFor="flagReason">
+                  Reason for flagging <span style={{ color: '#ef4444' }}>*</span>
+                </label>
+                <select
+                  id="flagReason"
+                  className={styles.input}
+                  value={flagForm.reason}
+                  onChange={(e) => setFlagForm({ ...flagForm, reason: e.target.value })}
+                  required
+                >
+                  <option value="" disabled>-- Select a reason --</option>
+                  {flagReasons.map((reason) => (
+                    <option key={reason} value={reason}>
+                      {reason}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div style={{ marginBottom: '20px' }}>
+                <label className={styles.inputLabel} htmlFor="flagDescription">
+                  Additional details {flagForm.reason === "Other" && <span style={{ color: '#ef4444' }}>*</span>}
+                </label>
+                <textarea
+                  id="flagDescription"
+                  className={styles.textarea}
+                  placeholder="Please provide more details about why you're flagging this report..."
+                  value={flagForm.description}
+                  onChange={(e) => setFlagForm({ ...flagForm, description: e.target.value })}
+                  required={flagForm.reason === "Other"}
+                  rows={4}
+                />
+              </div>
+
+              <div className={styles.submitRow}>
+                <button
+                  type="button"
+                  className={styles.cancelBtn}
+                  onClick={() => {
+                    setFlagModalVisible(false);
+                    setFlagForm({ reason: "", description: "" });
+                    setSelectedReportId(null);
+                  }}
+                >
+                  Cancel
+                </button>
+                <button type="submit" className={styles.submitBtn}>
+                  Submit Flag
+                </button>
               </div>
             </form>
           </div>
