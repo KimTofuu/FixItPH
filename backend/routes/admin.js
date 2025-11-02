@@ -16,4 +16,10 @@ router.delete('/reports/:reportId/delete-flagged', authenticateToken, isAdmin, a
 router.post('/reports/batch-delete', authenticateToken, isAdmin, adminController.batchDeleteReports);
 router.delete('/reports/:reportId/delete-and-warn', authenticateToken, isAdmin, adminController.deleteReportAndWarnUser);
 
+router.get('/users', authenticateToken, isAdmin, adminController.getAllUsers);
+router.get('/users/stats', authenticateToken, isAdmin, adminController.getUserStats);
+router.get('/users/:userId', authenticateToken, isAdmin, adminController.getUserById);
+router.patch('/users/:userId/archive', authenticateToken, isAdmin, adminController.archiveUser);
+router.patch('/users/:userId/unarchive', authenticateToken, isAdmin, adminController.unarchiveUser);
+
 module.exports = router;
