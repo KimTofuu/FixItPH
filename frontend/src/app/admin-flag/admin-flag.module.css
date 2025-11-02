@@ -1,304 +1,326 @@
-/* Header & Navigation */
-.navHeader {
-  position: fixed;
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Poppins:wght@400;600;700&display=swap');
+
+
+.adminFlagRoot,
+.adminRoot {
+  --ar-bg: #f6f8fb;
+  --ar-surface: #ffffff;
+  --ar-muted: #6b7280;
+  --ar-ink: #0b1220;
+  --ar-accent: #2563eb;
+  --ar-accent-2: #06b6d4;
+  --ar-success: #10b981;
+  --ar-danger: #ef4444;
+  --ar-glass: rgba(15,23,42,0.04);
+  --ar-radius: 12px;
+  --ar-gap: 16px;
+  --ar-shadow: 0 8px 30px rgba(2,6,23,0.06);
+  --header-height: 72px;
+  --font-sans: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  --font-display: 'Poppins', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  font-family: var(--font-sans);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  color: var(--ar-ink);
+  box-sizing: border-box;
+  position: relative;
+  background: linear-gradient(180deg, rgba(37,99,235,0.02), transparent);
+}
+
+
+.adminReportsRoot * ,
+.adminRoot * { box-sizing: inherit; }
+
+.header {
+  position: sticky;
   top: 0;
-  left: 0;
-  right: 0;
-  background: white;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  z-index: 100;
+  z-index: 60;
+  background: linear-gradient(180deg, rgba(37,99,235,0.02), transparent);
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid rgba(15,23,42,0.02);
+  padding: 14px 20px;
+  flex: 0 0 auto;
 }
 
 .adminNav {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 32px;
-  max-width: 1400px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: var(--ar-gap);
+  max-width: 1200px;
   margin: 0 auto;
+  width: 100%;
 }
 
-.navLeft {
-  display: flex;
-  align-items: center;
-}
+.navLeft { display:flex; align-items:center; gap:12px; }
+.logo { width:160px; height:40px; object-fit:contain; }
 
-.logo {
-  height: 40px;
-  width: auto;
-}
-
-.navListUserSide {
-  display: flex;
-  align-items: center;
-  gap: 32px;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.navLink {
-  color: #475569;
-  text-decoration: none;
-  font-weight: 500;
-  font-size: 15px;
-  transition: color 0.2s ease;
-}
-
-.navLink:hover {
-  color: #667eea;
-}
-
-.activeNavItem .navLink {
-  color: #667eea;
-  font-weight: 600;
-}
-
-.adminProfileLink {
-  display: flex;
-  align-items: center;
-}
-
-.adminProfilePic {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: 2px solid #e2e8f0;
-  transition: border-color 0.2s ease;
-}
-
-.adminProfilePic:hover {
-  border-color: #667eea;
-}
 
 .hamburger {
   display: none;
-  flex-direction: column;
+  width:46px;
+  height:40px;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  border-radius:8px;
   background: transparent;
   border: none;
-  cursor: pointer;
-  padding: 8px;
+  padding: 6px;
+  transition: background 160ms ease;
 }
-
 .bar {
-  width: 25px;
-  height: 3px;
-  background-color: #475569;
-  margin: 3px 0;
-  transition: 0.3s;
-  border-radius: 3px;
+  display:block;
+  width:22px;
+  height:2px;
+  background: var(--ar-muted);
+  margin:4px 0;
+  transition: transform 220ms ease, opacity 220ms ease;
+  border-radius: 2px;
 }
+.hamburger:hover { background: rgba(2,6,23,0.03); }
+.hamburger:focus { outline: 3px solid rgba(37,99,235,0.14); outline-offset: 3px; }
+.hamburger.open .bar:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+.hamburger.open .bar:nth-child(2) { opacity: 0; transform: scaleX(0); }
+.hamburger.open .bar:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
 
-/* Root and Page Layout */
-.adminFlagRoot {
-  min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
 
-.flagPage {
-  padding: 90px 20px 40px;
-  max-width: 1400px;
-  margin: 0 auto;
+.navListUserSide,
+.navList {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  list-style:none;
+  margin:0;
+  padding:0;
 }
+.navLink { color: var(--ar-ink); text-decoration:none; padding:8px 12px; border-radius:10px; font-weight:600; }
+.activeNavItem .navLink { background: rgba(37,99,235,0.08); color:var(--ar-accent); }
+.adminProfileLink { display:inline-flex; align-items:center; }
+.adminProfilePic { width:36px; height:36px; border-radius:999px; object-fit:cover; border:1px solid rgba(2,6,23,0.06); }
 
 .mainContainer {
   width: 100%;
 }
 
+/* Content card refined */
 .contentCard {
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-  padding: 32px;
+  background: linear-gradient(180deg, #ffffff, #fbfdff);
+  border-radius: 14px;
+  box-shadow: 0 14px 36px rgba(2,6,23,0.06);
+  padding: 28px;
+  border: 1px solid rgba(2,6,23,0.04);
 }
 
-/* Page Header (inside content card) */
+/* Page Header (visual polish) */
 .pageHeader {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 32px;
+  margin-bottom: 24px;
   flex-wrap: wrap;
-  gap: 24px;
+  gap: 18px;
 }
 
 .pageTitle {
-  font-size: 32px;
-  font-weight: 700;
-  color: #1e293b;
+  font-size: 28px;
+  font-weight: 800;
+  color: #0f172a;
   margin: 0 0 8px 0;
   display: flex;
   align-items: center;
+  gap: 10px;
 }
 
 .subtitle {
-  color: #64748b;
-  font-size: 16px;
+  color: #6b7280;
+  font-size: 15px;
   margin: 0;
 }
 
+/* Stats */
 .stats {
   display: flex;
-  gap: 16px;
+  gap: 12px;
+  align-items: center;
 }
 
 .statCard {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 16px 24px;
-  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  padding: 12px 18px;
+  background: linear-gradient(90deg, #fff7f7 0%, #fff 100%);
   border-radius: 12px;
-  color: white;
+  color: #b91c1c;
+  border: 1px solid rgba(239,68,68,0.08);
+  min-width: 140px;
 }
 
 .statCard i {
-  font-size: 32px;
+  font-size: 26px;
+  opacity: 0.95;
 }
 
 .statNumber {
-  font-size: 28px;
-  font-weight: 700;
+  font-size: 22px;
+  font-weight: 800;
   line-height: 1;
+  color: #0f172a;
 }
 
 .statLabel {
   font-size: 12px;
   opacity: 0.9;
   margin-top: 4px;
+  color: #6b7280;
 }
 
+/* Filter section aligned to reports look */
 .filterSection {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 24px;
-  padding: 16px;
-  background: #f8fafc;
+  margin-bottom: 18px;
+  padding: 12px;
+  background: #ffffff;
   border-radius: 12px;
+  border: 1px solid rgba(2,6,23,0.03);
 }
 
 .filterLabel {
-  font-weight: 600;
-  color: #475569;
+  font-weight: 700;
+  color: #0f172a;
   font-size: 14px;
 }
 
 .filterSelect {
   flex: 1;
-  max-width: 400px;
-  padding: 10px 16px;
-  border: 2px solid #e2e8f0;
+  max-width: 420px;
+  padding: 10px 14px;
+  border: 1px solid rgba(2,6,23,0.06);
   border-radius: 8px;
   font-size: 14px;
-  background: white;
+  background: #fbfdff;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: box-shadow 0.14s ease, border-color 0.14s ease;
 }
 
 .filterSelect:focus {
   outline: none;
-  border-color: #3b82f6;
+  border-color: #2563eb;
+  box-shadow: 0 8px 20px rgba(37,99,235,0.06);
 }
 
+/* Report list / cards (visual coherence) */
 .reportList {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 18px;
 }
 
+/* Flag card body & interactions */
 .flagCard {
-  background: white;
-  border: 2px solid #fee2e2;
+  background: #ffffff;
+  border: 1px solid rgba(239,68,68,0.06);
   border-radius: 12px;
-  padding: 24px;
-  transition: all 0.3s ease;
+  padding: 20px;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
 }
 
 .flagCard:hover {
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.1);
-  transform: translateY(-2px);
+  box-shadow: 0 18px 44px rgba(2,6,23,0.06);
+  transform: translateY(-6px);
 }
 
 .flagCardHeader {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 16px;
-  gap: 16px;
+  margin-bottom: 14px;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .reportInfo {
   flex: 1;
+  min-width: 0;
 }
 
+/* Title and meta tuned to match reports */
 .reportTitle {
-  font-size: 20px;
-  font-weight: 600;
-  color: #1e293b;
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f172a;
   margin: 0 0 8px 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .reportMeta {
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
-  font-size: 14px;
-  color: #64748b;
+  gap: 12px;
+  font-size: 13px;
+  color: #6b7280;
 }
 
 .metaItem {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  color: #6b7280;
 }
 
 .metaItem i {
-  color: #94a3b8;
+  color: #9aa6bd;
 }
 
+/* Flag badge refined */
 .flagBadge {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 16px;
-  background: #fef2f2;
-  border: 2px solid #fecaca;
-  border-radius: 20px;
-  color: #dc2626;
-  font-weight: 600;
+  padding: 8px 14px;
+  background: #fff7f6;
+  border: 1px solid rgba(239,68,68,0.08);
+  border-radius: 999px;
+  color: #b91c1c;
+  font-weight: 700;
   font-size: 14px;
-  white-space: nowrap;
 }
 
-.flagBadge i {
-  font-size: 16px;
-}
-
+/* Description */
 .reportDescription {
-  color: #475569;
+  color: #111827;
   line-height: 1.6;
-  margin: 0 0 20px 0;
+  margin: 0 0 18px 0;
+  font-size: 15px;
 }
 
+/* Flags list inside card styled to match reports */
 .flagsList {
-  background: #f8fafc;
+  background: #fbfdff;
   border-radius: 8px;
-  padding: 16px;
-  margin-bottom: 20px;
+  padding: 14px;
+  margin-bottom: 14px;
+  border: 1px solid rgba(2,6,23,0.03);
 }
 
 .flagsTitle {
   font-size: 14px;
-  font-weight: 600;
-  color: #475569;
-  margin: 0 0 12px 0;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 10px 0;
 }
 
+/* Individual flag item */
 .flagItem {
-  background: white;
-  border-left: 3px solid #ef4444;
-  border-radius: 6px;
+  background: #ffffff;
+  border-left: 4px solid rgba(239,68,68,0.16);
+  border-radius: 8px;
   padding: 12px;
   margin-bottom: 12px;
 }
@@ -315,8 +337,8 @@
 }
 
 .flagUser {
-  font-weight: 600;
-  color: #1e293b;
+  font-weight: 700;
+  color: #0f172a;
   font-size: 14px;
   display: flex;
   align-items: center;
@@ -325,85 +347,92 @@
 
 .flagTime {
   font-size: 12px;
-  color: #94a3b8;
+  color: #9ca3af;
 }
 
 .flagReason {
   display: flex;
   align-items: center;
   gap: 6px;
-  color: #ef4444;
-  font-weight: 500;
+  color: #dc2626;
+  font-weight: 700;
   font-size: 14px;
   margin-bottom: 6px;
 }
 
 .flagDescription {
-  font-size: 13px;
-  color: #64748b;
+  font-size: 14px;
+  color: #6b7280;
   font-style: italic;
-  padding-left: 20px;
+  padding-left: 4px;
 }
 
+/* More flags text */
 .moreFlagsText {
   text-align: center;
-  color: #64748b;
+  color: #6b7280;
   font-size: 13px;
   margin: 8px 0 0 0;
-  font-weight: 500;
+  font-weight: 600;
 }
 
+/* Actions (retain classes and behavior; improved visuals) */
 .cardActions {
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
+  align-items: center;
 }
 
 .viewDetailsBtn,
 .dismissAllBtn,
 .removeBtn {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 20px;
+  padding: 10px 18px;
   border: none;
-  border-radius: 8px;
-  font-weight: 600;
+  border-radius: 10px;
+  font-weight: 700;
   font-size: 14px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  min-height: 40px;
 }
 
+/* Action styles aligned with reports' palette */
 .viewDetailsBtn {
-  background: #3b82f6;
-  color: white;
+  background: linear-gradient(90deg, #2563eb, #1d4ed8);
+  color: #fff;
+  box-shadow: 0 10px 30px rgba(37,99,235,0.12);
 }
 
 .viewDetailsBtn:hover {
-  background: #2563eb;
-  transform: translateY(-1px);
+  transform: translateY(-3px);
 }
 
 .dismissAllBtn {
-  background: #10b981;
-  color: white;
+  background: linear-gradient(90deg, #10b981, #059669);
+  color: #fff;
+  box-shadow: 0 10px 30px rgba(16,185,129,0.12);
 }
 
 .dismissAllBtn:hover {
-  background: #059669;
-  transform: translateY(-1px);
+  transform: translateY(-3px);
 }
 
 .removeBtn {
-  background: #ef4444;
-  color: white;
+  background: transparent;
+  color: #ef4444;
+  border: 1px solid rgba(239,68,68,0.12);
 }
 
 .removeBtn:hover {
-  background: #dc2626;
-  transform: translateY(-1px);
+  background: rgba(239,68,68,0.06);
+  transform: translateY(-2px);
 }
 
+/* Loading and empty states */
 .loadingState,
 .emptyState {
   display: flex;
@@ -415,102 +444,228 @@
 }
 
 .emptyState h3 {
-  font-size: 24px;
-  color: #475569;
+  font-size: 22px;
+  color: #0f172a;
   margin: 16px 0 8px 0;
 }
 
 .emptyState p {
-  color: #94a3b8;
-  font-size: 16px;
+  color: #9ca3af;
+  font-size: 15px;
 }
 
-/* Modal Styles */
+/* Preserve flagCardBody / thumbnail / content / responsive behavior with visual updates */
+.flagCardBody {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.flagThumbnail {
+  width: 140px;
+  height: 96px;
+  border-radius: 10px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid rgba(2,6,23,0.04);
+  background: #f8fafc;
+  box-shadow: 0 8px 24px rgba(2,6,23,0.04);
+}
+
+.flagContent {
+  flex: 1;
+  min-width: 220px;
+}
+
+.reportMetaRow {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.reportTag {
+  font-size: 13px;
+  color: #0f172a;
+  background: #f1f5f9;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(2,6,23,0.04);
+  font-weight: 700;
+}
+
+.reportAuthor {
+  color: #0f172a;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.reportTime {
+  color: #9ca3af;
+  font-size: 13px;
+}
+
+/* Compact controls aligned to the right */
+.cardActionsRight {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-end;
+  margin-left: auto;
+}
+
+.smallAction {
+  padding: 8px 12px;
+  font-size: 13px;
+  border-radius: 8px;
+  min-width: 120px;
+  cursor: pointer;
+}
+
+.secondaryBtn {
+  background: #f8fafc;
+  color: #0f172a;
+  border: 1px solid rgba(2,6,23,0.04);
+}
+
+.secondaryBtn:hover {
+  background: #eef2ff;
+  transform: translateY(-1px);
+}
+
+/* Inline links */
+.inlineLink {
+  color: #2563eb;
+  font-weight: 700;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.inlineLink:hover {
+  text-decoration: underline;
+}
+
+/* Accessibility focus states */
+.viewDetailsBtn:focus,
+.dismissAllBtn:focus,
+.removeBtn:focus,
+.filterSelect:focus,
+.inlineLink:focus,
+.smallAction:focus,
+.dismissFlagBtn:focus {
+  outline: 3px solid rgba(37,99,235,0.12);
+  outline-offset: 2px;
+}
+
+/* Micro-interactions */
+.flagCard .flagBadge {
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.flagCard:hover .flagBadge {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(37,99,235,0.06);
+}
+
+/* Loading shimmer */
+.loadingShimmer {
+  width: 100%;
+  height: 12px;
+  background: linear-gradient(90deg, #f3f6ff 0%, #e6eef9 50%, #f3f6ff 100%);
+  background-size: 200% 100%;
+  border-radius: 6px;
+  animation: shimmer 1.6s linear infinite;
+  margin: 8px 0;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Modal styles preserved structurally; visuals updated */
 .modal {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
+  inset: 0;
+  background: rgba(2,6,23,0.6);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 1100;
   padding: 20px;
 }
 
 .modalContent {
-  background: white;
-  border-radius: 16px;
+  background: linear-gradient(180deg, #ffffff, #fbfdff);
+  border-radius: 12px;
   width: 100%;
-  max-width: 800px;
+  max-width: 860px;
   max-height: 90vh;
   overflow-y: auto;
   position: relative;
+  border: 1px solid rgba(2,6,23,0.04);
+  box-shadow: 0 20px 60px rgba(2,6,23,0.12);
 }
 
 .closeBtn {
   position: absolute;
-  top: 16px;
-  right: 16px;
-  width: 36px;
-  height: 36px;
+  top: 14px;
+  right: 14px;
+  width: 40px;
+  height: 40px;
   border: none;
-  background: #f1f5f9;
+  background: #fff;
   border-radius: 50%;
-  font-size: 24px;
-  color: #64748b;
+  font-size: 20px;
+  color: #6b7280;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: transform 0.12s ease, background 0.12s ease;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 8px 24px rgba(2,6,23,0.06);
 }
 
 .closeBtn:hover {
-  background: #e2e8f0;
-  color: #1e293b;
+  background: #f1f5f9;
+  color: #0f172a;
+  transform: translateY(-2px);
 }
 
 .modalTitle {
-  font-size: 24px;
-  font-weight: 700;
-  color: #1e293b;
+  font-size: 20px;
+  font-weight: 800;
+  color: #0f172a;
   margin: 0;
-  padding: 24px 24px 16px;
-  border-bottom: 2px solid #f1f5f9;
+  padding: 20px 20px 12px;
+  border-bottom: 1px solid rgba(2,6,23,0.03);
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
 .modalBody {
-  padding: 24px;
+  padding: 18px 20px 24px;
 }
 
+/* Modal internals */
 .section {
-  margin-bottom: 32px;
-}
-
-.section:last-child {
-  margin-bottom: 0;
+  margin-bottom: 20px;
 }
 
 .sectionTitle {
-  font-size: 18px;
-  font-weight: 600;
-  color: #1e293b;
-  margin: 0 0 16px 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 12px 0;
 }
 
 .infoGrid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
+  gap: 12px;
 }
 
 .infoItem {
@@ -521,46 +676,46 @@
 
 .infoItem strong {
   font-size: 12px;
-  color: #64748b;
+  color: #6b7280;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .infoItem span {
   font-size: 15px;
-  color: #1e293b;
-  font-weight: 500;
+  color: #0f172a;
+  font-weight: 600;
 }
 
 .statusBadge {
   display: inline-block;
-  padding: 4px 12px;
-  border-radius: 12px;
+  padding: 6px 12px;
+  border-radius: 999px;
   color: white;
   font-size: 13px;
-  font-weight: 600;
-  text-transform: capitalize;
+  font-weight: 700;
 }
 
 .reportImage {
   width: 100%;
-  max-height: 400px;
+  max-height: 420px;
   object-fit: contain;
   border-radius: 8px;
-  border: 2px solid #f1f5f9;
+  border: 1px solid rgba(2,6,23,0.03);
 }
 
 .flagsDetailList {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 
 .flagDetailItem {
-  background: #f8fafc;
-  border-left: 4px solid #ef4444;
+  background: #fff;
+  border-left: 4px solid rgba(239,68,68,0.16);
   border-radius: 8px;
-  padding: 16px;
+  padding: 14px;
+  border: 1px solid rgba(2,6,23,0.02);
 }
 
 .flagDetailHeader {
@@ -572,22 +727,22 @@
 }
 
 .flagDetailEmail {
-  color: #64748b;
+  color: #6b7280;
   font-size: 13px;
-  font-weight: 400;
+  font-weight: 500;
   margin-left: 4px;
 }
 
 .flagDetailTime {
   font-size: 12px;
-  color: #94a3b8;
+  color: #9ca3af;
   white-space: nowrap;
 }
 
 .flagDetailReason,
 .flagDetailDesc {
   font-size: 14px;
-  color: #475569;
+  color: #111827;
   margin-bottom: 8px;
   line-height: 1.5;
 }
@@ -595,63 +750,90 @@
 .dismissFlagBtn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 14px;
-  background: white;
-  border: 2px solid #e2e8f0;
-  border-radius: 6px;
-  color: #64748b;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #ffffff;
+  border: 1px solid rgba(2,6,23,0.04);
+  border-radius: 8px;
+  color: #0f172a;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s ease;
-  margin-top: 8px;
+  transition: transform 0.12s ease, background 0.12s ease;
 }
 
 .dismissFlagBtn:hover {
-  background: #fef2f2;
-  border-color: #fecaca;
+  background: rgba(239,68,68,0.06);
   color: #ef4444;
+  transform: translateY(-2px);
 }
 
 .modalActions {
   display: flex;
   gap: 12px;
-  padding: 16px 24px;
-  border-top: 2px solid #f1f5f9;
+  padding: 16px 20px;
+  border-top: 1px solid rgba(2,6,23,0.03);
   justify-content: flex-end;
+  background: rgba(255,255,255,0.6);
 }
-
 .modalDismissBtn,
 .modalRemoveBtn {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 12px 24px;
+  padding: 10px 16px;
   border: none;
-  border-radius: 8px;
-  font-weight: 600;
+  border-radius: 10px;
+  font-weight: 700;
   font-size: 14px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
 
 .modalDismissBtn {
-  background: #10b981;
-  color: white;
-}
-
-.modalDismissBtn:hover {
-  background: #059669;
+  background: linear-gradient(90deg, #10b981, #059669);
+  color: #fff;
 }
 
 .modalRemoveBtn {
-  background: #ef4444;
-  color: white;
+  background: linear-gradient(90deg, #ef4444, #dc2626);
+  color: #fff;
 }
 
-.modalRemoveBtn:hover {
-  background: #dc2626;
+/* Responsive adjustments (preserve original class behavior) */
+@media (max-width: 880px) {
+  .flagCardBody {
+    flex-direction: column;
+  }
+
+  .cardActionsRight {
+    flex-direction: row;
+    align-items: center;
+    width: 100%;
+    justify-content: flex-start;
+    margin-top: 12px;
+  }
+
+  .smallAction {
+    min-width: 110px;
+  }
+
+  .navHeader {
+    height: auto;
+    padding: 8px 12px;
+  }
+
+  .adminNav {
+    padding: 8px 12px;
+  }
+
+  .logo {
+    height: 36px;
+  }
+
+  .pageTitle {
+    font-size: 22px;
+  }
 }
 
 @media (max-width: 768px) {
@@ -661,17 +843,17 @@
 
   .navListUserSide {
     position: fixed;
-    top: 64px;
+    top: 72px;
     right: -100%;
-    width: 250px;
-    height: calc(100vh - 64px);
+    width: 260px;
+    height: calc(100vh - 72px);
     flex-direction: column;
-    background: white;
-    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
-    padding: 24px;
-    gap: 16px;
+    background: #ffffff;
+    box-shadow: -6px 0 18px rgba(2,6,23,0.06);
+    padding: 16px;
+    gap: 12px;
     align-items: flex-start;
-    transition: right 0.3s ease;
+    transition: right 0.24s ease;
   }
 
   .navListUserSide.open {

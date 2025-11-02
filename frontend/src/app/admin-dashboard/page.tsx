@@ -207,6 +207,9 @@ export default function AdminDashboardPage() {
               <a href="/admin-reports" className={styles.navLink}>Reports</a>
             </li>
             <li>
+              <a href="/admin-users" className={styles.navLink}>Users</a>
+            </li>
+            <li>
               <a href="/admin-flag" className={styles.navLink}>Flagged</a>
             </li>
             <li>

@@ -194,6 +194,12 @@ export default function ProfilePage() {
               <a href="/admin-reports" className={styles.navLink}>Reports</a>
             </li>
             <li>
+              <a href="/admin-users" className={styles.navLink}>Users</a>
+            </li>
+            <li>
+              <a href="/admin-flag" className={styles.navLink}>Flagged</a>
+            </li>
+            <li>
               <a href="/admin-profile" className={styles.adminProfileLink} aria-label="Admin profile">
                 <img
                   src={profilePic}

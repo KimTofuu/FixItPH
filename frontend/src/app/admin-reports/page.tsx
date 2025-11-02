@@ -243,31 +243,13 @@ export default function AdminReportsPage() {
   return (
     <div className={styles.adminReportsRoot}>
       {/* Header */}
-      <header className={styles.header}>
-        <nav className={styles.adminNav}>
-          <div className={styles.navLeft}>
-            <Image
-              src="/images/Fix-it_logo_3.png"
-              alt="Fixit Logo"
-              className={styles.logo}
-              width={160}
-              height={40}
-            />
-          </div>
+        <header className={styles.header}>
+          <nav className={styles.adminNav}>
+            <div className={styles.navLeft}>
+              <Image src="/images/Fix-it_logo_3.png" alt="Fixit Logo" className={styles.logo} width={160} height={40} />
+            </div>
 
-          <div
-            className={`${styles.hamburger} ${menuOpen ? styles.open : ""}`}
-            onClick={() => setMenuOpen(!menuOpen)}
-            aria-label="Toggle menu"
-            role="button"
-            tabIndex={0}
-          >
-            <span className={`${styles.bar} ${menuOpen ? styles.barOpen : ""}`} />
-            <span className={`${styles.bar} ${menuOpen ? styles.barOpen : ""}`} />
-            <span className={`${styles.bar} ${menuOpen ? styles.barOpen : ""}`} />
-          </div>
-
-          <ul className={`${styles.navListUserSide} ${menuOpen ? styles.open : ""}`}>
+            <ul className={`${styles.navListUserSide} ${menuOpen ? styles.open : ""}`}>
             <li>
               <a href="/admin-dashboard" className={styles.navLink}>Dashboard</a>
             </li>
@@ -276,6 +258,9 @@ export default function AdminReportsPage() {
             </li>
             <li className={styles.activeNavItem}>
               <a href="/admin-reports" className={styles.navLink}>Reports</a>
+            </li>
+            <li>
+              <a href="/admin-users" className={styles.navLink}>Users</a>
             </li>
             <li>
               <a href="/admin-flag" className={styles.navLink}>Flagged</a>
@@ -290,8 +275,8 @@ export default function AdminReportsPage() {
               </a>
             </li>
           </ul>
-        </nav>
-      </header>
+          </nav>
+        </header>
 
       {/* Reports Section */}
       <div className={styles.reportsPage}>
