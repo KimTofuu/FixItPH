@@ -298,12 +298,6 @@ exports.deleteReportAndWarnUser = async (req, res) => {
     // Delete the report
     await Report.findByIdAndDelete(reportId);
 
-    // Here you could:
-    // 1. Send a warning email to the user
-    // 2. Add a warning count to the user model
-    // 3. Temporarily suspend the user if too many warnings
-    // For now, we'll just log it
-
     console.log(`✅ Report deleted and user ${userName} warned: ${warningMessage || 'No message'}`);
 
     res.json({ 
@@ -321,3 +315,163 @@ exports.deleteReportAndWarnUser = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+// Get all users
+exports.getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find()
+      .select('fName lName email address barangay archived lastLogin createdAt reputation')
+      .sort({ createdAt: -1 });
+
+    const formattedUsers = users.map(user => ({
+      _id: user._id,
+      id: user._id,
+      name: `${user.fName} ${user.lName}`,
+      email: user.email,
+      address: user.address || user.barangay || 'No address provided',
+      archived: user.archived || false,
+      lastLogin: user.lastLogin,
+      reputation: user.reputation
+    }));
+
+    res.json(formattedUsers);
+  } catch (error) {
+    console.error('Get all users error:', error);
+    res.status(500).json({ message: 'Server error while fetching users' });
+  }
+};
+
+// Get user by ID
+exports.getUserById = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const user = await User.findById(userId)
+      .select('fName lName email address barangay archived lastLogin createdAt reputation');
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Get user's report count
+    const reportCount = await Report.countDocuments({ user: userId });
+
+    res.json({
+      _id: user._id,
+      id: user._id,
+      name: `${user.fName} ${user.lName}`,
+      email: user.email,
+      address: user.address || user.barangay || 'No address provided',
+      archived: user.archived || false,
+      lastLogin: user.lastLogin,
+      reputation: user.reputation,
+      reportCount
+    });
+  } catch (error) {
+    console.error('Get user by ID error:', error);
+    res.status(500).json({ message: 'Server error while fetching user' });
+  }
+};
+
+// Archive user
+exports.archiveUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const adminId = req.user.userId;
+
+    console.log(`📦 Admin ${adminId} attempting to archive user ${userId}`);
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (user.archived) {
+      return res.status(400).json({ message: 'User is already archived' });
+    }
+
+    user.archived = true;
+    user.archivedAt = new Date();
+    user.archivedBy = adminId;
+    await user.save();
+
+    console.log(`✅ User ${userId} archived successfully by admin ${adminId}`);
+
+    res.json({
+      message: 'User archived successfully',
+      user: {
+        _id: user._id,
+        name: `${user.fName} ${user.lName}`,
+        archived: user.archived
+      }
+    });
+  } catch (error) {
+    console.error('Archive user error:', error);
+    res.status(500).json({ message: 'Server error while archiving user' });
+  }
+};
+
+// Unarchive user
+exports.unarchiveUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const adminId = req.user.userId;
+
+    console.log(`📦 Admin ${adminId} attempting to unarchive user ${userId}`);
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (!user.archived) {
+      return res.status(400).json({ message: 'User is not archived' });
+    }
+
+    user.archived = false;
+    user.archivedAt = null;
+    user.archivedBy = null;
+    await user.save();
+
+    console.log(`✅ User ${userId} unarchived successfully by admin ${adminId}`);
+
+    res.json({
+      message: 'User unarchived successfully',
+      user: {
+        _id: user._id,
+        name: `${user.fName} ${user.lName}`,
+        archived: user.archived
+      }
+    });
+  } catch (error) {
+    console.error('Unarchive user error:', error);
+    res.status(500).json({ message: 'Server error while unarchiving user' });
+  }
+};
+
+// Get user statistics
+exports.getUserStats = async (req, res) => {
+  try {
+    const totalUsers = await User.countDocuments();
+    const activeUsers = await User.countDocuments({
+      archived: { $ne: true },
+      lastLogin: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }
+    });
+    const archivedUsers = await User.countDocuments({ archived: true });
+    const totalReports = await Report.countDocuments();
+
+    res.json({
+      totalUsers,
+      activeUsers,
+      archivedUsers,
+      totalReports
+    });
+  } catch (error) {
+    console.error('Get user stats error:', error);
+    res.status(500).json({ message: 'Server error while fetching stats' });
+  }
+};
+
+module.exports = exports;

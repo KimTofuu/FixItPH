@@ -1,5 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
 import Head from "next/head";
 import Image from "next/image";
 import styles from "./admin-users.module.css";
@@ -12,27 +14,24 @@ type User = {
   address?: string;
   archived?: boolean;
   lastLogin?: string;
+  reputation?: {
+    points: number;
+    level: string;
+    totalReports: number;
+  };
 };
 
-type ReportRecord = {
-  _id?: string;
-  userId?: string;
-  reporterId?: string;
+type UserStats = {
+  totalUsers: number;
+  activeUsers: number;
+  archivedUsers: number;
+  totalReports: number;
 };
-
-const HARDCODED_USERS: User[] = [
-  { _id: "20230330", id: "20230330", name: "Francescha Lei Arcega", email: "20230330@gordoncollege.edu.ph", address: "Gordon College", archived: false, lastLogin: new Date(Date.now() - 1000 * 60 * 60 * 24 * 40).toISOString() },
-  { _id: "20230331", id: "20230331", name: "Vincent David Ong", email: "20230331@gordoncollege.edu.ph", address: "Gordon College", archived: false, lastLogin: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString() },
-  { _id: "20230332", id: "20230332", name: "Paulo Cordova", email: "20230332@gordoncollege.edu.ph", address: "Gordon College", archived: false, lastLogin: new Date(Date.now() - 1000 * 60 * 60 * 24 * 80).toISOString() },
-  { _id: "20230333", id: "20230333", name: "Catherine Mon", email: "20230333@gordoncollege.edu.ph", address: "Gordon College", archived: false, lastLogin: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString() },
-  { _id: "20230334", id: "20230334", name: "Paul Jan Dilag", email: "20230334@gordoncollege.edu.ph", address: "Gordon College", archived: false, lastLogin: new Date(Date.now() - 1000 * 60 * 60 * 24 * 60).toISOString() },
-  { _id: "202312263", id: "202312263", name: "Francis Rosete", email: "202312263@gordoncollege.edu.ph", address: "East Tapinac, Olongapo", archived: false, lastLogin: new Date().toISOString() },
-  { _id: "202312264", id: "202312264", name: "Galo Matheny", email: "archived_user@example.com", address: "Archived Location", archived: true, lastLogin: new Date(Date.now() - 1000 * 60 * 60 * 24 * 365).toISOString() },
-];
 
 export default function AdminUserListPage() {
-  const [users, setUsers] = useState<User[]>(HARDCODED_USERS);
-  const [reports, setReports] = useState<ReportRecord[]>([]);
+  const router = useRouter();
+  const [users, setUsers] = useState<User[]>([]);
+  const [stats, setStats] = useState<UserStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [confirmOpenFor, setConfirmOpenFor] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
@@ -41,55 +40,78 @@ export default function AdminUserListPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive" | "archived">("all");
   const [viewingUser, setViewingUser] = useState<User | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
+  const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
   const profilePicUrl = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
 
+  // Check authentication
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const [usersRes, reportsRes] = await Promise.all([
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/users`),
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/reports`),
-        ]);
-        if (!usersRes.ok) throw new Error("Failed to fetch users");
-        if (!reportsRes.ok) throw new Error("Failed to fetch reports");
-        const usersData: any[] = await usersRes.json();
-        const reportsData: any[] = await reportsRes.json();
-        const normalizedUsers: User[] = (usersData || []).map((u: any) => ({
-          _id: u._id || u.id,
-          id: u._id || u.id,
-          name: u.name || u.fullName || "No name",
-          email: u.email || u.emailAddress || `${u._id || u.id}@example.com`,
-          address: u.address || u.location || "No address provided",
-          archived: !!u.archived,
-          lastLogin: u.lastLogin || undefined,
-        }));
-        const fetchedMap = new Map(normalizedUsers.map((u) => [u._id, u]));
-        const merged = HARDCODED_USERS.map((hc) => fetchedMap.get(hc._id) || hc);
-        normalizedUsers.forEach((u) => {
-          if (!merged.find((m) => m._id === u._id)) merged.push(u);
-        });
-        setUsers(merged);
-        setReports(reportsData || []);
-      } catch (err: any) {
-        console.error(err);
-        setError(err?.message || "Failed to load data");
-      } finally {
-        setLoading(false);
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem("token");
+      
+      if (!token) {
+        toast.error("Please login first");
+        router.push("/login");
+        return;
       }
-    };
-    fetchData();
+
+      setIsAuthenticated(true);
+      fetchData();
+    }
   }, []);
 
-  const countReportsForUser = (userId?: string) =>
-    reports.filter((r) => r.userId === userId || r.reporterId === userId).length;
+  const fetchData = async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const token = localStorage.getItem("token");
+      
+      const [usersRes, statsRes] = await Promise.all([
+        fetch(`${API}/admin/users`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        fetch(`${API}/admin/users/stats`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+      ]);
 
-  const computeCredibilityLabel = (reportsCount: number) => {
-    if (reportsCount === 0) return "Trusted";
+      if (!usersRes.ok) {
+        if (usersRes.status === 401 || usersRes.status === 403) {
+          toast.error("Session expired. Please login again.");
+          localStorage.clear();
+          router.push("/login");
+          return;
+        }
+        throw new Error("Failed to fetch users");
+      }
+
+      if (!statsRes.ok) throw new Error("Failed to fetch stats");
+
+      const usersData = await usersRes.json();
+      const statsData = await statsRes.json();
+
+      console.log("✅ Fetched users:", usersData.length);
+      console.log("✅ Stats:", statsData);
+
+      setUsers(usersData);
+      setStats(statsData);
+    } catch (err: any) {
+      console.error("❌ Fetch error:", err);
+      setError(err?.message || "Failed to load data");
+      toast.error("Failed to load user data");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const computeCredibilityLabel = (user: User) => {
+    const reportsCount = user.reputation?.totalReports || 0;
+    if (reportsCount === 0) return "Newcomer";
     if (reportsCount <= 2) return "Trusted";
-    return "Newcomer";
+    if (reportsCount <= 5) return "Active";
+    return "Veteran";
   };
 
   const isActiveFromLastLogin = (lastLogin?: string) => {
@@ -97,12 +119,6 @@ export default function AdminUserListPage() {
     const then = new Date(lastLogin).getTime();
     const diffDays = (Date.now() - then) / (1000 * 60 * 60 * 24);
     return diffDays <= 30;
-  };
-
-  const deriveStatusForUser = (u: User) => {
-    const reportsCount = countReportsForUser(u._id);
-    if (reportsCount >= 3) return "newcomer";
-    return "trusted";
   };
 
   const filteredAndSearchedUsers = users
@@ -131,66 +147,151 @@ export default function AdminUserListPage() {
     setConfirmOpenFor(null);
   };
 
-  // Archive: allowed for active or inactive users (not allowed when archived)
   const handleArchive = async (userId: string) => {
     setActionLoading(true);
     setError(null);
+    
     try {
+      const token = localStorage.getItem("token");
       const user = users.find((u) => u._id === userId);
+      
       if (!user) throw new Error("User not found");
-      if (user.archived) {
-        throw new Error("User is already archived");
-      }
+      if (user.archived) throw new Error("User is already archived");
 
-      const apiBody = { archived: true };
-
-      // Try preferred API endpoint first
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${userId}/archive`, {
+      const res = await fetch(`${API}/admin/users/${userId}/archive`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(apiBody),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        }
       });
 
+      const data = await res.json();
+
       if (!res.ok) {
-        // fallback to generic users patch endpoint
-        const alt = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${userId}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(apiBody),
-        });
-        if (!alt.ok) throw new Error("Failed to archive user");
+        throw new Error(data.message || "Failed to archive user");
       }
 
+      toast.success("User archived successfully");
+      
+      // Update local state
       setUsers((prev) => prev.map((u) => (u._id === userId ? { ...u, archived: true } : u)));
       closeConfirm();
       setViewingUser(null);
+      
+      // Refresh stats
+      fetchData();
     } catch (err: any) {
-      console.error(err);
+      console.error("❌ Archive error:", err);
       setError(err?.message || "Could not archive user");
+      toast.error(err?.message || "Failed to archive user");
     } finally {
       setActionLoading(false);
     }
   };
 
-  // Modal text helpers
+  const handleUnarchive = async (userId: string) => {
+    setActionLoading(true);
+    setError(null);
+    
+    try {
+      const token = localStorage.getItem("token");
+
+      const res = await fetch(`${API}/admin/users/${userId}/unarchive`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || "Failed to unarchive user");
+      }
+
+      toast.success("User unarchived successfully");
+      
+      // Update local state
+      setUsers((prev) => prev.map((u) => (u._id === userId ? { ...u, archived: false } : u)));
+      setViewingUser(null);
+      
+      // Refresh stats
+      fetchData();
+    } catch (err: any) {
+      console.error("❌ Unarchive error:", err);
+      toast.error(err?.message || "Failed to unarchive user");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const getConfirmMeta = (u: User | null) => {
     if (!u) return { title: "Confirm", description: "Are you sure?", confirmLabel: "Confirm" };
     if (u.archived) {
       return {
-        title: "No action available",
-        description: `User "${u.name}" is archived and cannot be modified.`,
-        confirmLabel: "Close",
+        title: "Unarchive user?",
+        description: `User "${u.name}" is currently archived. Unarchiving will restore their account.`,
+        confirmLabel: "Unarchive",
       };
     }
     const active = isActiveFromLastLogin(u.lastLogin);
     return {
       title: "Archive user?",
       description: active
-        ? `User "${u.name}" is currently active. Archiving will mark them as archived and hide their profile from public listings.`
-        : `User "${u.name}" is currently inactive. Archiving will mark them as archived and hide their profile from public listings.`,
+        ? `User "${u.name}" is currently active. Archiving will hide their profile from public listings.`
+        : `User "${u.name}" is currently inactive. Archiving will hide their profile from public listings.`,
       confirmLabel: "Archive",
     };
   };
+
+  const handleExport = () => {
+    // Convert users to CSV
+    const headers = ["ID", "Name", "Email", "Location", "Reports", "Credibility", "Status", "Last Login"];
+    const rows = filteredAndSearchedUsers.map(u => [
+      u.id || u._id,
+      u.name,
+      u.email || "",
+      u.address || "",
+      u.reputation?.totalReports || 0,
+      computeCredibilityLabel(u),
+      u.archived ? "Archived" : isActiveFromLastLogin(u.lastLogin) ? "Active" : "Inactive",
+      u.lastLogin ? new Date(u.lastLogin).toLocaleString() : "Never"
+    ]);
+
+    const csvContent = [
+      headers.join(","),
+      ...rows.map(row => row.map(cell => `"${cell}"`).join(","))
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `users-export-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+    
+    toast.success("Users exported successfully");
+  };
+
+  if (!isAuthenticated) {
+    return (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh',
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+      }}>
+        <div style={{ textAlign: 'center', color: 'white' }}>
+          <i className="fa-solid fa-spinner fa-spin" style={{ fontSize: "48px", marginBottom: "16px" }}></i>
+          <p style={{ fontSize: "18px" }}>Checking authentication...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -206,6 +307,18 @@ export default function AdminUserListPage() {
             <div className={styles.navLeft}>
               <Image src="/images/Fix-it_logo_3.png" alt="Fixit Logo" className={styles.logo} width={160} height={40} />
             </div>
+
+            <button
+              className={`${styles.hamburger} ${menuOpen ? styles.open : ""}`}
+              onClick={() => setMenuOpen(!menuOpen)}
+              aria-label={menuOpen ? "Close menu" : "Open menu"}
+              aria-expanded={menuOpen}
+              type="button"
+            >
+              <span className={styles.bar} />
+              <span className={styles.bar} />
+              <span className={styles.bar} />
+            </button>
 
             <ul className={`${styles.navListUserSide} ${menuOpen ? styles.open : ""}`}>
               <li>
@@ -239,16 +352,21 @@ export default function AdminUserListPage() {
         <main className={styles.adminUsersMain}>
           <div className={styles.headerRow}>
             <div className={styles.controls}>
-              <section className={styles.overview} aria-hidden={loading ? "true" : "false"}>
+              <section className={styles.overview}>
                 <div className={styles.overviewCard}>
                   <div className={styles.label}>Total users</div>
-                  <div className={styles.value}>{loading ? "..." : users.length}</div>
+                  <div className={styles.value}>{loading ? "..." : stats?.totalUsers || 0}</div>
+                </div>
+                <div className={styles.overviewCard}>
+                  <div className={styles.label}>Active users</div>
+                  <div className={styles.value}>{loading ? "..." : stats?.activeUsers || 0}</div>
                 </div>
                 <div className={styles.overviewCard}>
                   <div className={styles.label}>Total reports</div>
-                  <div className={styles.value}>{loading ? "..." : reports.length}</div>
+                  <div className={styles.value}>{loading ? "..." : stats?.totalReports || 0}</div>
                 </div>
               </section>
+              
               <div className={styles.searchWrap}>
                 <input
                   aria-label="Search users"
@@ -260,22 +378,29 @@ export default function AdminUserListPage() {
                 <i className="fa fa-search" aria-hidden />
               </div>
 
-              <button className={styles.btn}>Export</button>
-           
-
-
-
-           </div>
+              <button className={styles.btn} onClick={handleExport}>
+                <i className="fa fa-download" style={{ marginRight: "8px" }}></i>
+                Export
+              </button>
+            </div>
           </div>
 
           {error && <div className={styles.error}><strong>Error:</strong> {error}</div>}
 
           <section className={styles.tableSection}>
             <div className={styles.filterRow}>
-              <button className={`${styles.filterBtn} ${statusFilter === "all" ? styles.active : ""}`} onClick={() => setStatusFilter("all")}>All</button>
-              <button className={`${styles.filterBtn} ${statusFilter === "active" ? styles.active : ""}`} onClick={() => setStatusFilter("active")}>Active</button>
-              <button className={`${styles.filterBtn} ${statusFilter === "inactive" ? styles.active : ""}`} onClick={() => setStatusFilter("inactive")}>Inactive</button>
-              <button className={`${styles.filterBtn} ${statusFilter === "archived" ? styles.active : ""}`} onClick={() => setStatusFilter("archived")}>Archived</button>
+              <button className={`${styles.filterBtn} ${statusFilter === "all" ? styles.active : ""}`} onClick={() => setStatusFilter("all")}>
+                All ({users.length})
+              </button>
+              <button className={`${styles.filterBtn} ${statusFilter === "active" ? styles.active : ""}`} onClick={() => setStatusFilter("active")}>
+                Active ({users.filter(u => isActiveFromLastLogin(u.lastLogin) && !u.archived).length})
+              </button>
+              <button className={`${styles.filterBtn} ${statusFilter === "inactive" ? styles.active : ""}`} onClick={() => setStatusFilter("inactive")}>
+                Inactive ({users.filter(u => !isActiveFromLastLogin(u.lastLogin) && !u.archived).length})
+              </button>
+              <button className={`${styles.filterBtn} ${statusFilter === "archived" ? styles.active : ""}`} onClick={() => setStatusFilter("archived")}>
+                Archived ({users.filter(u => u.archived).length})
+              </button>
             </div>
 
             <div className={styles.tableWrap}>
@@ -295,38 +420,54 @@ export default function AdminUserListPage() {
 
                 <tbody className={styles.tbodyScrollable}>
                   {loading ? (
-                    <tr><td colSpan={8} className={styles.emptyCell}>Loading users...</td></tr>
+                    <tr><td colSpan={8} className={styles.emptyCell}>
+                      <i className="fa-solid fa-spinner fa-spin"></i> Loading users...
+                    </td></tr>
                   ) : filteredAndSearchedUsers.length === 0 ? (
                     <tr><td colSpan={8} className={styles.emptyCell}>No users found.</td></tr>
                   ) : (
                     filteredAndSearchedUsers.map((user) => {
-                      const reportsCount = countReportsForUser(user._id);
-                      const credibility = computeCredibilityLabel(reportsCount);
+                      const reportsCount = user.reputation?.totalReports || 0;
+                      const credibility = computeCredibilityLabel(user);
                       const isArchived = !!user.archived;
                       const active = isActiveFromLastLogin(user.lastLogin);
 
                       return (
                         <tr key={user._id} className={isArchived ? styles.archivedRow : ""}>
-                          <td className={styles.cellId}>{user.id || user._id}</td>
+                          <td className={styles.cellId}>{user.id || user._id.substring(0, 8)}</td>
                           <td>
                             <div className={styles.nameCell}>
                               <div className={styles.nameText}>{user.name}</div>
-                              <div className={styles.subText}>{isArchived ? "Archived" : active ? "Active" : "Inactive"}</div>
+                              <div className={styles.subText}>
+                                {user.reputation?.level || 'Newcomer'}
+                              </div>
                             </div>
                           </td>
-                          <td>{user.email || `${user.id || user._id}@example.com`}</td>
+                          <td>{user.email || "N/A"}</td>
                           <td>{user.address || "No address provided"}</td>
                           <td><strong>{reportsCount}</strong></td>
                           <td><span className={`${styles.credBadge} ${styles[`cred_${credibility.toLowerCase()}`]}`}>{credibility}</span></td>
-                          <td><div className={active ? styles.activeStatus : styles.inactiveStatus}>{active ? "Active" : "Inactive"}</div></td>
+                          <td>
+                            <div className={active && !isArchived ? styles.activeStatus : styles.inactiveStatus}>
+                              {isArchived ? "Archived" : active ? "Active" : "Inactive"}
+                            </div>
+                          </td>
                           <td>
                             <div className={styles.detailsCell}>
                               <button onClick={() => setViewingUser(user)} className={styles.linkBtn}>View</button>
-                              {/* Show Archive action only when user is NOT archived */}
-                              {!isArchived && (
+                              {isArchived ? (
+                                <button
+                                  onClick={() => handleUnarchive(user._id)}
+                                  className={`${styles.btn} ${styles.btnSuccess}`}
+                                  disabled={actionLoading}
+                                >
+                                  Unarchive
+                                </button>
+                              ) : (
                                 <button
                                   onClick={() => handleOpenConfirm(user._id)}
                                   className={`${styles.btn} ${styles.btnDanger}`}
+                                  disabled={actionLoading}
                                 >
                                   Archive
                                 </button>
@@ -346,23 +487,23 @@ export default function AdminUserListPage() {
           {confirmOpenFor && (() => {
             const u = users.find((x) => x._id === confirmOpenFor) || null;
             const meta = getConfirmMeta(u);
-            // If user is archived, modal is informational only (no destructive action)
-            const isInformational = !!u && !!u.archived;
+            const isUnarchive = !!u && !!u.archived;
+            
             return (
-              <div className={styles.confirmCard} role="dialog" aria-modal="true" aria-labelledby="confirm-title" aria-describedby="confirm-desc">
-                <div id="confirm-title" className={styles.title}>{meta.title}</div>
-                <div id="confirm-desc" className={styles.desc}>{meta.description}</div>
+              <div className={styles.confirmCard} role="dialog" aria-modal="true">
+                <div className={styles.title}>{meta.title}</div>
+                <div className={styles.desc}>{meta.description}</div>
                 <div className={styles.actions}>
-                  <button onClick={() => closeConfirm()} className={styles.btn}>{isInformational ? "Close" : "Cancel"}</button>
-                  {!isInformational && (
-                    <button
-                      onClick={() => confirmOpenFor && handleArchive(confirmOpenFor)}
-                      disabled={actionLoading}
-                      className={`${styles.btn} ${styles.btnDanger}`}
-                    >
-                      {actionLoading ? "Archiving..." : meta.confirmLabel}
-                    </button>
-                  )}
+                  <button onClick={closeConfirm} className={styles.btn} disabled={actionLoading}>
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => confirmOpenFor && (isUnarchive ? handleUnarchive(confirmOpenFor) : handleArchive(confirmOpenFor))}
+                    disabled={actionLoading}
+                    className={`${styles.btn} ${isUnarchive ? styles.btnSuccess : styles.btnDanger}`}
+                  >
+                    {actionLoading ? (isUnarchive ? "Unarchiving..." : "Archiving...") : meta.confirmLabel}
+                  </button>
                 </div>
               </div>
             );
@@ -373,8 +514,10 @@ export default function AdminUserListPage() {
             <div className={styles.modalBackdrop} role="dialog" aria-modal="true" onClick={() => setViewingUser(null)}>
               <div className={styles.modalCard} onClick={(e) => e.stopPropagation()}>
                 <div className={styles.modalHeader}>
-                  <h3>User details</h3>
-                  <button onClick={() => setViewingUser(null)} className={styles.linkBtn}>Close</button>
+                  <h3>User Details</h3>
+                  <button onClick={() => setViewingUser(null)} className={styles.linkBtn}>
+                    <i className="fa fa-times"></i> Close
+                  </button>
                 </div>
 
                 <div className={styles.modalGrid}>
@@ -385,22 +528,50 @@ export default function AdminUserListPage() {
                   <div>{viewingUser.name}</div>
 
                   <div className={styles.labelCol}>Email</div>
-                  <div>{viewingUser.email || `${viewingUser.id || viewingUser._id}@example.com`}</div>
+                  <div>{viewingUser.email || "N/A"}</div>
 
                   <div className={styles.labelCol}>Location</div>
                   <div>{viewingUser.address || "No address provided"}</div>
 
                   <div className={styles.labelCol}>Reports</div>
-                  <div>{countReportsForUser(viewingUser._id)}</div>
+                  <div>{viewingUser.reputation?.totalReports || 0}</div>
+
+                  <div className={styles.labelCol}>Reputation Points</div>
+                  <div>{viewingUser.reputation?.points || 0}</div>
+
+                  <div className={styles.labelCol}>Level</div>
+                  <div>{viewingUser.reputation?.level || 'Newcomer'}</div>
 
                   <div className={styles.labelCol}>Credibility</div>
-                  <div>{computeCredibilityLabel(countReportsForUser(viewingUser._id))}</div>
+                  <div>{computeCredibilityLabel(viewingUser)}</div>
 
                   <div className={styles.labelCol}>Status</div>
                   <div>{viewingUser.archived ? "Archived" : isActiveFromLastLogin(viewingUser.lastLogin) ? "Active" : "Inactive"}</div>
 
                   <div className={styles.labelCol}>Last Login</div>
                   <div>{viewingUser.lastLogin ? new Date(viewingUser.lastLogin).toLocaleString() : "Never"}</div>
+                </div>
+
+                <div className={styles.modalActions}>
+                  {viewingUser.archived ? (
+                    <button
+                      onClick={() => handleUnarchive(viewingUser._id)}
+                      className={`${styles.btn} ${styles.btnSuccess}`}
+                      disabled={actionLoading}
+                    >
+                      <i className="fa fa-undo" style={{ marginRight: "8px" }}></i>
+                      {actionLoading ? "Unarchiving..." : "Unarchive User"}
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => handleOpenConfirm(viewingUser._id)}
+                      className={`${styles.btn} ${styles.btnDanger}`}
+                      disabled={actionLoading}
+                    >
+                      <i className="fa fa-archive" style={{ marginRight: "8px" }}></i>
+                      Archive User
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
