@@ -186,26 +186,8 @@ export default function AdminMapPage() {
         <header className={styles.header}>
           <nav className={styles.adminNav}>
             <div className={styles.navLeft}>
-              <Image
-                src="/images/Fix-it_logo_3.png"
-                alt="Fixit Logo"
-                className={styles.logo}
-                width={160}
-                height={40}
-              />
+              <Image src="/images/Fix-it_logo_3.png" alt="Fixit Logo" className={styles.logo} width={160} height={40} />
             </div>
-
-            <button
-              className={`${styles.hamburger} ${menuOpen ? styles.open : ""}`}
-              onClick={() => setMenuOpen(!menuOpen)}
-              aria-label={menuOpen ? "Close menu" : "Open menu"}
-              aria-expanded={menuOpen}
-              type="button"
-            >
-              <span className={styles.bar} />
-              <span className={styles.bar} />
-              <span className={styles.bar} />
-            </button>
 
             <ul className={`${styles.navListUserSide} ${menuOpen ? styles.open : ""}`}>
             <li>
@@ -216,6 +198,9 @@ export default function AdminMapPage() {
             </li>
             <li>
               <a href="/admin-reports" className={styles.navLink}>Reports</a>
+            </li>
+            <li>
+              <a href="/admin-users" className={styles.navLink}>Users</a>
             </li>
             <li>
               <a href="/admin-flag" className={styles.navLink}>Flagged</a>

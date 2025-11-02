@@ -31,6 +31,9 @@ export default function RegisterPage() {
   const [verifyingOtp, setVerifyingOtp] = useState(false);
   const [registering, setRegistering] = useState(false);
 
+  const [privacyChecked, setPrivacyChecked] = useState(false);
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+
   const conditions = [
     { key: "length", text: "At least 8 characters", valid: form.password.length >= 8 },
     { key: "uppercase", text: "At least one uppercase letter", valid: /[A-Z]/.test(form.password) },
@@ -299,7 +302,37 @@ export default function RegisterPage() {
               <span className={styles.labelText}>Contact number</span>
             </label>
 
-            <button className={styles.registerBtn} type="submit" disabled={registering}>
+            <div className={styles.privacyRow}>
+              <label className={styles.checkboxLabel}>
+                <input
+                  type="checkbox"
+                  name="privacy"
+                  checked={privacyChecked}
+                  onChange={(e) => setPrivacyChecked(e.target.checked)}
+                  required
+                  className={styles.checkbox}
+                  aria-required="true"
+                />
+                <span className={styles.checkboxText}>
+                  I agree to the{" "}
+                  <button
+                    type="button"
+                    className={styles.linkButton}
+                    onClick={() => setShowPrivacyModal(true)}
+                    aria-haspopup="dialog"
+                  >
+                    Privacy Policy
+                  </button>
+                </span>
+              </label>
+            </div>
+
+            <button
+              className={styles.registerBtn}
+              type="submit"
+              disabled={registering || !privacyChecked}
+              aria-disabled={registering || !privacyChecked}
+            >
               {registering ? "Sending OTP..." : "Register"}
             </button>
           </form>
@@ -315,8 +348,8 @@ export default function RegisterPage() {
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" focusable="false" aria-hidden="true">
                   <path d="M21.6 12.23c0-.68-.06-1.34-.18-1.97H12v3.73h5.48c-.24 1.33-.94 2.46-2 3.22v2.66h3.23c1.88-1.73 2.97-4.28 2.97-7.64z" fill="#4285F4"/>
                   <path d="M12 22c2.7 0 4.96-.89 6.62-2.42l-3.23-2.66c-.9.6-2.06.96-3.39.96-2.6 0-4.8-1.76-5.59-4.14H2.98v2.6C4.64 19.9 8.04 22 12 22z" fill="#34A853"/>
-                  <path d="M6.41 13.74A6.972 6.972 0 0 1 6 12c0-.62.1-1.22.29-1.75V7.65H2.98A9.998 9.998 0 0 0 1 12c0 1.63.39 3.17 1.07 4.55l4.34-2.81z" fill="#FBBC05"/>
-                  <path d="M12 6.5c1.47 0 2.8.5 3.85 1.49L19.06 5c-1.66-1.18-3.9-1.84-7.06-1.84-3.96 0-7.36 2.1-9.02 5.14l4.34 2.81C7.2 8.26 9.4 6.5 12 6.5z" fill="#EA4335"/>
+                  <path d="M6.41 13.74A6.972 6.972 0 0 1 6 12c0-.62.10-1.22.29-1.75V7.65H2.98A9.998 9.998 0 0 0 1 12c0 1.63.39 3.17 1.07 4.55l4.34-2.81z" fill="#FBBC05"/>
+                  <path d="M12 6.5c1.47 0 2.8.50 3.85 1.49L19.06 5c-1.66-1.18-3.9-1.84-7.06-1.84-3.96 0-7.36 2.10-9.02 5.14l4.34 2.81C7.20 8.26 9.40 6.50 12 6.50z" fill="#EA4335"/>
                 </svg>
               </span>
               <span className={styles.googleText}>Continue with Google</span>
@@ -325,7 +358,43 @@ export default function RegisterPage() {
         </div>
       </main>
 
-      {/* OTP Verification Modal */}
+      {showPrivacyModal && (
+        <div className={styles.policyModalOverlay}>
+          <div className={styles.policyModal} role="dialog" aria-modal="true" aria-label="Privacy Policy">
+            <div className={styles.policyHeader}>
+              <h2>Privacy Policy</h2>
+              <button type="button" className={styles.closeBtn} onClick={() => setShowPrivacyModal(false)} aria-label="Close privacy policy">✕</button>
+            </div>
+            <div className={styles.policyContent}>
+              <p>
+                FixItPH collects and processes the personal information you provide during registration so we can create and manage your account, verify your identity, and deliver our service in your community.
+              </p>
+              <p>
+                The specific data we collect at sign-up includes: <strong>first and last name</strong>, <strong>email address</strong>, <strong>password</strong>, <strong>barangay</strong>, <strong>municipality</strong>, and <strong>contact number</strong>. The password you enter is used only to authenticate and is stored securely using industry-standard hashing on our servers.
+              </p>
+              <p>
+                We use your information to: create and secure your account, send one-time verification codes (OTP) to confirm email ownership, communicate important account messages, and provide location-aware features tied to your barangay and municipality.
+              </p>
+              <p>
+                We may share personal data with third-party service providers who perform services on our behalf (such as email delivery and authentication). We require those providers to protect your data and use it only as needed to provide their services.
+              </p>
+              <p>
+                We retain information only as long as necessary for account management, legal obligations, or to provide the service. You can request access, correction, or deletion of your personal data by contacting our support team; certain requests may be limited by legal or operational requirements.
+              </p>
+              <p>
+                We implement reasonable administrative and technical safeguards to protect your data. However, no system is completely risk-free. If a data incident affects your account we will notify you as required by applicable law and take steps to remediate the issue.
+              </p>
+              <p>
+                By checking the box and registering you consent to this collection and processing as described. For full details including retention periods, your rights, and contact information for privacy inquiries, please visit our website privacy center or contact support.
+              </p>
+            </div>
+            <div className={styles.policyActions}>
+              <button type="button" className={styles.secondaryBtn} onClick={() => setShowPrivacyModal(false)}>Close</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {showOtpModal && (
         <div className={styles.otpModalOverlay}>
           <div className={styles.otpModal} role="dialog" aria-modal="true">

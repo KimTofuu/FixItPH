@@ -289,68 +289,39 @@ export default function AdminFlagPage() {
 
   return (
     <>
-      <Head>
-        <title>FixIt PH - Flagged Reports</title>
-        <link
-          href="https://fonts.googleapis.com/css?family=Inter"
-          rel="stylesheet"
-        />
-        <script
-          src="https://kit.fontawesome.com/830b39c5c0.js"
-          crossOrigin="anonymous"
-          defer
-        ></script>
-      </Head>
-
       <div className={styles.adminFlagRoot}>
-        <header className={styles.navHeader}> {/* Changed from .header to .navHeader */}
+        <header className={styles.header}>
           <nav className={styles.adminNav}>
             <div className={styles.navLeft}>
-              <Image
-                src="/images/Fix-it_logo_3.png"
-                alt="Fixit Logo"
-                className={styles.logo}
-                width={160}
-                height={40}
-              />
+              <Image src="/images/Fix-it_logo_3.png" alt="Fixit Logo" className={styles.logo} width={160} height={40} />
             </div>
 
-            <button
-              className={`${styles.hamburger} ${menuOpen ? styles.open : ""}`}
-              onClick={() => setMenuOpen(!menuOpen)}
-              aria-label={menuOpen ? "Close menu" : "Open menu"}
-              aria-expanded={menuOpen}
-              type="button"
-            >
-              <span className={styles.bar} />
-              <span className={styles.bar} />
-              <span className={styles.bar} />
-            </button>
-
             <ul className={`${styles.navListUserSide} ${menuOpen ? styles.open : ""}`}>
-              <li>
-                <a href="/admin-dashboard" className={styles.navLink}>Dashboard</a>
-              </li>
-              <li>
-                <a href="/admin-map" className={styles.navLink}>Map</a>
-              </li>
-              <li>
-                <a href="/admin-reports" className={styles.navLink}>Reports</a>
-              </li>
-              <li className={styles.activeNavItem}>
-                <a href="/admin-flag" className={styles.navLink}>Flagged</a>
-              </li>
-
-              <li>
-                <a href="/admin-profile" className={styles.adminProfileLink}>
-                  <img
-                    src={profilePicUrl}
-                    alt="Admin Profile"
-                    className={styles.adminProfilePic}
-                  />
-                </a>
-              </li>
-            </ul>
+            <li>
+              <a href="/admin-dashboard" className={styles.navLink}>Dashboard</a>
+            </li>
+            <li>
+              <a href="/admin-map" className={styles.navLink}>Map</a>
+            </li>
+            <li>
+              <a href="/admin-reports" className={styles.navLink}>Reports</a>
+            </li>
+            <li>
+              <a href="/admin-users" className={styles.navLink}>Users</a>
+            </li>
+            <li className={styles.activeNavItem} >
+              <a href="/admin-flag" className={styles.navLink}>Flagged</a>
+            </li>
+            <li>
+              <a href="/admin-profile" className={styles.adminProfileLink}>
+                <img
+                  src={profilePicUrl}
+                  alt="Admin Profile"
+                  className={styles.adminProfilePic}
+                />
+              </a>
+            </li>
+          </ul>
           </nav>
         </header>
 
