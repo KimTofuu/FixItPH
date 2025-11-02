@@ -431,8 +431,3 @@
   .usersTable { min-width: 560px; font-size: 0.9rem; }
   .modalGrid { grid-template-columns: 1fr; }
 }
-
-
-.status_pending {}
-.status_in_progress {}
-.status_resolved {}

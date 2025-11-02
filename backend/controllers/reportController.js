@@ -283,13 +283,27 @@ exports.verifyReport = async (req, res) => {
 // Get all reports with user details
 exports.getAllReports = async (req, res) => {
   try {
-    const reports = await Report.find({ status: { $ne: 'awaiting-approval' } })
-      .populate('user', '_id fName lName email profilePicture reputation')
+    const reports = await Report.find({ status: { $ne: 'Rejected' } })
+      .populate('user', 'fName lName email profilePicture reputation')
       .sort({ createdAt: -1 });
-    
-    res.json(formatReportsWithStringIds(reports));
+
+    // Normalize votedBy to always be strings
+    const normalizedReports = reports.map(report => {
+      const reportObj = report.toObject();
+      
+      // Ensure votedBy is an array of strings
+      if (reportObj.votedBy) {
+        reportObj.votedBy = reportObj.votedBy.map(id => id.toString());
+      } else {
+        reportObj.votedBy = [];
+      }
+      
+      return reportObj;
+    });
+
+    res.json(normalizedReports);
   } catch (err) {
-    console.error('getAllReports error:', err);
+    console.error('Get all reports error:', err);
     res.status(500).json({ message: 'Server error' });
   }
 };
