@@ -63,6 +63,7 @@ exports.googleCallback = async (req, res) => {
         password: randomPassword, // Random hash, Google users won't use it
         barangay: '', // Will be filled in profile completion
         municipality: '', // Will be filled in profile completion
+        lastLogin: new Date(),
         profilePicture: { 
           url: data.picture || '', 
           public_id: '' 
