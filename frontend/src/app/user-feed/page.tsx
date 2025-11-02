@@ -622,11 +622,19 @@ export default function UserFeedPage() {
                 filteredReports.map((r) => {
                   const reportUserPic = r.user?.profilePicture?.url || defaultProfilePic;
                   
-                  // Ensure both IDs are strings and compare
+                  // Normalize votedBy array to always be strings
+                  const normalizedVotedBy = (r.votedBy || []).map(voterId => {
+                    if (typeof voterId === 'string') return voterId;
+                    if (typeof voterId === 'object' && voterId !== null) {
+                      return voterId._id || voterId.toString();
+                    }
+                    return String(voterId);
+                  });
+                  
+                  // Check if current user has voted
                   const hasVoted = Boolean(
                     currentUserId && 
-                    r.votedBy && 
-                    r.votedBy.some(voterId => String(voterId) === String(currentUserId))
+                    normalizedVotedBy.some(voterId => voterId === String(currentUserId))
                   );
                   
                   // Get report user ID safely and convert to string
@@ -639,8 +647,7 @@ export default function UserFeedPage() {
                     reportId: r._id,
                     currentUserId: String(currentUserId),
                     reportUserId,
-                    votedBy: r.votedBy,
-                    votedByTypes: r.votedBy?.map(id => typeof id),
+                    normalizedVotedBy,
                     hasVoted,
                     isOwnReport,
                     isDisabled
