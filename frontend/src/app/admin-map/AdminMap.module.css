@@ -1,6 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Poppins:wght@400;600;700&display=swap');
 
-/* Module-scoped variables and wrapper */
 .adminReportsRoot {
   --ar-bg: #f6f8fb;
   --ar-surface: #ffffff;
@@ -26,10 +25,10 @@
   position: relative;
 }
 
-/* Reset-like base for this module */
+
 .adminReportsRoot * { box-sizing: inherit; }
 
-/* Header / nav */
+
 .header {
   position: sticky;
   top: 0;
@@ -50,10 +49,11 @@
   margin: 0 auto;
   width: 100%;
 }
+
 .navLeft { display:flex; align-items:center; gap:12px; }
 .logo { width:160px; height:40px; object-fit:contain; }
 
-/* Hamburger button (updated) */
+
 .hamburger {
   display: none;
   width:46px;
@@ -67,8 +67,6 @@
   padding: 6px;
   transition: background 160ms ease;
 }
-
-/* three bars inside the button */
 .bar {
   display:block;
   width:22px;
@@ -78,25 +76,15 @@
   transition: transform 220ms ease, opacity 220ms ease;
   border-radius: 2px;
 }
-
-/* hover & focus affordances */
 .hamburger:hover { background: rgba(2,6,23,0.03); }
 .hamburger:focus { outline: 3px solid rgba(37,99,235,0.14); outline-offset: 3px; }
+.hamburger.open .bar:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+.hamburger.open .bar:nth-child(2) { opacity: 0; transform: scaleX(0); }
+.hamburger.open .bar:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
 
-/* open state transforms bars into X using parent .open */
-.hamburger.open .bar:nth-child(1) {
-  transform: translateY(6px) rotate(45deg);
-}
-.hamburger.open .bar:nth-child(2) {
-  opacity: 0;
-  transform: scaleX(0);
-}
-.hamburger.open .bar:nth-child(3) {
-  transform: translateY(-6px) rotate(-45deg);
-}
 
-/* Nav list */
-.navListUserSide {
+.navListUserSide,
+.navList {
   display:flex;
   align-items:center;
   gap:12px;
@@ -108,6 +96,7 @@
 .activeNavItem .navLink { background: rgba(37,99,235,0.08); color:var(--ar-accent); }
 .adminProfileLink { display:inline-flex; align-items:center; }
 .adminProfilePic { width:36px; height:36px; border-radius:999px; object-fit:cover; border:1px solid rgba(2,6,23,0.06); }
+
 
 /* Main layout */
 .reportsPage {
