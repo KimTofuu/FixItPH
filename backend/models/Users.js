@@ -92,6 +92,23 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  // Additional fields
+  archived: {
+    type: Boolean,
+    default: false
+  },
+  archivedAt: {
+    type: Date
+  },
+  archivedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Admin'
+  },
+  lastLogin: {
+    type: Date
+  }
+}, {
+  timestamps: true // Make sure this exists
 });
 
 // Method to calculate reputation level based on points

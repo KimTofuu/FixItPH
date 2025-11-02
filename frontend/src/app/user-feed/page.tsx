@@ -12,7 +12,7 @@ import { useRouter } from "next/navigation";
 interface Report {
   _id: string;
   user: { 
-    _id?: string; // ADD THIS
+    _id?: string;
     fName: string; 
     lName: string; 
     email: string;
