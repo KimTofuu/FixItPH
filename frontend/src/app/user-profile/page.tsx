@@ -117,7 +117,7 @@ export default function ProfilePage() {
         typeof window !== "undefined"
           ? localStorage.getItem("token")
           : null;
-      const res = await fetch(`${API}/users/me`, {
+      const res = await fetch(`${API}/users/profile`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -261,7 +261,7 @@ export default function ProfilePage() {
           ? localStorage.getItem("token")
           : null;
       const res = await fetch(`${API}/users/change-password`, {
-        method: "POST",
+        method: "PATCH",
         headers: {
           "Content-Type": "application/json",
           Authorization: token ? `Bearer ${token}` : "",
