@@ -646,11 +646,11 @@ exports.flagReport = async (req, res) => {
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
-    const report = await Report.findById(reportId);
+    const report = await Report.findById(reportId).populate('user', 'fName lName email');
     if (!report) {
       return res.status(404).json({ message: 'Report not found' });
     }
-
+    
     // Check if user already flagged this report
     if (report.flags && report.flags.some((flag) => flag.userId.toString() === userId)) {
       return res.status(400).json({ message: 'You have already flagged this report' });
@@ -661,6 +661,9 @@ exports.flagReport = async (req, res) => {
       report.flags = [];
     }
 
+    // Get the flagger's info
+    const flagger = await User.findById(userId).select('fName lName');
+
     // Add the flag
     report.flags.push({
       userId,
@@ -669,16 +672,135 @@ exports.flagReport = async (req, res) => {
       createdAt: new Date()
     });
 
+    const previousFlagCount = report.flagCount || 0;
     report.flagCount = report.flags.length;
 
     await report.save();
 
     console.log(`🚩 Report ${reportId} flagged by user ${userId}. Total flags: ${report.flagCount}`);
 
-    // If report has too many flags (e.g., 3+), notify admins or auto-hide
+    // Send email notification to the report author
+    if (report.user && report.user.email) {
+      try {
+        const isFirstFlag = previousFlagCount === 0;
+        const emailMessage = `
+          <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+            <h2 style="color: #ef4444;">⚠️ Your Report Has Been Flagged</h2>
+            <p>Hi ${report.user.fName},</p>
+            <p>Your report has received ${isFirstFlag ? 'a flag' : `${report.flagCount} flag(s)`} from ${isFirstFlag ? 'a community member' : 'community members'}.</p>
+            
+            <div style="background-color: #fef2f2; border-left: 4px solid #ef4444; padding: 16px; margin: 20px 0; border-radius: 4px;">
+              <h3 style="margin-top: 0; color: #991b1b;">Report Details:</h3>
+              <ul style="margin: 10px 0;">
+                <li><strong>Report ID:</strong> ${report._id}</li>
+                <li><strong>Title:</strong> ${report.title}</li>
+                <li><strong>Total Flags:</strong> ${report.flagCount}</li>
+              </ul>
+            </div>
+
+            <div style="background-color: #fffbeb; border-left: 4px solid #f59e0b; padding: 16px; margin: 20px 0; border-radius: 4px;">
+              <h3 style="margin-top: 0; color: #92400e;">Latest Flag Reason:</h3>
+              <p><strong>${reason}</strong></p>
+              ${description ? `<p style="color: #78716c; font-style: italic;">"${description}"</p>` : ''}
+            </div>
+
+            ${report.flagCount >= 3 ? `
+              <div style="background-color: #fecaca; border: 2px solid #dc2626; padding: 16px; margin: 20px 0; border-radius: 4px;">
+                <p style="margin: 0; font-weight: bold; color: #991b1b;">
+                  ⚠️ <strong>Important:</strong> Your report has reached ${report.flagCount} flags and is under review by our moderation team. 
+                  If the flags are valid, your report may be removed.
+                </p>
+              </div>
+            ` : ''}
+
+            <h3 style="color: #1f2937;">What This Means:</h3>
+            <ul style="color: #4b5563;">
+              <li>Community members have raised concerns about your report</li>
+              <li>Our team will review the flags and your report content</li>
+              <li>Please ensure your report follows our <a href="https://fixitph.com/guidelines" style="color: #3b82f6;">community guidelines</a></li>
+              ${report.flagCount >= 3 ? '<li><strong>Multiple flags may result in report removal</strong></li>' : ''}
+            </ul>
+
+            <h3 style="color: #1f2937;">Common Reasons for Flags:</h3>
+            <ul style="color: #4b5563;">
+              <li>Spam or irrelevant content</li>
+              <li>Misleading or false information</li>
+              <li>Offensive or inappropriate content</li>
+              <li>Duplicate report</li>
+              <li>Violation of community guidelines</li>
+            </ul>
+
+            <p style="margin-top: 24px;">
+              If you believe this flag is unfair or made in error, you can contact our support team or wait for admin review.
+            </p>
+
+            <p style="color: #6b7280; font-size: 14px; margin-top: 24px; padding-top: 16px; border-top: 1px solid #e5e7eb;">
+              <strong>Note:</strong> This is an automated notification. Please do not reply to this email.
+            </p>
+
+            <div style="margin-top: 24px; padding: 16px; background-color: #f9fafb; border-radius: 4px;">
+              <p style="margin: 0; color: #6b7280; font-size: 14px;">
+                Thank you for being a part of our community. Together, we can keep FixItPH a helpful and respectful platform.
+              </p>
+            </div>
+          </div>
+        `;
+
+        await sendEmail({
+          to: report.user.email,
+          subject: `⚠️ Your FixItPH Report Has Been Flagged (ID: ${report._id})`,
+          html: emailMessage,
+        });
+
+        console.log(`📧 Flag notification email sent to ${report.user.email}`);
+      } catch (emailError) {
+        console.error('❌ Failed to send flag notification email:', emailError);
+        // Don't fail the request if email fails
+      }
+    }
+
+    // If report has too many flags (e.g., 3+), notify admins
     if (report.flagCount >= 3) {
       console.log(`⚠️ Report ${reportId} has reached ${report.flagCount} flags. Consider review.`);
-      // You can add admin notification logic here
+      
+      // Send email to admins (you can add admin email notification here)
+      try {
+        const adminEmail = process.env.ADMIN_EMAIL || 'admin@fixitph.com';
+        const adminEmailMessage = `
+          <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+            <h2 style="color: #dc2626;">⚠️ Report Requires Immediate Review</h2>
+            <p>A report has reached <strong>${report.flagCount} flags</strong> and requires admin attention.</p>
+            
+            <div style="background-color: #fef2f2; padding: 16px; margin: 20px 0; border-radius: 4px;">
+              <h3>Report Details:</h3>
+              <ul>
+                <li><strong>Report ID:</strong> ${report._id}</li>
+                <li><strong>Title:</strong> ${report.title}</li>
+                <li><strong>Author:</strong> ${report.user.fName} ${report.user.lName} (${report.user.email})</li>
+                <li><strong>Total Flags:</strong> ${report.flagCount}</li>
+                <li><strong>Latest Flag Reason:</strong> ${reason}</li>
+              </ul>
+            </div>
+
+            <p>
+              <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/admin-flag" 
+                 style="display: inline-block; padding: 12px 24px; background-color: #3b82f6; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">
+                Review Report Now
+              </a>
+            </p>
+          </div>
+        `;
+
+        await sendEmail({
+          to: adminEmail,
+          subject: `⚠️ Urgent: Report ${report._id} Has ${report.flagCount} Flags`,
+          html: adminEmailMessage,
+        });
+
+        console.log(`📧 Admin notification email sent for report ${reportId}`);
+      } catch (adminEmailError) {
+        console.error('❌ Failed to send admin notification email:', adminEmailError);
+      }
     }
 
     res.json({

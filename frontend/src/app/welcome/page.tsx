@@ -45,7 +45,7 @@ export default function WelcomePage() {
   const checkProfileCompletion = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/me`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/profile`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       
@@ -66,7 +66,7 @@ export default function WelcomePage() {
     
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/me`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/profile`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
