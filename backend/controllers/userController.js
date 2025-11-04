@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const cloudinary = require("../config/cloudinary");
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
+const smsService = require('../config/smsService');
 
 // Configure email transporter
 const transporter = nodemailer.createTransport({
@@ -420,5 +421,79 @@ exports.getMyProfile = async (req, res) => {
   } catch (error) {
     console.error('Get profile error:', error);
     res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Request SMS OTP
+exports.requestSmsOtp = async (req, res) => {
+  try {
+    const { phone } = req.body;
+
+    if (!phone) {
+      return res.status(400).json({ message: 'Phone number is required' });
+    }
+
+    // Validate phone number format (basic validation)
+    const phoneRegex = /^(\+63|0)?9\d{9}$/;
+    if (!phoneRegex.test(phone.replace(/\s/g, ''))) {
+      return res.status(400).json({ 
+        message: 'Invalid Philippine phone number format. Use +639XXXXXXXXX or 09XXXXXXXXX' 
+      });
+    }
+
+    const result = await smsService.sendOTP(phone);
+
+    if (result.success) {
+      console.log(`✅ OTP sent to ${phone}`);
+      res.json({ 
+        message: 'Verification code sent to your phone',
+        messageId: result.messageId 
+      });
+    } else {
+      res.status(500).json({ message: result.message || 'Failed to send OTP' });
+    }
+  } catch (error) {
+    console.error('Request OTP error:', error);
+    res.status(500).json({ 
+      message: error.message || 'Failed to send verification code' 
+    });
+  }
+};
+
+// Verify SMS OTP
+exports.verifySmsOtp = async (req, res) => {
+  try {
+    const { phone, otp } = req.body;
+    const userId = req.user.userId;
+
+    if (!phone || !otp) {
+      return res.status(400).json({ message: 'Phone number and OTP are required' });
+    }
+
+    const result = smsService.verifyOTP(phone, otp);
+
+    if (result.success) {
+      // Update user's contact verification status
+      const user = await User.findById(userId);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      user.contact = phone;
+      user.contactVerified = true;
+      await user.save();
+
+      console.log(`✅ Phone verified for user ${userId}: ${phone}`);
+      
+      res.json({ 
+        message: 'Phone number verified successfully',
+        contactVerified: true 
+      });
+    } else {
+      res.status(400).json({ message: result.message });
+    }
+  } catch (error) {
+    console.error('Verify OTP error:', error);
+    res.status(500).json({ message: 'Verification failed' });
   }
 };
