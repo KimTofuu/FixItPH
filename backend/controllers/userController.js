@@ -400,3 +400,25 @@ exports.resetPassword = async (req, res) => {
     res.status(500).json({ message: 'Server error. Please try again later.' });
   }
 };
+
+exports.getMyProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Convert mongoose document to a plain object to safely modify it
+    const userObject = user.toObject();
+
+    if (userObject.profilePicture && userObject.profilePicture.url && !userObject.profilePicture.url.startsWith('http')) {
+      console.warn(`User ${user._id} has an invalid local file path for profile picture. Clearing it.`);
+      userObject.profilePicture = null;
+    }
+
+    res.json(userObject);
+  } catch (error) {
+    console.error('Get profile error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
