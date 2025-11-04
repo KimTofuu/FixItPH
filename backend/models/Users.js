@@ -19,6 +19,10 @@ const userSchema = new mongoose.Schema({
     required: false,
     default: '',
   },
+  contactVerified: {
+    type: Boolean,
+    default: false,
+  },
   password: {
     type: String,
     required: false,
