@@ -142,7 +142,7 @@ export default function AdminMapPage() {
       reportsToShow = resolvedReports;
     } else if (filterStatus === "All") {
       const nonResolved = reports.filter((r) => r.status !== "Resolved");
-      reportsToShow = [...nonResolved, ...resolvedReports];
+      reportsToShow = [...nonResolved];
     } else {
       reportsToShow = reports.filter((report) => report.status === filterStatus);
     }
