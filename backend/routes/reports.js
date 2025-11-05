@@ -1,25 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const multer = require('multer');
 const reportController = require('../controllers/reportController');
-const reputationController = require('../controllers/reputationController');
 const { authenticateToken, isAdmin } = require('../middleware/authenticateToken');
-
-// --- Configure Multer for File Uploads ---
-// This is the missing part. It tells multer where to temporarily save files.
-const storage = multer.diskStorage({}); 
-
-// This filter ensures only image and video files are accepted.
-const fileFilter = (req, file, cb) => {
-  if (file.mimetype.startsWith('image/') || file.mimetype.startsWith('video/')) {
-    cb(null, true);
-  } else {
-    cb(new Error('Not an image or video file!'), false);
-  }
-};
-
-const upload = multer({ storage, fileFilter });
-// --- End of Multer Config ---
+const { upload } = require('../config/cloudinary'); // ✅ Must import Cloudinary upload
+const reputationController = require('../controllers/reputationController'); // Import reputation controller
 
 
 // --- ADMIN ROUTES  ---
