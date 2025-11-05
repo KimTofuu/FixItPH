@@ -218,7 +218,14 @@ export default function UserFeedPage() {
           const data = await res.json();
           console.log("✅ Reports loaded:", data);
           console.log("📸 First report user pic:", data[0]?.user?.profilePicture?.url);
-          setReports(data);
+
+          // FILTER OUT reports still awaiting approval (any status containing "approval")
+          const visibleReports = (data || []).filter((r: any) => {
+            const status = (r?.status || "").toString();
+            return !/approval/i.test(status); // exclude statuses like "Awaiting Approval", "For Approval", etc.
+          });
+
+          setReports(visibleReports);
         }
       } catch (err) {
         console.error("Failed to load reports", err);
