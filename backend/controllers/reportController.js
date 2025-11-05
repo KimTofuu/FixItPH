@@ -23,15 +23,19 @@ const formatReportsWithStringIds = (reports) => {
 // Create a new report
 exports.createReport = async (req, res) => {
   try {
-    console.log('📝 Creating report...');
-    console.log('Decoded Token:', req.user);
-    console.log('req.user.userId:', req.user?.userId);
+    const { title, description, category, location, latitude, longitude, isUrgent } = req.body;
+    const userId = req.user?.userId;
 
-    const { title, description, location, latitude, longitude, category, isUrgent } = req.body;
-    const userId = req.user?.userId || req.userId; // Fixed: use req.user.userId
+    console.log('📝 Creating report with file:', {
+      hasFile: !!req.file,
+      filePath: req.file?.path,
+      fileName: req.file?.filename,
+      fileSize: req.file?.size,
+      mimetype: req.file?.mimetype
+    });
 
     if (!userId) {
-      return res.status(401).json({ message: 'Unauthorized: User ID not found' });
+      return res.status(401).json({ message: 'Unauthorized' });
     }
 
     const user = await User.findById(userId);
@@ -39,30 +43,33 @@ exports.createReport = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
+    // Get image URL from Cloudinary upload
+    let imageUrl = null;
+    if (req.file && req.file.path) {
+      imageUrl = req.file.path; // This should be https://res.cloudinary.com/...
+      
+      console.log('📸 Image uploaded:', imageUrl);
+      
+      // ✅ CRITICAL: Validate it's a proper Cloudinary URL
+      if (!imageUrl.startsWith('https://res.cloudinary.com/')) {
+        console.error('❌ INVALID IMAGE URL! Expected Cloudinary URL, got:', imageUrl);
+        console.error('❌ Check your Cloudinary configuration in .env');
+        return res.status(500).json({ 
+          message: 'Image upload failed - Cloudinary not configured properly',
+          detail: 'Image URL is not a valid Cloudinary URL'
+        });
+      }
+      
+      console.log('✅ Valid Cloudinary URL confirmed');
+    }
+
     const isUrgentBool = isUrgent === 'true' || isUrgent === true;
     const initialStatus = isUrgentBool ? 'pending' : 'awaiting-approval';
-
-    let imageUrl = null;
-    if (req.file) {
-      try {
-        const result = await cloudinary.uploader.upload(req.file.path, {
-          folder: 'fixit-reports',
-          transformation: [
-            { width: 800, height: 600, crop: 'limit' },
-            { quality: 'auto' }
-          ]
-        });
-        imageUrl = result.secure_url;
-      } catch (uploadError) {
-        console.error('Cloudinary upload error:', uploadError);
-        return res.status(500).json({ message: 'Failed to upload image' });
-      }
-    }
 
     const newReport = new Report({
       title,
       description,
-      image: imageUrl,
+      image: imageUrl, // Save Cloudinary URL
       location,
       latitude,
       longitude,
@@ -73,62 +80,51 @@ exports.createReport = async (req, res) => {
     });
 
     await newReport.save();
-    console.log('✅ Report saved to database');
+    
+    console.log('✅ Report saved:', {
+      id: newReport._id,
+      image: newReport.image,
+      status: newReport.status
+    });
 
-    // Award reputation BEFORE sending response
-    if (reputationController && typeof reputationController.awardReportCreation === 'function') {
+    // Award reputation
+    if (reputationController?.awardReportCreation) {
       try {
-        console.log('🏆 Awarding reputation points...');
-        const reputation = await reputationController.awardReportCreation(userId);
-        console.log('✅ Reputation awarded:', reputation);
+        await reputationController.awardReportCreation(userId);
+        console.log('✅ Reputation awarded');
       } catch (repError) {
-        console.error('❌ Reputation award error:', repError);
-        // Don't fail the request if reputation fails
+        console.error('❌ Reputation error:', repError);
       }
     }
 
-    // Send email acknowledgement
-    const emailStatus = isUrgentBool ? 'Pending' : 'Awaiting Approval';
-    const emailDetails = isUrgentBool
-      ? 'Your urgent report has been posted and is now pending review by our team.'
-      : 'Your report has been submitted and is now awaiting approval from an administrator before it is posted publicly.';
-
-    try {
-      const emailMessage = `
-        <div style="font-family: Arial, sans-serif; line-height: 1.6;">
-          <h2>Report Received!</h2>
-          <p>Hi ${user.fName},</p>
-          <p>${emailDetails}</p>
-          <h3>Report Details:</h3>
-          <ul>
-            <li><strong>Report ID:</strong> ${newReport._id}</li>
-            <li><strong>Title:</strong> ${title}</li>
-            <li><strong>Status:</strong> ${emailStatus}</li>
-          </ul>
-          <p>Thank you for helping improve our community!</p>
-        </div>
-      `;
-      await sendEmail({
-        to: user.email,
-        subject: `Your FixItPH Report is ${emailStatus} (ID: ${newReport._id})`,
-        html: emailMessage,
-      });
-      console.log('📧 Acknowledgement email sent successfully to:', user.email);
-    } catch (emailError) {
-      console.error('❌ Failed to send acknowledgement email:', emailError);
-    }
-
-    // Populate user data with reputation before sending response
+    // Populate and return
     const populatedReport = await Report.findById(newReport._id)
       .populate('user', 'fName lName email profilePicture reputation');
 
+    // Send email
+    try {
+      await sendEmail({
+        to: user.email,
+        subject: `Report Submitted: ${title}`,
+        html: `
+          <div style="font-family: Arial, sans-serif;">
+            <h2>Report Received! 🎉</h2>
+            <p>Hi ${user.fName},</p>
+            <p>Your report has been submitted successfully.</p>
+          </div>
+        `
+      });
+    } catch (emailError) {
+      console.error('❌ Email error:', emailError);
+    }
+
     res.status(201).json({ 
       message: 'Report created successfully', 
-      report: populatedReport 
+      report: populatedReport
     });
   } catch (err) {
     console.error('❌ Create report error:', err);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Server error', error: err.message });
   }
 };
 
