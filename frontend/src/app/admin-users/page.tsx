@@ -276,6 +276,21 @@ export default function AdminUserListPage() {
     toast.success("Users exported successfully");
   };
 
+  const truncateId = (id: string) => {
+    if (!id || id.length <= 12) return id;
+    return `${id.substring(0, 4)}...${id.substring(id.length - 4)}`;
+  };
+
+  // ✅ Add copy to clipboard function
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text).then(() => {
+      toast.success("ID copied to clipboard!");
+    }).catch((err) => {
+      console.error("Failed to copy:", err);
+      toast.error("Failed to copy ID");
+    });
+  };
+
   if (!isAuthenticated) {
     return (
       <div style={{ 
@@ -298,7 +313,7 @@ export default function AdminUserListPage() {
       <Head>
         <title>FixIt PH - Admin Users</title>
         <link href="https://fonts.googleapis.com/css?family=Inter" rel="stylesheet" />
-        <script src="https://kit.fontawesome.com/830b39c5c0.js" crossOrigin="anonymous" defer></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
       </Head>
 
       <div className={styles.adminUsersRoot}>
@@ -431,10 +446,26 @@ export default function AdminUserListPage() {
                       const credibility = computeCredibilityLabel(user);
                       const isArchived = !!user.archived;
                       const active = isActiveFromLastLogin(user.lastLogin);
+                      const fullId = user.id || user._id;
 
                       return (
                         <tr key={user._id} className={isArchived ? styles.archivedRow : ""}>
-                          <td className={styles.cellId}>{user.id || user._id.substring(0, 8)}</td>
+                          <td className={styles.cellId}>
+                            <div className={styles.idWrapper} title={fullId}>
+                              <span className={styles.idText}>{truncateId(fullId)}</span>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  copyToClipboard(fullId);
+                                }}
+                                className={styles.copyBtn}
+                                aria-label="Copy ID"
+                                title="Copy full ID"
+                              >
+                                <i className="fa-regular fa-copy"></i> {/* ✅ Changed to fa-regular */}
+                              </button>
+                            </div>
+                          </td>
                           <td>
                             <div className={styles.nameCell}>
                               <div className={styles.nameText}>{user.name}</div>
@@ -522,7 +553,17 @@ export default function AdminUserListPage() {
 
                 <div className={styles.modalGrid}>
                   <div className={styles.labelCol}>ID</div>
-                  <div>{viewingUser.id || viewingUser._id}</div>
+                  <div className={styles.idWrapper}>
+                    <span className={styles.idText}>{viewingUser.id || viewingUser._id}</span>
+                    <button
+                      onClick={() => copyToClipboard(viewingUser.id || viewingUser._id)}
+                      className={styles.copyBtn}
+                      aria-label="Copy ID"
+                      title="Copy ID"
+                    >
+                      <i className="fa-regular fa-copy"></i> {/* ✅ Changed to fa-regular */}
+                    </button>
+                  </div>
 
                   <div className={styles.labelCol}>Name</div>
                   <div>{viewingUser.name}</div>

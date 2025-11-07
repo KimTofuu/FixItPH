@@ -374,9 +374,10 @@
 }
 .modalGrid {
   display: grid;
-  grid-template-columns: 120px 1fr;
-  gap: 10px 12px;
-  margin-top: 12px;
+  grid-template-columns: 180px 1fr;
+  gap: 16px;
+  padding: 24px;
+  font-size: 15px;
 }
 .labelCol { font-weight: 700; color: var(--muted); }
 
@@ -388,6 +389,59 @@
   border-top: 1px solid #e2e8f0;
   justify-content: flex-end;
 }
+
+
+.cellId {
+  font-size: 13px;
+  color: #4b5563;
+}
+
+.idWrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.idText {
+  font-size: 13px;
+  color: #4b5563;
+}
+
+.copyBtn {
+  padding: 6px 10px;
+  background: #f9fafb;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  min-width: 32px;
+  height: 32px;
+}
+
+.copyBtn:hover {
+  background: #ffffff;
+  color: #667eea;
+  border-color: #667eea;
+  box-shadow: 0 2px 4px rgba(102, 126, 234, 0.2);
+}
+
+.copyBtn:active {
+  transform: scale(0.95);
+  background: #f3f4f6;
+}
+
+.copyBtn i {
+  font-size: 14px;
+  line-height: 1;
+}
+
+/* ...existing styles... */
 
 
 @media (max-width: 900px) {
