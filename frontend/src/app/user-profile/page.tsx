@@ -6,6 +6,13 @@ import Link from "next/link";
 import styles from "./ProfilePage.module.css";
 import { toast } from "react-toastify";
 
+interface Badge {
+  name: string;
+  icon: string;
+  earnedAt: string;
+  _id?: string;
+}
+
 interface ProfileData {
   _id: string;
   fName: string;
@@ -22,11 +29,7 @@ interface ProfileData {
   reputation?: {
     points: number;
     level: string;
-    badges: Array<{
-      name: string;
-      icon: string;
-      earnedAt: string;
-    }>;
+    badges: Badge[];
     totalReports: number;
     verifiedReports: number;
     resolvedReports: number;
@@ -57,6 +60,10 @@ export default function ProfilePage() {
   // Profile picture state
   const [uploadingPicture, setUploadingPicture] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // ✅ Badge detail modal state
+  const [showBadgeModal, setShowBadgeModal] = useState(false);
+  const [selectedBadge, setSelectedBadge] = useState<Badge | null>(null);
 
   const defaultProfilePic = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
   const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
@@ -416,6 +423,94 @@ export default function ProfilePage() {
     return 50;
   };
 
+  // Add this badge configuration
+  const badgeConfig: Record<string, { icon: string; color: string; description: string; requirement: string }> = {
+    'First Report': { 
+      icon: '🌟', 
+      color: '#fbbf24', 
+      description: 'Created your first report',
+      requirement: 'Submit 1 report'
+    },
+    'Reporter': { 
+      icon: '📝', 
+      color: '#60a5fa', 
+      description: 'Submitted 5 reports',
+      requirement: 'Submit 5 reports'
+    },
+    'Active Reporter': { 
+      icon: '📋', 
+      color: '#3b82f6', 
+      description: 'Submitted 10 reports',
+      requirement: 'Submit 10 reports'
+    },
+    'Super Reporter': { 
+      icon: '⭐', 
+      color: '#8b5cf6', 
+      description: 'Submitted 25 reports',
+      requirement: 'Submit 25 reports'
+    },
+    'Report Legend': { 
+      icon: '🏆', 
+      color: '#f59e0b', 
+      description: 'Submitted 50 reports',
+      requirement: 'Submit 50 reports'
+    },
+    'Verified Contributor': { 
+      icon: '✅', 
+      color: '#10b981', 
+      description: 'Had 5 reports verified by admins',
+      requirement: 'Get 5 reports verified'
+    },
+    'Trusted Source': { 
+      icon: '🌟', 
+      color: '#14b8a6', 
+      description: 'Had 10 reports verified by admins',
+      requirement: 'Get 10 reports verified'
+    },
+    'Problem Solver': { 
+      icon: '🔧', 
+      color: '#06b6d4', 
+      description: 'Had 5 reports resolved',
+      requirement: 'Get 5 reports resolved'
+    },
+    'Community Hero': { 
+      icon: '🦸', 
+      color: '#8b5cf6', 
+      description: 'Had 10 reports resolved',
+      requirement: 'Get 10 reports resolved'
+    },
+    'Impact Maker': { 
+      icon: '💫', 
+      color: '#a855f7', 
+      description: 'Had 25 reports resolved',
+      requirement: 'Get 25 reports resolved'
+    },
+    'Helpful Citizen': { 
+      icon: '👍', 
+      color: '#22c55e', 
+      description: 'Received 10 helpful votes',
+      requirement: 'Receive 10 helpful votes'
+    },
+    'Top Contributor': { 
+      icon: '🌟', 
+      color: '#eab308', 
+      description: 'Received 25 helpful votes',
+      requirement: 'Receive 25 helpful votes'
+    },
+    'Community Champion': { 
+      icon: '👑', 
+      color: '#ef4444', 
+      description: 'Received 50 helpful votes',
+      requirement: 'Receive 50 helpful votes'
+    },
+  };
+
+  // ✅ Handle badge click
+  const handleBadgeClick = (badge: Badge) => {
+    setSelectedBadge(badge);
+    setShowBadgeModal(true);
+  };
+
   if (!profile) return <div className={styles.loading}>Loading profile...</div>;
 
   const profilePicUrl = profile?.profilePicture?.url || defaultProfilePic;
@@ -715,7 +810,7 @@ export default function ProfilePage() {
                         borderRadius: "6px",
                         cursor: profile.contact ? "pointer" : "not-allowed",
                         fontSize: "14px",
-                        fontWeight: 500,
+                        fontWeight: "500",
                         whiteSpace: "nowrap"
                       }}
                     >
@@ -811,26 +906,51 @@ export default function ProfilePage() {
 
             {/* Badges Section */}
             <div className={styles.badgesSection}>
-              <h3 className={styles.sectionTitle}>🏆 Achievements ({profile.reputation?.badges?.length || 0})</h3>
-              
-              {profile.reputation?.badges && profile.reputation.badges.length > 0 ? (
-                <div className={styles.badgesGrid}>
-                  {profile.reputation.badges.map((badge, index) => (
-                    <div key={index} className={styles.badge}>
-                      <div className={styles.badgeIcon}>{badge.icon}</div>
-                      <div className={styles.badgeName}>{badge.name}</div>
-                      <div className={styles.badgeDate}>
-                        {new Date(badge.earnedAt).toLocaleDateString()}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className={styles.emptyState}>
-                  <div className={styles.emptyIcon}>🎯</div>
-                  <p className={styles.emptyText}>No badges yet. Start reporting to earn achievements!</p>
-                </div>
-              )}
+              <h3 className={styles.sectionTitle}>🏅 Achievements</h3>
+              <div className={styles.badgeGrid}>
+                {profile?.reputation?.badges && profile.reputation.badges.length > 0 ? (
+                  profile.reputation.badges
+                    .sort((a, b) => new Date(b.earnedAt).getTime() - new Date(a.earnedAt).getTime())
+                    .map((badge, index) => {
+                      const fallbackConfig = badgeConfig[badge.name] || { 
+                        icon: '🏅', 
+                        color: '#94a3b8', 
+                        description: badge.name,
+                        requirement: 'Unknown'
+                      };
+
+                      return (
+                        <div 
+                          key={badge._id || index} 
+                          className={styles.badgeItem}
+                          style={{ 
+                            backgroundColor: `${fallbackConfig.color}15`,
+                            borderLeft: `4px solid ${fallbackConfig.color}`,
+                            cursor: 'pointer' // ✅ Show it's clickable
+                          }}
+                          onClick={() => handleBadgeClick(badge)} // ✅ Add click handler
+                          title="Click to view details"
+                        >
+                          <span className={styles.badgeIcon}>{badge.icon || fallbackConfig.icon}</span>
+                          <div className={styles.badgeInfo}>
+                            <span className={styles.badgeName}>{badge.name}</span>
+                            <span className={styles.badgeDate}>
+                              {new Date(badge.earnedAt).toLocaleDateString('en-US', { 
+                                month: 'short', 
+                                day: 'numeric', 
+                                year: 'numeric' 
+                              })}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })
+                ) : (
+                  <p className={styles.noBadges}>
+                    No achievements yet. Start reporting to earn badges! 🎯
+                  </p>
+                )}
+              </div>
             </div>
 
             {/* How to Earn Points */}
@@ -1029,6 +1149,101 @@ export default function ProfilePage() {
                 {sendingOtp ? "Resending..." : "Resend Code"}
               </button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ✅ BADGE DETAIL MODAL */}
+      {showBadgeModal && selectedBadge && (
+        <div className={styles.modalBackdrop} role="dialog" aria-modal="true">
+          <div className={styles.modal} style={{ maxWidth: '500px' }}>
+            <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+              <div style={{ fontSize: '64px', marginBottom: '12px' }}>
+                {selectedBadge.icon || badgeConfig[selectedBadge.name]?.icon || '🏅'}
+              </div>
+              <h3 className={styles.modalTitle} style={{ marginBottom: '4px' }}>
+                {selectedBadge.name}
+              </h3>
+              <p style={{ 
+                color: '#6b7280', 
+                fontSize: '14px',
+                margin: '0'
+              }}>
+                Earned on {new Date(selectedBadge.earnedAt).toLocaleDateString('en-US', { 
+                  month: 'long', 
+                  day: 'numeric', 
+                  year: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}
+              </p>
+            </div>
+
+            <div style={{
+              backgroundColor: '#f9fafb',
+              padding: '20px',
+              borderRadius: '8px',
+              marginBottom: '20px'
+            }}>
+              <h4 style={{ 
+                fontSize: '14px', 
+                fontWeight: '600', 
+                color: '#374151',
+                marginBottom: '8px',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px'
+              }}>
+                Description
+              </h4>
+              <p style={{ 
+                color: '#1f2937', 
+                fontSize: '16px',
+                margin: '0',
+                lineHeight: '1.6'
+              }}>
+                {badgeConfig[selectedBadge.name]?.description || 'Achievement earned!'}
+              </p>
+            </div>
+
+            <div style={{
+              backgroundColor: `${badgeConfig[selectedBadge.name]?.color || '#94a3b8'}15`,
+              padding: '20px',
+              borderRadius: '8px',
+              borderLeft: `4px solid ${badgeConfig[selectedBadge.name]?.color || '#94a3b8'}`,
+              marginBottom: '24px'
+            }}>
+              <h4 style={{ 
+                fontSize: '14px', 
+                fontWeight: '600', 
+                color: '#374151',
+                marginBottom: '8px',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px'
+              }}>
+                Requirement
+              </h4>
+              <p style={{ 
+                color: '#1f2937', 
+                fontSize: '16px',
+                margin: '0',
+                fontWeight: '500'
+              }}>
+                {badgeConfig[selectedBadge.name]?.requirement || 'Complete specific actions'}
+              </p>
+            </div>
+
+            <div className={styles.modalActions}>
+              <button
+                onClick={() => {
+                  setShowBadgeModal(false);
+                  setSelectedBadge(null);
+                }}
+                className={styles.modalConfirm}
+                style={{ width: '100%' }}
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -463,52 +463,66 @@
 
 /* Badges Section */
 .badgesSection {
-  margin-bottom: 32px;
+  margin-top: 32px;
 }
 
-.sectionTitle {
-  font-size: 20px;
-  font-weight: 700;
-  color: #1e293b;
-  margin-bottom: 16px;
-}
-
-.badgesGrid {
+.badgeGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 12px;
+  margin-top: 16px;
 }
 
-.badge {
-  background: white;
-  border: 2px solid #e2e8f0;
-  padding: 16px;
-  border-radius: 12px;
-  text-align: center;
-  transition: all 0.2s;
+.badgeItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  cursor: pointer; /* ✅ Show clickable */
 }
 
-.badge:hover {
-  border-color: #667eea;
-  transform: translateY(-4px);
-  box-shadow: 0 8px 16px rgba(102, 126, 234, 0.15);
+.badgeItem:hover {
+  transform: translateY(-2px) scale(1.02); /* ✅ Enhanced hover effect */
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+.badgeItem:active {
+  transform: translateY(0) scale(0.98);
 }
 
 .badgeIcon {
-  font-size: 40px;
-  margin-bottom: 8px;
+  font-size: 28px;
+  flex-shrink: 0;
+}
+
+.badgeInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
 }
 
 .badgeName {
-  font-size: 13px;
   font-weight: 600;
-  color: #1e293b;
-  margin-bottom: 4px;
+  color: #1f2937;
+  font-size: 14px;
 }
 
 .badgeDate {
   font-size: 11px;
-  color: #94a3b8;
+  color: #6b7280;
+  font-weight: 400;
+}
+
+.noBadges {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 48px 24px;
+  color: #6b7280;
+  font-style: italic;
+  font-size: 15px;
 }
 
 /* Empty State */
