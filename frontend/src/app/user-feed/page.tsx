@@ -349,25 +349,21 @@ export default function UserFeedPage() {
 
   const ReportImage = ({ src, alt }: { src: string; alt: string }) => {
     const [imgSrc, setImgSrc] = useState(() => {
-      // Validate the image source
       if (!src) {
         console.warn('No image source provided');
         return "/images/broken-streetlights.jpg";
       }
 
-      // Check if it's a Windows file path (INVALID)
       if (src.includes('\\') || src.includes('AppData') || src.includes('C:') || src.includes('Temp')) {
         console.error('❌ Invalid image path (local file detected):', src);
         return "/images/broken-streetlights.jpg";
       }
 
-      // Check if it's a valid HTTP/HTTPS URL
       if (src.startsWith('http://') || src.startsWith('https://')) {
         console.log('✅ Valid image URL:', src);
         return src;
       }
 
-      // Any other format is invalid
       console.warn('⚠️ Invalid image format:', src);
       return "/images/broken-streetlights.jpg";
     });
