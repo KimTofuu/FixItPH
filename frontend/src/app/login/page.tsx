@@ -160,25 +160,26 @@ export default function LoginPage() {
     <>
       <header className={styles.header}>
         <nav className={styles.nav}>
-          <Image
-            src="/images/Fix-it_logo_3.png"
-            alt="Fixit Logo"
-            className={styles.logo}
-            width={160}
-            height={40}
-          />
-          <ul className={styles.navList}>
-            <li>
-              <Link href="/" aria-label="Back to home">
-                <button className={styles.backBtn}>Back</button>
-              </Link>
-            </li>
-          </ul>
+          <Link href="/" aria-label="Back to home">
+            <Image
+              src="/images/Fix-it_logo_3.png"
+              alt="Fixit Logo"
+              className={styles.logo}
+              width={160}
+              height={40}
+            />
+          </Link>
+          <h1> LOGIN </h1>
         </nav>
       </header>
-
       <div className={styles.login}>
         <div className={`${styles.loginContainer} ${styles.container}`}>
+        <div className={styles.loginLeft}>
+        {/* <h1> Welcome to FIXIT </h1>
+        <p> Secure admin access for faster maintenance and clearer oversight. </p>
+        <p> Sign in to manage issues, review requests, and keep the community running smoothly.</p>  */}
+        </div>
+        <div className={styles.loginRight}>
           <h1 id="form-title" className={styles.formTitle}>
             {isResident ? "Resident Login" : "Admin Login"}
           </h1>
@@ -320,6 +321,7 @@ export default function LoginPage() {
               Log in
             </button>
           </form>
+        </div>
         </div>
       </div>
     </>

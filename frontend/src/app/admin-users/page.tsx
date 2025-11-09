@@ -366,22 +366,7 @@ export default function AdminUserListPage() {
 
         <main className={styles.adminUsersMain}>
           <div className={styles.headerRow}>
-            <div className={styles.controls}>
-              <section className={styles.overview}>
-                <div className={styles.overviewCard}>
-                  <div className={styles.label}>Total users</div>
-                  <div className={styles.value}>{loading ? "..." : stats?.totalUsers || 0}</div>
-                </div>
-                <div className={styles.overviewCard}>
-                  <div className={styles.label}>Active users</div>
-                  <div className={styles.value}>{loading ? "..." : stats?.activeUsers || 0}</div>
-                </div>
-                <div className={styles.overviewCard}>
-                  <div className={styles.label}>Total reports</div>
-                  <div className={styles.value}>{loading ? "..." : stats?.totalReports || 0}</div>
-                </div>
-              </section>
-              
+            <div className={styles.controls}>   
               <div className={styles.searchWrap}>
                 <input
                   aria-label="Search users"
@@ -462,7 +447,7 @@ export default function AdminUserListPage() {
                                 aria-label="Copy ID"
                                 title="Copy full ID"
                               >
-                                <i className="fa-regular fa-copy"></i> {/* ✅ Changed to fa-regular */}
+                                <i className="fa-regular fa-copy">Copy</i> {/* ✅ Changed to fa-regular */}
                               </button>
                             </div>
                           </td>
