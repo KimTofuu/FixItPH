@@ -6,7 +6,6 @@ import styles from "./AdminReports.module.css";
 import Image from "next/image";
 import { toast } from "react-toastify";
 
-// ---------- Types ----------
 interface Comment {
   user: string;
   text: string;
@@ -26,24 +25,23 @@ interface Report {
   location: string;
   timestamp: string;
   description: string;
-  category?: string; // ADDED
+  category?: string;
   imageUrl?: string;
   image?: string;
-  images?: string[]; // ADDED
-  videos?: string[]; // ADDED
-  isUrgent?: boolean; // ADDED
+  images?: string[];
+  videos?: string[];
+  isUrgent?: boolean;
   user?: User;
   comments?: Comment[];
   summary?: string;
   resolvedAt?: string;
   originalReportId?: string;
   createdAt?: string;
-  updatedAt?: string; // ADDED
+  updatedAt?: string;
 }
 
 type AdminStatusFilter = "awaiting-approval" | "pending" | "in-progress" | "resolved";
 
-// ---------- Helpers ----------
 const formatTimeAgo = (timestamp: string): string => {
   const diff = Date.now() - new Date(timestamp).getTime();
   const mins = Math.floor(diff / 60000);
@@ -54,20 +52,20 @@ const formatTimeAgo = (timestamp: string): string => {
   return `${days}d ago`;
 };
 
-// ---------- Component ----------
 export default function AdminReportsPage() {
   const [reports, setReports] = useState<Report[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeStatus, setActiveStatus] = useState<AdminStatusFilter>("awaiting-approval");
   const [searchTerm, setSearchTerm] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
+  const [authorityModalOpen, setAuthorityModalOpen] = useState(false);
+  const [selectedReport, setSelectedReport] = useState<Report | null>(null);
 
-  // Small constants required by the component
   const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
   const defaultProfilePic = "/images/sample_avatar.png";
   const profilePicUrl = defaultProfilePic;
+  const verificationEmail = "johnnabunturan1029384756@gmail.com";
 
-  // ---------- Fetch Reports ----------
   useEffect(() => {
     const fetchReports = async () => {
       setIsLoading(true);
@@ -103,7 +101,6 @@ export default function AdminReportsPage() {
 
         const data = await res.json();
 
-        // Normalize status strings to lowercase expected values for UI comparisons
         const normalized = Array.isArray(data)
           ? data.map((r: any) => ({
               ...r,
@@ -130,7 +127,6 @@ export default function AdminReportsPage() {
     fetchReports();
   }, [activeStatus]);
 
-  // ---------- Actions (kept original functions intact) ----------
   const toggleBookmark = (id: string) => {
     console.log("Bookmark toggled for:", id);
   };
@@ -190,7 +186,6 @@ export default function AdminReportsPage() {
     try {
       const token = localStorage.getItem("token");
       const res = await fetch(
-        // FIX: Add /reports prefix to match backend route
         `${process.env.NEXT_PUBLIC_API_URL}/reports/admin/reports/${reportId}/status`,
         {
           method: "PATCH",
@@ -222,7 +217,6 @@ export default function AdminReportsPage() {
     }
   };
 
-  // ---------- Filtered Reports ----------
   const filteredReports = useMemo(() => {
     let filtered: Report[] = reports ?? [];
     if (activeStatus !== "resolved" && activeStatus !== "awaiting-approval") {
@@ -239,10 +233,87 @@ export default function AdminReportsPage() {
     });
   }, [reports, activeStatus, searchTerm]);
 
-  // ---------- JSX ----------
+  const authoritiesByCategory: Record<string, { name: string; email: string }[]> = {
+    "infrastructure": [
+      { name: "Public Works Office", email: verificationEmail },
+      { name: "Traffic Management", email: verificationEmail }
+    ],
+    "utilities": [
+      { name: "City Electric Office", email: verificationEmail },
+      { name: "Water Services", email: verificationEmail }
+    ],
+    "sanitation and waste": [
+      { name: "Sanitation Department", email: verificationEmail },
+      { name: "Solid Waste Management", email: verificationEmail }
+    ],
+    "environment and public spaces": [
+      { name: "Parks and Environment", email: verificationEmail },
+      { name: "Environmental Services", email: verificationEmail }
+    ],
+    "community and safety": [
+      { name: "Local Police Station", email: verificationEmail },
+      { name: "Barangay Office", email: verificationEmail }
+    ],
+    "government / administrative": [
+      { name: "City Hall", email: verificationEmail },
+      { name: "Municipal Administrative Office", email: verificationEmail }
+    ],
+    "others": [
+      { name: "City Hall", email: verificationEmail }
+    ],
+    "default": [
+      { name: "City Hall", email: verificationEmail }
+    ]
+  };
+
+  const openAuthorityModal = (report: Report) => {
+    setSelectedReport(report);
+    setAuthorityModalOpen(true);
+  };
+
+  const closeAuthorityModal = () => {
+    setSelectedReport(null);
+    setAuthorityModalOpen(false);
+  };
+
+  const sendReportToAuthority = async (authorityEmail: string) => {
+    if (!selectedReport) {
+      toast.error("No report selected.");
+      return;
+    }
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${API}/reports/${selectedReport._id}/notify-authority`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          authorityEmail: verificationEmail,
+          reportId: selectedReport._id,
+        }),
+      });
+      if (res.ok) {
+        toast.success("Report sent to verification email.");
+        closeAuthorityModal();
+      } else {
+        const data = await res.json();
+        toast.error(data?.message || "Failed to send report to authority.");
+      }
+    } catch (err) {
+      console.error("Error sending to authority:", err);
+      toast.error("An error occurred while sending the report.");
+    }
+  };
+
+  const getAuthoritiesForReport = (report: Report) => {
+    const key = (report.category ?? "default").toLowerCase();
+    return authoritiesByCategory[key] ?? authoritiesByCategory["default"];
+  };
+
   return (
     <div className={styles.adminReportsRoot}>
-      {/* Header */}
         <header className={styles.header}>
           <nav className={styles.adminNav}>
             <div className={styles.navLeft}>
@@ -278,11 +349,9 @@ export default function AdminReportsPage() {
           </nav>
         </header>
 
-      {/* Reports Section */}
       <div className={styles.reportsPage}>
         <main className={styles.mainContainer}>
           <div className={styles.contentCard}>
-            {/* Toolbar wrapper (sticky) */}
             <div className={styles.toolbarWrapper}>
               <div className={styles.toolbar}>
                 <div className={styles.toggleGroup}>
@@ -316,22 +385,6 @@ export default function AdminReportsPage() {
               </div>
             </div>
 
-            {/* Secondary toolbar with alternative search input (kept but consolidated) */}
-            <div className={styles.toolbarWrapper}>
-              <div className={styles.toolbar}>
-                <div className={styles.searchContainer}>
-                  <input
-                    type="text"
-                    placeholder="Search by title or location..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className={styles.searchInput}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Report List (scrollable only area) */}
             <div id="admin-reportList" className={styles.reportList} role="region" aria-label="Reports list">
               {isLoading ? (
                 <p className={styles.loadingText}>Loading reports...</p>
@@ -368,6 +421,7 @@ export default function AdminReportsPage() {
                         </div>
 
                         <h3 className={styles.reportTitle}>{r.title}</h3>
+                        <p className={styles.reportCategory}>{r.category ?? "Unspecified"}</p>
                         <p className={styles.reportLocation}>
                           <i className="fa-solid fa-location-dot" /> {r.location}
                         </p>
@@ -405,6 +459,17 @@ export default function AdminReportsPage() {
                               <option value="in-progress">Processing</option>
                               <option value="resolved">Resolved</option>
                             </select>
+                          </div>
+                        )}
+
+                        {activeStatus === "pending" && (
+                          <div className={styles.reportToAuthoritiesWrap}>
+                            <button
+                              className={`${styles.actionBtn} ${styles.reportToAuthoritiesBtn}`}
+                              onClick={() => openAuthorityModal(r)}
+                            >
+                              Report to Authorities
+                            </button>
                           </div>
                         )}
                       </div>
@@ -468,6 +533,39 @@ export default function AdminReportsPage() {
           </div>
         </main>
       </div>
+
+      {authorityModalOpen && selectedReport && (
+        <div className={styles.modalOverlay} role="dialog" aria-modal="true" aria-label="Report to Authorities">
+          <div className={styles.modal}>
+            <div className={styles.modalHeader}>
+              <h3 className={styles.modalTitle}>Send report to authority</h3>
+              <button className={styles.modalCloseBtn} onClick={closeAuthorityModal}>
+                <i className="fa-solid fa-times" />
+              </button>
+            </div>
+            <div className={styles.modalBody}>
+              <p className={styles.modalReportTitle}>{selectedReport.title}</p>
+              <p className={styles.modalReportCategory}>Category: {selectedReport.category ?? "Unspecified"}</p>
+              <div className={styles.authorityList}>
+                {getAuthoritiesForReport(selectedReport).map((a) => (
+                  <button
+                    key={a.email}
+                    className={`${styles.actionBtn} ${styles.authorityBtn}`}
+                    onClick={() => sendReportToAuthority(a.email)}
+                  >
+                    {a.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className={styles.modalFooter}>
+              <button className={`${styles.actionBtn} ${styles.cancelBtn}`} onClick={closeAuthorityModal}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
