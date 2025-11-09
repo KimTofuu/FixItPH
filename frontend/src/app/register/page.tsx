@@ -181,20 +181,16 @@ export default function RegisterPage() {
     <>
       <header className={styles.header}>
         <nav className={styles.nav}>
-          <Image
-            src="/images/Fix-it_logo_3.png"
-            alt="Fixit Logo"
-            className={styles.logo}
-            width={160}
-            height={40}
-          />
-          <ul className={styles.navList}>
-            <li>
-              <Link href="/" aria-label="Back to home">
-                <button className={styles.backBtn}>Back</button>
-              </Link>
-            </li>
-          </ul>
+          <Link href="/" aria-label="Back to home">
+            <Image
+              src="/images/Fix-it_logo_3.png"
+              alt="Fixit Logo"
+              className={styles.logo}
+              width={160}
+              height={40}
+            />
+          </Link>
+          <h1>REGISTER</h1>
         </nav>
       </header>
 

@@ -116,7 +116,12 @@ export default function UserMapPage() {
         if (res.ok) {
           const data = await res.json();
           console.log("✅ Reports loaded:", data);
-          setReports(data);
+          // Filter out reports that are awaiting approval so they don't appear in the public map
+          const visibleReports = (data || []).filter((r: any) => {
+            const status = (r?.status || "").toString();
+            return !/approval/i.test(status);
+          });
+          setReports(visibleReports);
         }
       } catch (err) {
         console.error("Failed to fetch reports", err);
@@ -135,6 +140,19 @@ export default function UserMapPage() {
       attribution:
         '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>',
     }).addTo(feedMap);
+    // Leaflet needs a resize/invalidate after layout changes (sidebar repositioning)
+    setTimeout(() => {
+      try { feedMap.invalidateSize(); } catch (e) { /* ignore */ }
+    }, 200);
+
+    const onResize = () => { try { feedMap.invalidateSize(); } catch (e) {} };
+    window.addEventListener('resize', onResize);
+
+    // cleanup listener on unmount
+    return () => {
+      window.removeEventListener('resize', onResize);
+      try { feedMap.remove(); } catch (e) {}
+    };
   }, []);
 
   useEffect(() => {
@@ -269,14 +287,42 @@ export default function UserMapPage() {
       });
 
       if (res.ok) {
-        toast.success("Report submitted successfully!");
-        setModalOpen(false);
-        
-        const refreshRes = await fetch(`${API}/reports`);
-        if (refreshRes.ok) {
-          const data = await refreshRes.json();
-          setReports(data);
-        }
+          // Backend returns { message, report }
+          const data = await res.json();
+          const createdReport = data.report || data;
+          toast.success("Report submitted successfully!");
+
+          // Ensure numeric lat/lng if present
+          if (createdReport.latitude) {
+            createdReport.latitude = parseFloat(String(createdReport.latitude));
+          }
+          if (createdReport.longitude) {
+            createdReport.longitude = parseFloat(String(createdReport.longitude));
+          }
+
+          // Only add to the public list if it's not awaiting approval
+          const statusStr = String(createdReport.status || "");
+          if (!/approval/i.test(statusStr)) {
+            // Add the new report to the top of the list so the map updates immediately
+            setReports((prev) => [createdReport, ...prev]);
+          } else {
+            // If it's awaiting approval, don't show it in public lists immediately
+            toast.info("Report submitted and is awaiting approval before appearing in the public feed.");
+          }
+
+          // Reset form and close modal
+          setReportForm({
+            title: "",
+            description: "",
+            category: "",
+            isUrgent: false,
+            image: null,
+            address: "",
+            latitude: "",
+            longitude: "",
+          });
+          setUploadedFile(null);
+          setModalOpen(false);
       } else {
         const data = await res.json();
         toast.error(data.message || "Failed to submit report");

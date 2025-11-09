@@ -54,6 +54,22 @@ export default function UserMyReportsPage() {
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; index: number } | null>(null);
 
+  // Add Report modal state (from user-map)
+  const [addModalVisible, setAddModalVisible] = useState(false);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [reportForm, setReportForm] = useState({
+    title: "",
+    description: "",
+    category: "",
+    isUrgent: false,
+    image: null as File | null,
+    address: "",
+    latitude: "",
+    longitude: "",
+  });
+  const addModalMapRef = useRef<any | null>(null);
+  const addModalMarkerRef = useRef<any | null>(null);
+
   const [editForm, setEditForm] = useState({
     _id: "",
     title: "",
@@ -145,6 +161,127 @@ export default function UserMyReportsPage() {
     })();
   }, []);
 
+  // Initialize map for Add Report modal when it opens
+  useEffect(() => {
+    if (!addModalVisible || !LRef) return;
+
+    if (addModalMapRef.current) {
+      try { addModalMapRef.current.remove(); } catch (e) {}
+      addModalMapRef.current = null;
+    }
+
+    const L = LRef;
+    const map = L.map("add-modal-map").setView([14.8292, 120.2828], 13);
+    addModalMapRef.current = map;
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "&copy; OpenStreetMap contributors",
+    }).addTo(map);
+
+    const customPin = L.icon({
+      iconUrl: "/images/pin.png",
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+    });
+
+    map.on("click", async (e: any) => {
+      const { lat, lng } = e.latlng;
+      if (addModalMarkerRef.current) {
+        addModalMarkerRef.current.setLatLng([lat, lng]);
+      } else {
+        addModalMarkerRef.current = L.marker([lat, lng], { icon: customPin }).addTo(map);
+      }
+
+      (document.getElementById("add-latitude") as HTMLInputElement).value = lat.toString();
+      (document.getElementById("add-longitude") as HTMLInputElement).value = lng.toString();
+
+      const address = await getAddressFromCoords(lat, lng);
+      (document.getElementById("add-address") as HTMLInputElement).value = address || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+
+      setReportForm((prev) => ({
+        ...prev,
+        address: address || `${lat.toFixed(5)}, ${lng.toFixed(5)}`,
+        latitude: lat.toString(),
+        longitude: lng.toString(),
+      }));
+    });
+
+    setTimeout(() => map.invalidateSize(), 200);
+
+    return () => {
+      try { map.remove(); } catch (e) {}
+      addModalMapRef.current = null;
+      addModalMarkerRef.current = null;
+    };
+  }, [addModalVisible, LRef]);
+
+  const handleAddImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setUploadedFile(file);
+      setReportForm({ ...reportForm, image: file });
+    }
+  };
+
+  const removeAddImage = () => {
+    setUploadedFile(null);
+    setReportForm({ ...reportForm, image: null });
+  };
+
+  const handleAddReportSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!reportForm.category) {
+      toast.error("Please select a category.");
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append("title", reportForm.title);
+      formData.append("description", reportForm.description);
+      formData.append("category", reportForm.category);
+      formData.append("isUrgent", String(reportForm.isUrgent));
+      if (reportForm.image) formData.append("image", reportForm.image);
+      formData.append("location", reportForm.address);
+      if (reportForm.latitude) formData.append("latitude", String(reportForm.latitude));
+      if (reportForm.longitude) formData.append("longitude", String(reportForm.longitude));
+
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${API}/reports`, {
+        method: "POST",
+        body: formData,
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        const createdReport = data.report || data;
+        toast.success("Report submitted successfully!");
+        setReports((prev) => [createdReport, ...prev]);
+        setReportForm({ title: "", description: "", category: "", isUrgent: false, image: null, address: "", latitude: "", longitude: "" });
+        setUploadedFile(null);
+        setAddModalVisible(false);
+      } else {
+        const data = await res.json();
+        toast.error(data.message || "Failed to submit report");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to submit report");
+    }
+  };
+
+  async function getAddressFromCoords(lat: number, lng: number): Promise<string | null> {
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`);
+      const data = await res.json();
+      return data.display_name;
+    } catch (err) {
+      return null;
+    }
+  }
+
   useEffect(() => {
     if (!LRef) return;
 
@@ -229,17 +366,7 @@ export default function UserMyReportsPage() {
     }
   }, [editForm.latitude, editForm.longitude, editMap, LRef]);
 
-  const getAddressFromCoords = async (lat: number, lng: number) => {
-    try {
-      const res = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`
-      );
-      const data = await res.json();
-      return data.display_name;
-    } catch (err) {
-      return null;
-    }
-  };
+  
 
   const handleComment = (index: number, comment: string) => {
     if (!comment.trim()) return;
@@ -465,12 +592,14 @@ export default function UserMyReportsPage() {
             </div>
           </div>
         )}
+      </header>
 
+      <main className={styles.feedContainer}>
         <div className={styles.toolbar} role="toolbar" aria-label="Reports toolbar">
           <div className={styles.toolbarInner}>
             <button
               className={`${styles.reportBtn}`}
-              onClick={() => setEditModalVisible(true)}
+              onClick={() => setAddModalVisible(true)}
             >
               + Add Report
             </button>
@@ -484,9 +613,6 @@ export default function UserMyReportsPage() {
             />
           </div>
         </div>
-      </header>
-
-      <main className={styles.feedContainer}>
         <section className={styles.feedList} id="user-myreports">
           <div className={styles.myreportsColumn}>
 
@@ -494,6 +620,7 @@ export default function UserMyReportsPage() {
               {filteredReports.length > 0 ? (
                 filteredReports.map((report, i) => {
                   const reportUserPic = report.user?.profilePicture?.url || defaultProfilePic;
+                  const statusClass = String(report.status || "").toLowerCase().replace(/\s+/g, "-");
                   
                   return (
                     <article key={report._id || i} className={styles.reportCard}>
@@ -523,7 +650,7 @@ export default function UserMyReportsPage() {
                           <p className={styles.reportLocation}><i className="fa-solid fa-location-dot"></i> {report.location}</p>
 
                           <div className={styles.statusPriorityRow}>
-                            <span className={`${styles.reportStatus} ${String(report.status).toLowerCase().replace(" ", "-")}`}>
+                            <span className={`${styles.reportStatus} ${styles[statusClass] || ""}`}>
                               {report.status}
                             </span>
                           </div>
@@ -571,6 +698,102 @@ export default function UserMyReportsPage() {
       </main>
 
       {/* Edit Modal and Delete Modal remain the same */}
+      {addModalVisible && (
+        <div className={styles.modal} role="dialog" aria-modal="true">
+          <div className={styles.modalContent}>
+            <button className={styles.close} onClick={() => setAddModalVisible(false)} aria-label="Close">&times;</button>
+            <h2 className={styles.modalTitle}>Add Report</h2>
+
+            <form className={styles.formGrid} onSubmit={handleAddReportSubmit}>
+              <div className={styles.formLeft}>
+                <input
+                  className={styles.input}
+                  type="text"
+                  name="title"
+                  placeholder="Report Title"
+                  value={reportForm.title}
+                  onChange={(e) => setReportForm({ ...reportForm, title: e.target.value })}
+                  required
+                />
+                <textarea
+                  className={styles.textarea}
+                  name="description"
+                  placeholder="Describe the issue..."
+                  value={reportForm.description}
+                  onChange={(e) => setReportForm({ ...reportForm, description: e.target.value })}
+                  required
+                />
+                <select
+                  className={styles.input}
+                  name="category"
+                  value={reportForm.category}
+                  onChange={(e) => setReportForm({ ...reportForm, category: e.target.value })}
+                  required
+                >
+                  <option value="" disabled>-- Select a Category --</option>
+                  <option value="Infrastructure">Infrastructure</option>
+                  <option value="Utilities">Utilities</option>
+                  <option value="Sanitation and Waste">Sanitation and Waste</option>
+                  <option value="Environment and Public Spaces">Environment and Public Spaces</option>
+                  <option value="Community and Safety">Community and Safety</option>
+                  <option value="Government / Administrative">Government / Administrative</option>
+                  <option value="Others">Others</option>
+                </select>
+
+                <label className={styles.inputLabel} htmlFor="addImageUpload">Upload Image</label>
+                <div className={styles.uploadWrapper}>
+                  <input
+                    className={styles.fileInput}
+                    type="file"
+                    id="addImageUpload"
+                    name="image"
+                    accept="image/*"
+                    onChange={handleAddImageChange}
+                  />
+                  {uploadedFile && (
+                    <div id="imagePreview" className={styles.imagePreview}>
+                      <a href={URL.createObjectURL(uploadedFile)} target="_blank" rel="noreferrer" className={styles.previewLink}>{uploadedFile.name}</a>
+                      <button type="button" onClick={removeAddImage} className={styles.removeBtn} aria-label="Remove image">✖</button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className={styles.formRight}>
+                <label className={styles.inputLabel} htmlFor="add-address">Location</label>
+                <input
+                  className={styles.input}
+                  type="text"
+                  id="add-address"
+                  name="address"
+                  placeholder="Search or click on map"
+                  value={reportForm.address}
+                  onChange={(e) => setReportForm({ ...reportForm, address: e.target.value })}
+                  required
+                />
+                <input type="hidden" id="add-latitude" name="latitude" />
+                <input type="hidden" id="add-longitude" name="longitude" />
+                <div id="add-modal-map" className={styles.modalMap}></div>
+
+                <div className={styles.urgentToggle}>
+                  <input
+                    type="checkbox"
+                    id="addIsUrgent"
+                    name="isUrgent"
+                    checked={reportForm.isUrgent}
+                    onChange={(e) => setReportForm({ ...reportForm, isUrgent: e.target.checked })}
+                  />
+                  <label htmlFor="addIsUrgent">Mark as Urgent</label>
+                </div>
+              </div>
+
+              <div className={styles.submitRow}>
+                <button type="submit" className={styles.submitBtn}>Submit Report</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
       {editModalVisible && (
         <div className={styles.modal} role="dialog" aria-modal="true">
           <div className={styles.modalContent}>
@@ -580,6 +803,7 @@ export default function UserMyReportsPage() {
             <form className={styles.formGrid} onSubmit={handleEditSubmit}>
               <div className={styles.formLeft}>
                 <input 
+                  className={styles.input}
                   type="text" 
                   name="title" 
                   placeholder="Report Title" 
@@ -588,6 +812,7 @@ export default function UserMyReportsPage() {
                 />
 
                 <textarea 
+                  className={styles.textarea}
                   name="description" 
                   placeholder="Describe the issue..." 
                   value={editForm.description}
@@ -676,6 +901,8 @@ export default function UserMyReportsPage() {
           </div>
         </div>
       )}
+
+      
     </div>
   );
 }

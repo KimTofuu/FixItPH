@@ -29,7 +29,7 @@
 
 
 .header {
-  position: sticky;
+  position: fixed;
   top: 0;
   z-index: 60;
   background: linear-gradient(180deg, rgba(37,99,235,0.02), transparent);
@@ -37,19 +37,21 @@
   border-bottom: 1px solid rgba(15,23,42,0.02);
   padding: 14px 20px;
   flex: 0 0 auto;
+  height: 100%;
 }
 
 .adminNav {
   display:flex;
+  flex-direction:column;
   align-items:center;
   justify-content:space-between;
   gap: var(--ar-gap);
   max-width: 1200px;
-  margin: 0 auto;
+  margin: 1rem auto;
   width: 100%;
 }
 
-.navLeft { display:flex; align-items:center; gap:12px; }
+.navLeft { display:flex; align-items:center; gap:20px; }
 .logo { width:160px; height:40px; object-fit:contain; }
 
 
@@ -79,26 +81,19 @@
 .navListUserSide,
 .navList {
   display:flex;
+  flex-direction: column;
   align-items:center;
-  gap:12px;
+  gap:2rem;
   list-style:none;
   margin:0;
   padding:0;
+  margin-top: 5rem;
 }
 .navLink { color: var(--ar-ink); text-decoration:none; padding:8px 12px; border-radius:10px; font-weight:600; }
 .activeNavItem .navLink { background: rgba(37,99,235,0.08); color:var(--ar-accent); }
 .adminProfileLink { display:inline-flex; align-items:center; }
 .adminProfilePic { width:36px; height:36px; border-radius:999px; object-fit:cover; border:1px solid rgba(2,6,23,0.06); }
 
-
-.navListUserSide {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
 .usersLink {
   padding: 0.5rem 1rem;
   border-radius: 0.5rem;
@@ -123,6 +118,7 @@
   display: flex;
   flex-direction: column;
   gap: 18px;
+  margin-left: 12rem;
 }
 
 
@@ -183,19 +179,6 @@
   background: #059669 !important;
 }
 
-
-.overview {
-  display: flex;
-  gap: 12px;
-  align-items: stretch;
-}
-.overviewCard {
-  background: var(--surface);
-  border-radius: var(--radius);
-  padding: 12px 16px;
-  box-shadow: var(--shadow-sm);
-  min-width: 140px;
-}
 .label {
   font-size: 0.85rem;
   color: var(--muted);
@@ -422,6 +405,12 @@
   flex-shrink: 0;
   min-width: 32px;
   height: 32px;
+  background: transparent;
+  border: none;
+  color: var(--accent);
+  cursor: pointer;
+  padding: 6px 8px;
+  font-weight: 600;
 }
 
 .copyBtn:hover {
@@ -439,6 +428,7 @@
 .copyBtn i {
   font-size: 14px;
   line-height: 1;
+  
 }
 
 /* ...existing styles... */
