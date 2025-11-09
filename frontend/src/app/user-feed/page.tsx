@@ -433,7 +433,12 @@ export default function UserFeedPage() {
         const refreshRes = await fetch(`${API}/reports`);
         if (refreshRes.ok) {
           const data = await refreshRes.json();
-          setReports(data);
+          // Filter out reports that are awaiting approval so they don't appear immediately
+          const visibleReports = (data || []).filter((r: any) => {
+            const status = (r?.status || "").toString();
+            return !/approval/i.test(status);
+          });
+          setReports(visibleReports);
         }
       } else {
         toast.error("Failed to submit report");
@@ -625,7 +630,11 @@ export default function UserFeedPage() {
           </div>
         )}
 
-        <div className={styles.toolbar} role="toolbar" aria-label="Reports toolbar">
+      </header>
+
+      <main className={styles.pageWrap}>
+        <div className={styles.feedContainer}>
+          <div className={styles.toolbar} role="toolbar" aria-label="Reports toolbar">
           <div className={styles.toolbarInner}>
             <button
               className={styles.reportBtn}
@@ -643,10 +652,6 @@ export default function UserFeedPage() {
             />
           </div>
         </div>
-      </header>
-
-      <main className={styles.pageWrap}>
-        <div className={styles.feedContainer}>
           <section className={styles.feedMain}>
             <section id="reportList" className={styles.feedList}>
               {filteredReports.length > 0 ? (
@@ -915,7 +920,6 @@ export default function UserFeedPage() {
                   />
                   <div id="imagePreview" className={styles.imagePreview}>
                     <a href="#" id="imageLink" target="_blank" className={styles.previewLink}></a>
-                    <button type="button" id="removeImage" className={styles.removeBtn}>✖</button>
                   </div>
                 </div>
               </div>

@@ -34,23 +34,22 @@
 
 
 .header {
-  position: sticky;
+  position: fixed;
   top: 0;
   z-index: 60;
-  background: linear-gradient(180deg, rgba(37,99,235,0.02), transparent);
-  backdrop-filter: blur(6px);
-  border-bottom: 1px solid rgba(15,23,42,0.02);
+  background: white;
   padding: 14px 20px;
   flex: 0 0 auto;
+  height: 100%;
 }
 
 .adminNav {
   display:flex;
+  flex-direction:column;
   align-items:center;
   justify-content:space-between;
-  gap: var(--ar-gap);
   max-width: 1200px;
-  margin: 0 auto;
+  margin: 1rem auto;
   width: 100%;
 }
 
@@ -90,11 +89,13 @@
 .navListUserSide,
 .navList {
   display:flex;
+  flex-direction: column;
   align-items:center;
-  gap:12px;
+  gap:2rem;
   list-style:none;
   margin:0;
   padding:0;
+  margin-top: 5rem;
 }
 .navLink { color: var(--ar-ink); text-decoration:none; padding:8px 12px; border-radius:10px; font-weight:600; }
 .activeNavItem .navLink { background: rgba(37,99,235,0.08); color:var(--ar-accent); }
@@ -166,7 +167,7 @@
   gap:6px;
   box-shadow: 0 8px 24px rgba(2,6,23,0.06);
   cursor: pointer;
-  transition: transform 140ms ease, box-shadow 140ms ease, opacity 120ms ease;
+  transition: box-shadow 140ms ease, opacity 120ms ease;
   min-width: 140px;
   text-align: left;
 }
@@ -211,6 +212,9 @@
   box-sizing: border-box;
 }
 
+.dashboardMain{
+  margin-left: 11rem;
+}
 
 .grid {
   display:grid;
@@ -236,7 +240,7 @@
   flex-direction:column;
   justify-content:space-between;
   min-height:92px;
-  transition: transform 160ms ease, box-shadow 160ms ease;
+  transition: box-shadow 160ms ease;
 }
 .metricCard:hover { transform: translateY(-4px); }
 .metricHeader {
