@@ -5,7 +5,9 @@ const cloudinary = require("../config/cloudinary");
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 const smsService = require('../config/smsService');
+const { sendEmail, sendOtpEmail, generateOtp } = require('../utils/emailService');
 
+const emailOtpStore = new Map();
 // Configure email transporter
 const transporter = nodemailer.createTransport({
   service: 'gmail', // or your email service
@@ -495,5 +497,180 @@ exports.verifySmsOtp = async (req, res) => {
   } catch (error) {
     console.error('Verify OTP error:', error);
     res.status(500).json({ message: 'Verification failed' });
+  }
+};
+
+// ✅ Request Email OTP
+exports.requestEmailOtp = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: 'Email is required' });
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ message: 'Invalid email format' });
+    }
+
+    // Check if email already exists (optional - depends on your use case)
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: 'Email already registered' });
+    }
+
+    // Generate 6-digit OTP
+    const otp = generateOtp();
+    
+    // Store OTP with expiration (5 minutes)
+    emailOtpStore.set(email, {
+      otp,
+      expiresAt: Date.now() + 5 * 60 * 1000, // 5 minutes
+      attempts: 0,
+      createdAt: Date.now()
+    });
+
+    // Send OTP via email
+    await sendOtpEmail(email, otp);
+
+    console.log(`✅ Email OTP sent to ${email}:`, otp); // Remove in production
+
+    res.status(200).json({ 
+      success: true,
+      message: 'OTP sent successfully to your email',
+      expiresIn: 300 // seconds
+    });
+
+  } catch (error) {
+    console.error('❌ Request Email OTP error:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Failed to send OTP. Please try again.',
+      error: error.message 
+    });
+  }
+};
+
+// ✅ Verify Email OTP
+exports.verifyEmailOtp = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
+      return res.status(400).json({ 
+        success: false,
+        message: 'Email and OTP are required' 
+      });
+    }
+
+    const storedData = emailOtpStore.get(email);
+
+    if (!storedData) {
+      return res.status(400).json({ 
+        success: false,
+        message: 'OTP not found or expired. Please request a new one.' 
+      });
+    }
+
+    // Check if OTP has expired
+    if (Date.now() > storedData.expiresAt) {
+      emailOtpStore.delete(email);
+      return res.status(400).json({ 
+        success: false,
+        message: 'OTP has expired. Please request a new one.' 
+      });
+    }
+
+    // Check attempts (max 3 attempts)
+    if (storedData.attempts >= 3) {
+      emailOtpStore.delete(email);
+      return res.status(429).json({ 
+        success: false,
+        message: 'Too many failed attempts. Please request a new OTP.' 
+      });
+    }
+
+    // Verify OTP
+    if (storedData.otp !== otp.trim()) {
+      storedData.attempts++;
+      return res.status(400).json({ 
+        success: false,
+        message: 'Invalid OTP. Please try again.',
+        attemptsRemaining: 3 - storedData.attempts
+      });
+    }
+
+    // OTP is valid, remove it from store
+    emailOtpStore.delete(email);
+
+    console.log(`✅ Email OTP verified for ${email}`);
+
+    res.status(200).json({ 
+      success: true,
+      message: 'Email verified successfully. You can now complete registration.' 
+    });
+
+  } catch (error) {
+    console.error('❌ Verify Email OTP error:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Failed to verify OTP. Please try again.',
+      error: error.message 
+    });
+  }
+};
+
+// ✅ Optional: Resend Email OTP
+exports.resendEmailOtp = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: 'Email is required' });
+    }
+
+    // Check if there's an existing OTP
+    const existingData = emailOtpStore.get(email);
+    
+    // Prevent spam: Only allow resend after 1 minute
+    if (existingData && (Date.now() - existingData.createdAt) < 60000) {
+      return res.status(429).json({ 
+        success: false,
+        message: 'Please wait before requesting a new OTP',
+        retryAfter: Math.ceil((60000 - (Date.now() - existingData.createdAt)) / 1000)
+      });
+    }
+
+    // Generate new OTP
+    const otp = generateOtp();
+    
+    // Store new OTP
+    emailOtpStore.set(email, {
+      otp,
+      expiresAt: Date.now() + 5 * 60 * 1000,
+      attempts: 0,
+      createdAt: Date.now()
+    });
+
+    // Send OTP via email
+    await sendOtpEmail(email, otp);
+
+    console.log(`✅ Email OTP resent to ${email}:`, otp);
+
+    res.status(200).json({ 
+      success: true,
+      message: 'New OTP sent successfully',
+      expiresIn: 300
+    });
+
+  } catch (error) {
+    console.error('❌ Resend Email OTP error:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Failed to resend OTP',
+      error: error.message 
+    });
   }
 };

@@ -41,7 +41,12 @@ const sendOtpEmail = async (email, otp) => {
   return sendEmail({ to: email, subject, html });
 };
 
+const generateOtp = () => {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+};
+
 module.exports = { 
   sendOtpEmail,
-  sendEmail // Export the new generic function
+  sendEmail, // Export the new generic function
+  generateOtp
 };
