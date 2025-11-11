@@ -61,6 +61,10 @@ export default function AdminReportsPage() {
   const [authorityModalOpen, setAuthorityModalOpen] = useState(false);
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
 
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [currentReportImages, setCurrentReportImages] = useState<string[]>([]);
+
   const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
   const defaultProfilePic = "/images/sample_avatar.png";
   const profilePicUrl = defaultProfilePic;
@@ -232,6 +236,44 @@ export default function AdminReportsPage() {
       return title.includes(term) || location.includes(term);
     });
   }, [reports, activeStatus, searchTerm]);
+
+  const openLightbox = (images: string[], index: number) => {
+    setCurrentReportImages(images);
+    setCurrentImageIndex(index);
+    setLightboxOpen(true);
+  };
+
+  const closeLightbox = () => {
+    setLightboxOpen(false);
+    setCurrentImageIndex(0);
+    setCurrentReportImages([]);
+  };
+
+  const nextImage = () => {
+    setCurrentImageIndex((prev) => 
+      prev === currentReportImages.length - 1 ? 0 : prev + 1
+    );
+  };
+
+  const prevImage = () => {
+    setCurrentImageIndex((prev) => 
+      prev === 0 ? currentReportImages.length - 1 : prev - 1
+    );
+  };
+
+  // Handle keyboard navigation
+  useEffect(() => {
+    if (!lightboxOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') closeLightbox();
+      if (e.key === 'ArrowRight') nextImage();
+      if (e.key === 'ArrowLeft') prevImage();
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [lightboxOpen, currentReportImages.length]);
 
   const authoritiesByCategory: Record<string, { name: string; email: string }[]> = {
     "infrastructure": [
@@ -475,23 +517,48 @@ export default function AdminReportsPage() {
                       </div>
 
                       <div className={styles.reportImage}>
-                        {r.imageUrl || r.image ? (
-                          <img
-                            src={r.imageUrl ?? (r as any).image}
-                            alt="Report Image"
-                            className={styles.inlineImage}
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).src =
-                                "/images/broken-streetlights.jpg";
-                            }}
-                          />
-                        ) : (
-                          <img
-                            src={"/images/broken-streetlights.jpg"}
-                            alt="Report Image"
-                            className={styles.inlineImage}
-                          />
-                        )}
+                        {/* ✅ Display multiple images */}
+                        <div className={styles.reportImageGallery}>
+                          {(() => {
+                            const allImages = r.images && r.images.length > 0 
+                              ? r.images 
+                              : r.imageUrl 
+                              ? [r.imageUrl]
+                              : r.image 
+                              ? [r.image] 
+                              : ["/images/broken-streetlights.jpg"];
+                            
+                            const displayImages = allImages.slice(0, 4);
+                            const totalImages = allImages.length;
+                            
+                            return displayImages.map((img, idx) => {
+                              const isLastImage = idx === 3 && totalImages === 5;
+                              
+                              return (
+                                <div 
+                                  key={idx} 
+                                  className={styles.reportImageItem}
+                                  onClick={() => openLightbox(allImages, idx)}
+                                  style={{ position: 'relative', cursor: 'pointer' }}
+                                >
+                                  <img
+                                    src={img}
+                                    alt={`Report Image ${idx + 1}`}
+                                    className={styles.inlineImage}
+                                    onError={(e) => {
+                                      (e.target as HTMLImageElement).src = "/images/broken-streetlights.jpg";
+                                    }}
+                                  />
+                                  {isLastImage && (
+                                    <div className={styles.imageOverlay}>
+                                      <span className={styles.overlayText}>+1</span>
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            });
+                          })()}
+                        </div>
                       </div>
                     </div>
 
@@ -563,6 +630,76 @@ export default function AdminReportsPage() {
                 Cancel
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ✅ Image Lightbox Modal */}
+      {lightboxOpen && (
+        <div className={styles.lightboxBackdrop} onClick={closeLightbox}>
+          <div className={styles.lightboxContainer} onClick={(e) => e.stopPropagation()}>
+            {/* Close Button */}
+            <button
+              className={styles.lightboxClose}
+              onClick={closeLightbox}
+              aria-label="Close lightbox"
+            >
+              <i className="fa-solid fa-times"></i>
+            </button>
+
+            {/* Previous Button */}
+            {currentReportImages.length > 1 && (
+              <button
+                className={`${styles.lightboxNav} ${styles.lightboxPrev}`}
+                onClick={prevImage}
+                aria-label="Previous image"
+              >
+                <i className="fa-solid fa-chevron-left"></i>
+              </button>
+            )}
+
+            {/* Image */}
+            <div className={styles.lightboxImageWrapper}>
+              <img
+                src={currentReportImages[currentImageIndex]}
+                alt={`Image ${currentImageIndex + 1}`}
+                className={styles.lightboxImage}
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = "/images/broken-streetlights.jpg";
+                }}
+              />
+            </div>
+
+            {/* Next Button */}
+            {currentReportImages.length > 1 && (
+              <button
+                className={`${styles.lightboxNav} ${styles.lightboxNext}`}
+                onClick={nextImage}
+                aria-label="Next image"
+              >
+                <i className="fa-solid fa-chevron-right"></i>
+              </button>
+            )}
+
+            {/* Image Counter */}
+            <div className={styles.lightboxCounter}>
+              {currentImageIndex + 1} / {currentReportImages.length}
+            </div>
+
+            {/* Thumbnail Navigation */}
+            {currentReportImages.length > 1 && (
+              <div className={styles.lightboxThumbnails}>
+                {currentReportImages.map((img, idx) => (
+                  <div
+                    key={idx}
+                    className={`${styles.thumbnailItem} ${idx === currentImageIndex ? styles.activeThumbnail : ''}`}
+                    onClick={() => setCurrentImageIndex(idx)}
+                  >
+                    <img src={img} alt={`Thumbnail ${idx + 1}`} />
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}
