@@ -15,6 +15,9 @@ router.get('/profile', authenticateToken, userController.getProfile);
 router.patch('/profile', authenticateToken, userController.updateProfile);
 router.patch('/change-password', authenticateToken, userController.changePassword);
 
+router.post('/request-email-otp', userController.requestEmailOtp);
+router.post('/verify-email-otp', userController.verifyEmailOtp);
+
 router.post(
   '/me/profile-picture',
   authenticateToken,
