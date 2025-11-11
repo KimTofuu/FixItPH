@@ -72,8 +72,8 @@ export default function RegisterPage() {
     try {
       setRegistering(true);
 
-      // Step 1: Send OTP to user's email
-      const otpRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/request-otp`, {
+      // ✅ Request Email OTP
+      const otpRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/request-email-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: form.email }),
@@ -86,8 +86,8 @@ export default function RegisterPage() {
         return;
       }
 
-      // Step 2: Show OTP modal for user to enter code
-      toast.success("OTP sent to your email");
+      // Show OTP modal
+      toast.success("OTP sent to your email. Please check your inbox.");
       setShowOtpModal(true);
 
     } catch (error) {
@@ -102,8 +102,8 @@ export default function RegisterPage() {
     try {
       setVerifyingOtp(true);
 
-      // Step 1: Verify OTP
-      const verifyRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/verify-otp`, {
+      // ✅ Verify Email OTP
+      const verifyRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/verify-email-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: form.email, otp }),
@@ -113,10 +113,15 @@ export default function RegisterPage() {
 
       if (!verifyRes.ok) {
         toast.error(verifyData.message || "Invalid OTP");
+        if (verifyData.attemptsRemaining !== undefined) {
+          toast.warn(`${verifyData.attemptsRemaining} attempts remaining`);
+        }
         return;
       }
 
-      // Step 2: If OTP is valid, proceed with registration
+      toast.success("Email verified!");
+
+      // ✅ Proceed with registration
       const registerRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -125,43 +130,46 @@ export default function RegisterPage() {
 
       const registerData = await registerRes.json();
 
-      if (registerRes.ok && registerData.success) {
-        toast.success("Registration successful!");
-        setShowOtpModal(false);
-        
-        // Auto-login: Create token for the new user
-        const loginRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/login`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ 
-            email: form.email, 
-            password: form.password 
-          }),
-        });
-
-        const loginData = await loginRes.json();
-
-        if (loginRes.ok && loginData.token) {
-          // Save token
-          localStorage.setItem("token", loginData.token);
-          
-          // Redirect to welcome page
-          toast.success("Welcome to FixItPH!");
-          setTimeout(() => router.push("/welcome"), 1000);
-        } else {
-          // If auto-login fails, redirect to login page
-          toast.info("Please log in to continue");
-          setTimeout(() => router.push("/login"), 1000);
-        }
-      } else {
+      if (!registerRes.ok) {
         toast.error(registerData.message || "Registration failed");
+        return;
       }
+
+      toast.success("Registration successful! Redirecting to login...");
+      setTimeout(() => {
+        router.push("/login");
+      }, 1500);
 
     } catch (error) {
       console.error("Verification error:", error);
-      toast.error("Network error verifying OTP");
+      toast.error("Network error. Please try again.");
     } finally {
       setVerifyingOtp(false);
+    }
+  };
+
+  // ✅ Optional: Add resend OTP function
+  const resendOtp = async () => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/request-email-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: form.email }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        toast.error(data.message || "Failed to resend OTP");
+        return;
+      }
+
+      toast.success("New OTP sent to your email");
+      setOtp(""); // Clear previous OTP input
+
+    } catch (error) {
+      console.error("Resend OTP error:", error);
+      toast.error("Failed to resend OTP");
     }
   };
 
