@@ -38,6 +38,7 @@ interface Report {
   location: string;
   category: string;
   isUrgent?: boolean;
+  images?: string[];
   image?: string;
   latitude?: string | number;
   longitude?: string | number;
@@ -75,11 +76,13 @@ export default function UserMapPage() {
     description: "",
     category: "",
     isUrgent: false,
-    image: null as File | null,
+    images: [] as File[],
     address: "",
     latitude: "",
     longitude: "",
   });
+
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
 
   const [reports, setReports] = useState<Report[]>([]);
 
@@ -174,14 +177,19 @@ export default function UserMapPage() {
         const userName = r.user ? `${r.user.fName} ${r.user.lName}` : 'Anonymous';
         const userPic = r.user?.profilePicture?.url || defaultProfilePic;
         
+        // ✅ Get all images
+        const allImages = r.images && r.images.length > 0 ? r.images : r.image ? [r.image] : [];
+        const imageCount = allImages.length;
+        
         m.bindPopup(`
-          <div style="text-align: center;">
+          <div style="text-align: center; min-width: 200px;">
             <img src="${userPic}" alt="${userName}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; margin-bottom: 8px;" />
             <br>
             <b>${r.title}</b><br>
             <b>Reported by:</b> ${userName}<br>
             <b>Status:</b> ${r.status}<br>
-            <b>Location:</b> ${r.location}
+            <b>Location:</b> ${r.location}<br>
+            ${imageCount > 0 ? `<b>Images:</b> ${imageCount}` : ''}
           </div>
         `);
       }
@@ -245,16 +253,47 @@ export default function UserMapPage() {
   }
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setUploadedFile(file);
-      setReportForm({ ...reportForm, image: file });
+    const files = Array.from(e.target.files || []);
+    
+    // Limit to 5 images
+    if (files.length > 5) {
+      toast.error("Maximum 5 images allowed");
+      return;
     }
+
+    // Check file sizes (5MB per image)
+    const invalidFiles = files.filter(file => file.size > 5 * 1024 * 1024);
+    if (invalidFiles.length > 0) {
+      toast.error("Each image must be less than 5MB");
+      return;
+    }
+
+    setReportForm({ ...reportForm, images: files });
+
+    // Generate previews
+    const previews = files.map(file => {
+      return new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          resolve(event.target?.result as string);
+        };
+        reader.readAsDataURL(file);
+      });
+    });
+
+    Promise.all(previews).then(setImagePreviews);
   };
 
-  const removeImage = () => {
-    setUploadedFile(null);
-    setReportForm({ ...reportForm, image: null });
+  const removeImage = (index: number) => {
+    const newImages = reportForm.images.filter((_, i) => i !== index);
+    const newPreviews = imagePreviews.filter((_, i) => i !== index);
+    setReportForm({ ...reportForm, images: newImages });
+    setImagePreviews(newPreviews);
+  };
+
+  const removeAllImages = () => {
+    setReportForm({ ...reportForm, images: [] });
+    setImagePreviews([]);
   };
 
   const handleReportSubmit = async (e: React.FormEvent) => {
@@ -263,6 +302,12 @@ export default function UserMapPage() {
       toast.error("Please select a category.");
       return;
     }
+    
+    if (reportForm.images.length === 0) {
+      toast.error("Please upload at least one image.");
+      return;
+    }
+
     showLoader();
 
     try {
@@ -271,7 +316,12 @@ export default function UserMapPage() {
       formData.append("description", reportForm.description);
       formData.append("category", reportForm.category);
       formData.append("isUrgent", String(reportForm.isUrgent));
-      if (reportForm.image) formData.append("image", reportForm.image);
+      
+      // ✅ Append multiple images
+      reportForm.images.forEach((image) => {
+        formData.append("images", image);
+      });
+      
       formData.append("location", reportForm.address);
       formData.append("latitude", reportForm.latitude);
       formData.append("longitude", reportForm.longitude);
@@ -287,42 +337,37 @@ export default function UserMapPage() {
       });
 
       if (res.ok) {
-          // Backend returns { message, report }
-          const data = await res.json();
-          const createdReport = data.report || data;
-          toast.success("Report submitted successfully!");
+        const data = await res.json();
+        const createdReport = data.report || data;
+        toast.success("Report submitted successfully!");
 
-          // Ensure numeric lat/lng if present
-          if (createdReport.latitude) {
-            createdReport.latitude = parseFloat(String(createdReport.latitude));
-          }
-          if (createdReport.longitude) {
-            createdReport.longitude = parseFloat(String(createdReport.longitude));
-          }
+        if (createdReport.latitude) {
+          createdReport.latitude = parseFloat(String(createdReport.latitude));
+        }
+        if (createdReport.longitude) {
+          createdReport.longitude = parseFloat(String(createdReport.longitude));
+        }
 
-          // Only add to the public list if it's not awaiting approval
-          const statusStr = String(createdReport.status || "");
-          if (!/approval/i.test(statusStr)) {
-            // Add the new report to the top of the list so the map updates immediately
-            setReports((prev) => [createdReport, ...prev]);
-          } else {
-            // If it's awaiting approval, don't show it in public lists immediately
-            toast.info("Report submitted and is awaiting approval before appearing in the public feed.");
-          }
+        const statusStr = String(createdReport.status || "");
+        if (!/approval/i.test(statusStr)) {
+          setReports((prev) => [createdReport, ...prev]);
+        } else {
+          toast.info("Report submitted and is awaiting approval before appearing in the public feed.");
+        }
 
-          // Reset form and close modal
-          setReportForm({
-            title: "",
-            description: "",
-            category: "",
-            isUrgent: false,
-            image: null,
-            address: "",
-            latitude: "",
-            longitude: "",
-          });
-          setUploadedFile(null);
-          setModalOpen(false);
+        // ✅ Reset form including images
+        setReportForm({
+          title: "",
+          description: "",
+          category: "",
+          isUrgent: false,
+          images: [], // ✅ Reset images array
+          address: "",
+          latitude: "",
+          longitude: "",
+        });
+        setImagePreviews([]); // ✅ Clear previews
+        setModalOpen(false);
       } else {
         const data = await res.json();
         toast.error(data.message || "Failed to submit report");
@@ -516,37 +561,58 @@ export default function UserMapPage() {
                   <option value="Others">Others</option>
                 </select>
                 <label className={styles.inputLabel} htmlFor="imageUpload">
-                  Upload Image
+                  Upload Images (Max 5)
                 </label>
                 <div className={styles.uploadWrapper}>
                   <input
                     className={styles.fileInput}
                     type="file"
                     id="imageUpload"
-                    name="image"
+                    name="images"
                     accept="image/*"
+                    multiple // ✅ Enable multiple file selection
                     onChange={handleImageChange}
                   />
-                  {uploadedFile && (
-                    <div id="imagePreview" className={styles.imagePreview}>
-                      <a
-                        href={URL.createObjectURL(uploadedFile)}
-                        target="_blank"
-                        rel="noreferrer"
-                        className={styles.previewLink}
-                      >
-                        {uploadedFile.name}
-                      </a>
-                      <button
-                        type="button"
-                        onClick={removeImage}
-                        className={styles.removeBtn}
-                        aria-label="Remove image"
-                      >
-                        ✖
-                      </button>
-                    </div>
-                  )}
+                  
+                  <div className={styles.imagePreviewGrid}>
+                    {imagePreviews.slice(0, 4).map((preview, index) => {
+                      const isLastPreview = index === 3 && imagePreviews.length === 5;
+                      
+                      return (
+                        <div key={index} className={styles.previewItem}>
+                          <img 
+                            src={preview} 
+                            alt={`Preview ${index + 1}`}
+                            className={styles.previewImage}
+                            style={isLastPreview ? { filter: 'brightness(0.4)' } : {}}
+                          />
+                          
+                          {isLastPreview && (
+                            <div className={styles.overlayCount}>
+                              +1
+                            </div>
+                          )}
+                          
+                          <button
+                            type="button"
+                            className={styles.removePreviewBtn}
+                            onClick={() => removeImage(index)}
+                            aria-label="Remove image"
+                          >
+                            ✖
+                          </button>
+                        </div>
+                      );
+                    })}
+                    
+                    {imagePreviews.length === 0 && (
+                      <div className={styles.uploadPlaceholder}>
+                        <i className="fa-solid fa-cloud-arrow-up" style={{ fontSize: '32px', color: '#94a3b8', marginBottom: '8px' }}></i>
+                        <p>Click to upload images</p>
+                        <p style={{ fontSize: '12px', color: '#64748b' }}>Up to 5 images, 5MB each</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 

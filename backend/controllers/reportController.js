@@ -74,6 +74,23 @@ exports.createReport = async (req, res) => {
       images: newReport.images
     });
 
+    // Send email
+    try {
+      await sendEmail({
+        to: user.email,
+        subject: `Report Submitted: ${title}`,
+        html: `
+          <div style="font-family: Arial, sans-serif;">
+            <h2>Report Received! 🎉</h2>
+            <p>Hi ${user.fName},</p>
+            <p>Your report has been submitted successfully.</p>
+          </div>
+        `
+      });
+    } catch (emailError) {
+      console.error('❌ Email error:', emailError);
+    }
+
     // Award reputation points
     user.reputation.points = (user.reputation.points || 0) + 10;
     user.reputation.totalReports = (user.reputation.totalReports || 0) + 1;
