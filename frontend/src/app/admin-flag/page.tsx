@@ -53,9 +53,13 @@ export default function AdminFlagPage() {
   const [detailsModalVisible, setDetailsModalVisible] = useState(false);
   const [filterReason, setFilterReason] = useState<string>("all");
   const [menuOpen, setMenuOpen] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false); // Add this
-  const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [currentReportImages, setCurrentReportImages] = useState<string[]>([]);
+  
+  const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
   const profilePicUrl = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
 
   const flagReasons = [
@@ -68,8 +72,46 @@ export default function AdminFlagPage() {
     "Other"
   ];
 
+  // ✅ Move all functions and hooks BEFORE any conditional returns
+  const openLightbox = (images: string[], index: number) => {
+    setCurrentReportImages(images);
+    setCurrentImageIndex(index);
+    setLightboxOpen(true);
+  };
+
+  const closeLightbox = () => {
+    setLightboxOpen(false);
+    setCurrentImageIndex(0);
+    setCurrentReportImages([]);
+  };
+
+  const nextImage = () => {
+    setCurrentImageIndex((prev) => 
+      prev === currentReportImages.length - 1 ? 0 : prev + 1
+    );
+  };
+
+  const prevImage = () => {
+    setCurrentImageIndex((prev) => 
+      prev === 0 ? currentReportImages.length - 1 : prev - 1
+    );
+  };
+
+  // ✅ This useEffect must be before any conditional returns
   useEffect(() => {
-    // Simplified authentication check - same as other admin pages
+    if (!lightboxOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') closeLightbox();
+      if (e.key === 'ArrowRight') nextImage();
+      if (e.key === 'ArrowLeft') prevImage();
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [lightboxOpen, currentReportImages.length]);
+
+  useEffect(() => {
     const checkAuth = () => {
       const token = localStorage.getItem("token");
       
@@ -83,13 +125,10 @@ export default function AdminFlagPage() {
         return false;
       }
 
-      // If there's a token, assume they're authenticated
-      // The backend will verify if they're actually admin
       console.log("✅ Authentication passed");
       return true;
     };
 
-    // Only run on client side
     if (typeof window !== 'undefined') {
       const isAuth = checkAuth();
       if (isAuth) {
@@ -269,7 +308,7 @@ export default function AdminFlagPage() {
     return `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
   };
 
-  // Don't render anything until authentication is checked
+  // ✅ NOW the conditional return is AFTER all hooks
   if (!isAuthenticated) {
     return (
       <div style={{ 
@@ -408,6 +447,36 @@ export default function AdminFlagPage() {
 
                       <p className={styles.reportDescription}>{report.description}</p>
 
+                      {/* ✅ Display multiple images in flag card preview */}
+                      {(() => {
+                        const allImages = report.images && report.images.length > 0 
+                          ? report.images 
+                          : report.image 
+                          ? [report.image] 
+                          : [];
+                        
+                        if (allImages.length > 0) {
+                          return (
+                            <div className={styles.reportImagePreview}>
+                              <img
+                                src={allImages[0]}
+                                alt="Report preview"
+                                className={styles.previewImage}
+                                onClick={() => openLightbox(allImages, 0)}
+                                style={{ cursor: 'pointer' }}
+                              />
+                              {allImages.length > 1 && (
+                                <div className={styles.imageCount}>
+                                  <i className="fa-solid fa-images"></i>
+                                  {allImages.length} images
+                                </div>
+                              )}
+                            </div>
+                          );
+                        }
+                        return null;
+                      })()}
+
                       <div className={styles.flagsList}>
                         <h4 className={styles.flagsTitle}>Flags:</h4>
                         {report.flags.slice(0, 2).map((flag, index) => (
@@ -536,16 +605,50 @@ export default function AdminFlagPage() {
                   </div>
                 </div>
 
-                {selectedReport.image && (
-                  <div className={styles.section}>
-                    <h3 className={styles.sectionTitle}>Image</h3>
-                    <img
-                      src={selectedReport.image}
-                      alt="Report"
-                      className={styles.reportImage}
-                    />
-                  </div>
-                )}
+                {/* ✅ Display multiple images in modal */}
+                {(() => {
+                  const allImages = selectedReport.images && selectedReport.images.length > 0 
+                    ? selectedReport.images 
+                    : selectedReport.image 
+                    ? [selectedReport.image] 
+                    : [];
+
+                  if (allImages.length > 0) {
+                    return (
+                      <div className={styles.section}>
+                        <h3 className={styles.sectionTitle}>
+                          Images ({allImages.length})
+                        </h3>
+                        <div className={styles.modalImageGallery}>
+                          {allImages.slice(0, 4).map((img, idx) => {
+                            const isLastImage = idx === 3 && allImages.length === 5;
+                            
+                            return (
+                              <div 
+                                key={idx} 
+                                className={styles.modalImageItem}
+                                onClick={() => openLightbox(allImages, idx)}
+                                style={{ position: 'relative', cursor: 'pointer' }}
+                              >
+                                <img
+                                  src={img}
+                                  alt={`Report Image ${idx + 1}`}
+                                  className={styles.reportImage}
+                                />
+                                {isLastImage && (
+                                  <div className={styles.imageOverlay}>
+                                    <span className={styles.overlayText}>+1</span>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
 
                 <div className={styles.section}>
                   <h3 className={styles.sectionTitle}>
@@ -600,6 +703,73 @@ export default function AdminFlagPage() {
                   Remove Report
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* ✅ Image Lightbox Modal */}
+        {lightboxOpen && (
+          <div className={styles.lightboxBackdrop} onClick={closeLightbox}>
+            <div className={styles.lightboxContainer} onClick={(e) => e.stopPropagation()}>
+              {/* Close Button */}
+              <button
+                className={styles.lightboxClose}
+                onClick={closeLightbox}
+                aria-label="Close lightbox"
+              >
+                <i className="fa-solid fa-times"></i>
+              </button>
+
+              {/* Previous Button */}
+              {currentReportImages.length > 1 && (
+                <button
+                  className={`${styles.lightboxNav} ${styles.lightboxPrev}`}
+                  onClick={prevImage}
+                  aria-label="Previous image"
+                >
+                  <i className="fa-solid fa-chevron-left"></i>
+                </button>
+              )}
+
+              {/* Image */}
+              <div className={styles.lightboxImageWrapper}>
+                <img
+                  src={currentReportImages[currentImageIndex]}
+                  alt={`Image ${currentImageIndex + 1}`}
+                  className={styles.lightboxImage}
+                />
+              </div>
+
+              {/* Next Button */}
+              {currentReportImages.length > 1 && (
+                <button
+                  className={`${styles.lightboxNav} ${styles.lightboxNext}`}
+                  onClick={nextImage}
+                  aria-label="Next image"
+                >
+                  <i className="fa-solid fa-chevron-right"></i>
+                </button>
+              )}
+
+              {/* Image Counter */}
+              <div className={styles.lightboxCounter}>
+                {currentImageIndex + 1} / {currentReportImages.length}
+              </div>
+
+              {/* Thumbnail Navigation */}
+              {currentReportImages.length > 1 && (
+                <div className={styles.lightboxThumbnails}>
+                  {currentReportImages.map((img, idx) => (
+                    <div
+                      key={idx}
+                      className={`${styles.thumbnailItem} ${idx === currentImageIndex ? styles.activeThumbnail : ''}`}
+                      onClick={() => setCurrentImageIndex(idx)}
+                    >
+                      <img src={img} alt={`Thumbnail ${idx + 1}`} />
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}
