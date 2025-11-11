@@ -20,7 +20,7 @@ router.delete('/admin/:reportId/dismiss-all-flags', authenticateToken, isAdmin, 
 
 // --- USER ROUTES ---
 router.get('/', reportController.getAllReports);
-router.post('/', authenticateToken, upload.single('image'), reportController.createReport);
+router.post('/', authenticateToken, upload.array('images', 5), reportController.createReport); // ✅ Changed to array
 router.get('/getAllReports', reportController.getAllReports);
 router.get('/getAllPendingReports', reportController.getAllPendingReports);
 router.get('/getAllInProgressReports', reportController.getAllInProgressReports);
@@ -35,7 +35,7 @@ router.post('/getReportByUser', reportController.getReportByUser);
 router.get('/my', authenticateToken, reportController.getMyReports);
 router.post('/:id/comment', authenticateToken, reportController.addComment);
 router.delete('/:id', authenticateToken, reportController.deleteReport);
-router.patch('/:id', authenticateToken, upload.single('image'), reportController.updateReport);
+router.patch('/:id', authenticateToken, upload.array('images', 5), reportController.updateReport); // ✅ Changed to array
 
 router.post('/:reportId/flag', authenticateToken, reportController.flagReport);
 router.post('/:reportId/vote-helpful', authenticateToken, reputationController.voteHelpful); // Add this line

@@ -40,7 +40,8 @@ interface Report {
   location: string;
   category: string;
   isUrgent?: boolean;
-  image: string;
+  images?: string[];
+  image?: string;
   helpfulVotes?: number;
   votedBy?: (string | any)[]; 
   comments?: { user: string; text: string; createdAt?: string }[];
@@ -140,16 +141,22 @@ export default function UserFeedPage() {
   const [modalMap, setModalMap] = useState<any>(null);
   const [LRef, setLRef] = useState<any>(null);
 
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [currentReportImages, setCurrentReportImages] = useState<string[]>([]);
+
   const [reportForm, setReportForm] = useState({
     title: "",
     description: "",
     category: "",
     isUrgent: false,
-    image: null as File | null,
+    images: [] as File[],
     address: "",
     latitude: "",
     longitude: "",
   });
+
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
 
   const [reports, setReports] = useState<Report[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -386,70 +393,81 @@ export default function UserFeedPage() {
   };
 
   const handleReportSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    if (!reportForm.category) {
-      toast.error("Please select a category.");
-      return;
-    }
+  if (!reportForm.category) {
+    toast.error("Please select a category.");
+    return;
+  }
 
-    showLoader();
+  if (reportForm.images.length === 0) {
+    toast.error("Please upload at least one image.");
+    return;
+  }
 
-    try {
-      const formData = new FormData();
-      formData.append("title", reportForm.title);
-      formData.append("description", reportForm.description);
-      formData.append("category", reportForm.category);
-      formData.append("isUrgent", String(reportForm.isUrgent));
-      if (reportForm.image) formData.append("image", reportForm.image);
-      formData.append("location", reportForm.address);
-      formData.append("latitude", reportForm.latitude);
-      formData.append("longitude", reportForm.longitude);
+  showLoader();
 
-      const token = localStorage.getItem("token");
+  try {
+    const formData = new FormData();
+    formData.append("title", reportForm.title);
+    formData.append("description", reportForm.description);
+    formData.append("category", reportForm.category);
+    formData.append("isUrgent", String(reportForm.isUrgent));
+    
+    // ✅ Append multiple images
+    reportForm.images.forEach((image) => {
+      formData.append("images", image);
+    });
+    
+    formData.append("location", reportForm.address);
+    formData.append("latitude", reportForm.latitude);
+    formData.append("longitude", reportForm.longitude);
 
-      const res = await fetch(`${API}/reports`, {
-        method: "POST",
-        body: formData,
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+    const token = localStorage.getItem("token");
+
+    const res = await fetch(`${API}/reports`, {
+      method: "POST",
+      body: formData,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (res.ok) {
+      toast.success("Report submitted successfully!");
+      setModalVisible(false);
+      setReportForm({
+        title: "",
+        description: "",
+        category: "",
+        isUrgent: false,
+        images: [], // ✅ Reset images array
+        address: "",
+        latitude: "",
+        longitude: "",
       });
+      setImagePreviews([]); // ✅ Clear previews
 
-      if (res.ok) {
-        toast.success("Report submitted successfully!");
-        setModalVisible(false);
-        setReportForm({
-          title: "",
-          description: "",
-          category: "",
-          isUrgent: false,
-          image: null,
-          address: "",
-          latitude: "",
-          longitude: "",
+      const refreshRes = await fetch(`${API}/reports`);
+      if (refreshRes.ok) {
+        const data = await refreshRes.json();
+        const visibleReports = (data || []).filter((r: any) => {
+          const status = (r?.status || "").toString();
+          return !/approval/i.test(status);
         });
-
-        const refreshRes = await fetch(`${API}/reports`);
-        if (refreshRes.ok) {
-          const data = await refreshRes.json();
-          // Filter out reports that are awaiting approval so they don't appear immediately
-          const visibleReports = (data || []).filter((r: any) => {
-            const status = (r?.status || "").toString();
-            return !/approval/i.test(status);
-          });
-          setReports(visibleReports);
-        }
-      } else {
-        toast.error("Failed to submit report");
+        setReports(visibleReports);
       }
-    } catch (error) {
-      console.error("Submission error:", error);
-      toast.error("An error occurred while submitting the report.");
-    } finally {
-      hideLoader();
+    } else {
+      const errorData = await res.json();
+      toast.error(errorData.message || "Failed to submit report");
     }
-  };
+  } catch (error) {
+    console.error("Submission error:", error);
+    toast.error("An error occurred while submitting the report.");
+  } finally {
+    hideLoader();
+  }
+};
 
   const handleFlagSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -534,6 +552,44 @@ export default function UserFeedPage() {
     };
     fetchUserId();
   }, [API]);
+
+  const openLightbox = (images: string[], index: number) => {
+    setCurrentReportImages(images);
+    setCurrentImageIndex(index);
+    setLightboxOpen(true);
+  };
+
+  const closeLightbox = () => {
+    setLightboxOpen(false);
+    setCurrentImageIndex(0);
+    setCurrentReportImages([]);
+  };
+
+  const nextImage = () => {
+    setCurrentImageIndex((prev) => 
+      prev === currentReportImages.length - 1 ? 0 : prev + 1
+    );
+  };
+
+  const prevImage = () => {
+    setCurrentImageIndex((prev) => 
+      prev === 0 ? currentReportImages.length - 1 : prev - 1
+    );
+  };
+
+  // Handle keyboard navigation
+  useEffect(() => {
+    if (!lightboxOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') closeLightbox();
+      if (e.key === 'ArrowRight') nextImage();
+      if (e.key === 'ArrowLeft') prevImage();
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [lightboxOpen, currentReportImages.length]);
 
   return (
     <>
@@ -725,7 +781,7 @@ export default function UserFeedPage() {
                                     borderRadius: '12px',
                                     fontSize: '11px',
                                     fontWeight: '600',
-                                    whiteSpace: 'nowrap'
+                                   
                                   }}
                                   title={`${r.user.reputation.level} - ${r.user.reputation.points} points`}
                                 >
@@ -760,11 +816,37 @@ export default function UserFeedPage() {
                           <p className={styles.reportDetails}>{r.description}</p>
                         </div>
 
-                        <div className={styles.reportImage}>
-                          <ReportImage src={r.image} alt="Report Image" />
+                        <div className={styles.reportImageGallery}>
+                          {(() => {
+                            const allImages = r.images && r.images.length > 0 ? r.images : r.image ? [r.image] : [];
+                            const displayImages = allImages.slice(0, 4);
+                            const totalImages = allImages.length;
+
+                            return displayImages.map((imgSrc, idx) => {
+                              const isLastImage = idx === 3 && totalImages === 5;
+                              
+                              return (
+                                <div 
+                                  key={idx} 
+                                  className={styles.reportImageItem}
+                                  onClick={() => openLightbox(allImages, idx)} // ✅ Make clickable
+                                  style={{ cursor: 'pointer' }}
+                                >
+                                  <ReportImage 
+                                    src={imgSrc} 
+                                    alt={`${r.title} - Image ${idx + 1}`} 
+                                  />
+                                  {isLastImage && (
+                                    <div className={styles.imageOverlay}>
+                                      <span className={styles.overlayText}>+1</span>
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            });
+                          })()}
                         </div>
                       </div>
-
                       <div className={styles.reportActions}>
                         <button
                           type="button"
@@ -892,34 +974,94 @@ export default function UserFeedPage() {
                   <option value="Others">Others</option>
                 </select>
 
-                <label className={styles.inputLabel} htmlFor="imageUpload">Upload Image</label>
+                <label className={styles.inputLabel} htmlFor="imageUpload">
+                  Upload Images (Max 5)
+                </label>
                 <div className={styles.uploadWrapper}>
                   <input
                     className={styles.fileInput}
                     type="file"
                     id="imageUpload"
-                    name="image"
+                    name="images"
                     accept="image/*"
+                    multiple // ✅ Enable multiple file selection
                     onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        setReportForm({ ...reportForm, image: file });
-                        const reader = new FileReader();
-                        reader.onload = (event) => {
-                          const preview = document.getElementById("imagePreview") as HTMLElement;
-                          if (preview && event.target?.result) {
-                            preview.innerHTML = `
-                              <img src="${event.target.result}" style="width: 100%; height: 150px; object-fit: cover; border-radius: 4px;" />
-                              <button type="button" onclick="this.parentElement.innerHTML=''" class="${styles.removeBtn}">✖</button>
-                            `;
-                          }
-                        };
-                        reader.readAsDataURL(file);
+                      const files = Array.from(e.target.files || []);
+                      
+                      // ✅ Limit to 5 images
+                      if (files.length > 5) {
+                        toast.error("Maximum 5 images allowed");
+                        return;
                       }
+
+                      // ✅ Check file sizes (5MB per image)
+                      const invalidFiles = files.filter(file => file.size > 5 * 1024 * 1024);
+                      if (invalidFiles.length > 0) {
+                        toast.error("Each image must be less than 5MB");
+                        return;
+                      }
+
+                      setReportForm({ ...reportForm, images: files });
+
+                      // ✅ Generate previews
+                      const previews = files.map(file => {
+                        return new Promise<string>((resolve) => {
+                          const reader = new FileReader();
+                          reader.onload = (event) => {
+                            resolve(event.target?.result as string);
+                          };
+                          reader.readAsDataURL(file);
+                        });
+                      });
+
+                      Promise.all(previews).then(setImagePreviews);
                     }}
                   />
-                  <div id="imagePreview" className={styles.imagePreview}>
-                    <a href="#" id="imageLink" target="_blank" className={styles.previewLink}></a>
+                  
+                  {/* ✅ Image Previews Grid */}
+                  <div className={styles.imagePreviewGrid}>
+                    {imagePreviews.slice(0, 4).map((preview, index) => {
+                      const isLastPreview = index === 3 && imagePreviews.length === 5;
+                      
+                      return (
+                        <div key={index} className={styles.previewItem}>
+                          <img 
+                            src={preview} 
+                            alt={`Preview ${index + 1}`}
+                            className={styles.previewImage}
+                            style={isLastPreview ? { filter: 'brightness(0.4)' } : {}}
+                          />
+                          
+                          {isLastPreview && (
+                            <div className={styles.overlayCount}>
+                              +1
+                            </div>
+                          )}
+                          
+                          <button
+                            type="button"
+                            className={styles.removePreviewBtn}
+                            onClick={() => {
+                              const newImages = reportForm.images.filter((_, i) => i !== index);
+                              const newPreviews = imagePreviews.filter((_, i) => i !== index);
+                              setReportForm({ ...reportForm, images: newImages });
+                              setImagePreviews(newPreviews);
+                            }}
+                            aria-label="Remove image"
+                          >
+                            ✖
+                          </button>
+                        </div>
+                      );
+                    })}
+                    
+                    {imagePreviews.length === 0 && (
+                      <div className={styles.uploadPlaceholder}>
+                        <i className="fa-solid fa-cloud-arrow-up" style={{ fontSize: '32px', color: '#94a3b8', marginBottom: '8px' }}></i>
+                        <p>Click to upload images</p>
+                        <p style={{ fontSize: '12px', color: '#64748b' }}>Up to 5 images, 5MB each</p>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -1036,6 +1178,76 @@ export default function UserFeedPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ✅ Image Lightbox Modal */}
+      {lightboxOpen && (
+        <div className={styles.lightboxBackdrop} onClick={closeLightbox}>
+          <div className={styles.lightboxContainer} onClick={(e) => e.stopPropagation()}>
+            {/* Close Button */}
+            <button
+              className={styles.lightboxClose}
+              onClick={closeLightbox}
+              aria-label="Close lightbox"
+            >
+              <i className="fa-solid fa-times"></i>
+            </button>
+
+            {/* Previous Button */}
+            {currentReportImages.length > 1 && (
+              <button
+                className={`${styles.lightboxNav} ${styles.lightboxPrev}`}
+                onClick={prevImage}
+                aria-label="Previous image"
+              >
+                <i className="fa-solid fa-chevron-left"></i>
+              </button>
+            )}
+
+            {/* Image */}
+            <div className={styles.lightboxImageWrapper}>
+              <img
+                src={currentReportImages[currentImageIndex]}
+                alt={`Image ${currentImageIndex + 1}`}
+                className={styles.lightboxImage}
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = "/images/broken-streetlights.jpg";
+                }}
+              />
+            </div>
+
+            {/* Next Button */}
+            {currentReportImages.length > 1 && (
+              <button
+                className={`${styles.lightboxNav} ${styles.lightboxNext}`}
+                onClick={nextImage}
+                aria-label="Next image"
+              >
+                <i className="fa-solid fa-chevron-right"></i>
+              </button>
+            )}
+
+            {/* Image Counter */}
+            <div className={styles.lightboxCounter}>
+              {currentImageIndex + 1} / {currentReportImages.length}
+            </div>
+
+            {/* Thumbnail Navigation */}
+            {currentReportImages.length > 1 && (
+              <div className={styles.lightboxThumbnails}>
+                {currentReportImages.map((img, idx) => (
+                  <div
+                    key={idx}
+                    className={`${styles.thumbnailItem} ${idx === currentImageIndex ? styles.activeThumbnail : ''}`}
+                    onClick={() => setCurrentImageIndex(idx)}
+                  >
+                    <img src={img} alt={`Thumbnail ${idx + 1}`} />
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}

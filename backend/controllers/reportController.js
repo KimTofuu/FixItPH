@@ -1,7 +1,7 @@
 const Report = require('../models/Report');
 const User = require('../models/Users');
 const ResolvedReport = require('../models/ResolvedReport'); // 1. Add this import
-const cloudinary = require('../config/cloudinary');
+const { cloudinary, upload } = require('../config/cloudinary');
 const { sendEmail } = require('../utils/emailService'); 
 const reputationController = require('./reputationController');
 
@@ -20,19 +20,14 @@ const formatReportsWithStringIds = (reports) => {
   });
 };
 
+// ✅ Update multer configuration to handle multiple files
+const uploadMultiple = upload.array('images', 5); // Max 5 images
+
 // Create a new report
 exports.createReport = async (req, res) => {
   try {
     const { title, description, category, location, latitude, longitude, isUrgent } = req.body;
     const userId = req.user?.userId;
-
-    console.log('📝 Creating report with file:', {
-      hasFile: !!req.file,
-      filePath: req.file?.path,
-      fileName: req.file?.filename,
-      fileSize: req.file?.size,
-      mimetype: req.file?.mimetype
-    });
 
     if (!userId) {
       return res.status(401).json({ message: 'Unauthorized' });
@@ -43,24 +38,15 @@ exports.createReport = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Get image URL from Cloudinary upload
-    let imageUrl = null;
-    if (req.file && req.file.path) {
-      imageUrl = req.file.path; // This should be https://res.cloudinary.com/...
+    // ✅ Handle multiple image uploads
+    let imageUrls = [];
+    if (req.files && req.files.length > 0) {
+      imageUrls = req.files.map(file => file.path);
       
-      console.log('📸 Image uploaded:', imageUrl);
-      
-      // ✅ CRITICAL: Validate it's a proper Cloudinary URL
-      if (!imageUrl.startsWith('https://res.cloudinary.com/')) {
-        console.error('❌ INVALID IMAGE URL! Expected Cloudinary URL, got:', imageUrl);
-        console.error('❌ Check your Cloudinary configuration in .env');
-        return res.status(500).json({ 
-          message: 'Image upload failed - Cloudinary not configured properly',
-          detail: 'Image URL is not a valid Cloudinary URL'
-        });
-      }
-      
-      console.log('✅ Valid Cloudinary URL confirmed');
+      console.log('📸 Multiple images uploaded:', {
+        count: imageUrls.length,
+        urls: imageUrls
+      });
     }
 
     const isUrgentBool = isUrgent === 'true' || isUrgent === true;
@@ -69,7 +55,8 @@ exports.createReport = async (req, res) => {
     const newReport = new Report({
       title,
       description,
-      image: imageUrl, // Save Cloudinary URL
+      images: imageUrls, // ✅ Store array of images
+      image: imageUrls[0] || null, // ✅ Keep first image for backward compatibility
       location,
       latitude,
       longitude,
@@ -81,42 +68,19 @@ exports.createReport = async (req, res) => {
 
     await newReport.save();
     
-    console.log('✅ Report saved:', {
+    console.log('✅ Report saved with images:', {
       id: newReport._id,
-      image: newReport.image,
-      status: newReport.status
+      imageCount: imageUrls.length,
+      images: newReport.images
     });
 
-    // Award reputation
-    if (reputationController?.awardReportCreation) {
-      try {
-        await reputationController.awardReportCreation(userId);
-        console.log('✅ Reputation awarded');
-      } catch (repError) {
-        console.error('❌ Reputation error:', repError);
-      }
-    }
+    // Award reputation points
+    user.reputation.points = (user.reputation.points || 0) + 10;
+    user.reputation.totalReports = (user.reputation.totalReports || 0) + 1;
+    await user.checkAndAwardBadges();
+    await user.save();
 
-    // Populate and return
-    const populatedReport = await Report.findById(newReport._id)
-      .populate('user', 'fName lName email profilePicture reputation');
-
-    // Send email
-    try {
-      await sendEmail({
-        to: user.email,
-        subject: `Report Submitted: ${title}`,
-        html: `
-          <div style="font-family: Arial, sans-serif;">
-            <h2>Report Received! 🎉</h2>
-            <p>Hi ${user.fName},</p>
-            <p>Your report has been submitted successfully.</p>
-          </div>
-        `
-      });
-    } catch (emailError) {
-      console.error('❌ Email error:', emailError);
-    }
+    const populatedReport = await Report.findById(newReport._id).populate('user', 'fName lName email profilePicture');
 
     res.status(201).json({ 
       message: 'Report created successfully', 
@@ -459,42 +423,45 @@ exports.deleteReport = async (req, res) => {
 
 exports.updateReport = async (req, res) => {
   try {
-    const id = req.params.id;
-    const userId = req.user?.userId || req.userId;
+    const { id } = req.params;
+    const { title, description, category, location, latitude, longitude, isUrgent } = req.body;
+    const userId = req.user?.userId;
+
     const report = await Report.findById(id);
-    if (!report) return res.status(404).json({ error: 'Not found' });
-    if (userId && report.user && report.user.toString() !== userId) {
-      return res.status(403).json({ error: 'Forbidden' });
+    if (!report) {
+      return res.status(404).json({ message: 'Report not found' });
     }
-    const { title, description, location, latitude, longitude, removeImage, category } = req.body;
-    if (title !== undefined) report.title = title;
-    if (description !== undefined) report.description = description;
-    if (location !== undefined) report.location = location;
-    if (latitude !== undefined) report.latitude = latitude;
-    if (longitude !== undefined) report.longitude = longitude;
-    if (category !== undefined) report.category = category;
-    if (req.file) {
-      try {
-        const result = await cloudinary.uploader.upload(req.file.path, {
-          folder: 'fixit-reports',
-          transformation: [
-            { width: 800, height: 600, crop: 'limit' },
-            { quality: 'auto' },
-          ],
-        });
-        report.image = result.secure_url;
-      } catch (uploadErr) {
-        console.error('Cloudinary upload error:', uploadErr);
-        return res.status(500).json({ error: 'Failed to upload image' });
-      }
-    } else if (removeImage === 'true' || removeImage === true) {
-      report.image = null;
+
+    if (report.user.toString() !== userId) {
+      return res.status(403).json({ message: 'Not authorized to update this report' });
     }
+
+    // ✅ Handle multiple image uploads for update
+    if (req.files && req.files.length > 0) {
+      const imageUrls = req.files.map(file => file.path);
+      report.images = imageUrls;
+      report.image = imageUrls[0]; // Keep first image for backward compatibility
+    }
+
+    report.title = title || report.title;
+    report.description = description || report.description;
+    report.category = category || report.category;
+    report.location = location || report.location;
+    report.latitude = latitude || report.latitude;
+    report.longitude = longitude || report.longitude;
+    report.isUrgent = isUrgent !== undefined ? (isUrgent === 'true' || isUrgent === true) : report.isUrgent;
+
     await report.save();
-    return res.json(report);
+
+    const populatedReport = await Report.findById(id).populate('user', 'fName lName email profilePicture');
+
+    res.status(200).json({ 
+      message: 'Report updated successfully', 
+      report: populatedReport 
+    });
   } catch (err) {
-    console.error('updateReport error', err);
-    return res.status(500).json({ error: 'Server error' });
+    console.error('❌ Update report error:', err);
+    res.status(500).json({ message: 'Server error', error: err.message });
   }
 };
 

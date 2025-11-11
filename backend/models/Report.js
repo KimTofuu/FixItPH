@@ -28,9 +28,8 @@ const reportSchema = new mongoose.Schema({
   longitude: {
     type: String,
   },
-  image: {
-    type: String,
-  },
+  images: [{ type: String }],
+  image: { type: String },
   status: {
     type: String,
     enum: ['awaiting-approval', 'pending', 'in-progress', 'resolved'],
