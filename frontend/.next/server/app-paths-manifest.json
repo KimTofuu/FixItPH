@@ -1,0 +1,7 @@
+{
+  "/admin-dashboard/page": "app/admin-dashboard/page.js",
+  "/admin-summary/page": "app/admin-summary/page.js",
+  "/user-feed/page": "app/user-feed/page.js",
+  "/user-myreports/page": "app/user-myreports/page.js",
+  "/admin-reports/page": "app/admin-reports/page.js"
+}

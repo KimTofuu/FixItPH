@@ -1,0 +1,46 @@
+{
+  "pages": {
+    "/layout": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/css/app/layout.css",
+      "static/chunks/app/layout.js"
+    ],
+    "/login/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/css/app/login/page.css",
+      "static/chunks/app/login/page.js"
+    ],
+    "/admin-dashboard/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/css/app/admin-dashboard/page.css",
+      "static/chunks/app/admin-dashboard/page.js"
+    ],
+    "/admin-summary/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/css/app/admin-summary/page.css",
+      "static/chunks/app/admin-summary/page.js"
+    ],
+    "/user-feed/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/css/app/user-feed/page.css",
+      "static/chunks/app/user-feed/page.js"
+    ],
+    "/user-myreports/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/css/app/user-myreports/page.css",
+      "static/chunks/app/user-myreports/page.js"
+    ],
+    "/admin-reports/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/css/app/admin-reports/page.css",
+      "static/chunks/app/admin-reports/page.js"
+    ]
+  }
+}

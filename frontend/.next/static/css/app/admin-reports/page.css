@@ -1,0 +1,1444 @@
+/*!*****************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[5].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[5].use[3]!./src/app/admin-reports/AdminReports.module.css ***!
+  \*****************************************************************************************************************************************************************************************************************************************************************************************/
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=Poppins:wght@400;600;700&display=swap');
+
+
+.AdminReports_adminReportsRoot__HQMge {
+  --ar-bg: #f6f8fb;
+  --ar-surface: #ffffff;
+  --ar-muted: #6b7280;
+  --ar-ink: #0b1220;
+  --ar-accent: #2563eb;
+  --ar-accent-2: #06b6d4;
+  --ar-success: #10b981;
+  --ar-danger: #ef4444;
+  --ar-glass: rgba(15,23,42,0.04);
+  --ar-radius: 12px;
+  --ar-gap: 16px;
+  --ar-shadow: 0 8px 30px rgba(2,6,23,0.06);
+  --header-height: 72px;
+  --font-sans: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  --font-display: 'Poppins', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  font-family: var(--font-sans);
+}
+
+
+
+.AdminReports_header__reoaM {
+  position: fixed;
+  top: 0;
+  z-index: 60;
+  background: linear-gradient(180deg, rgba(37,99,235,0.02), transparent);
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid rgba(15,23,42,0.02);
+  padding: 14px 20px;
+  flex: 0 0 auto;
+  height: 100%;
+}
+
+.AdminReports_adminNav__i7BoV {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:space-between;
+  max-width: 1200px;
+  margin: 1rem auto;
+  width: 100%;
+}
+
+.AdminReports_navLeft__utQyW { display:flex; align-items:center; gap:20px; }
+.AdminReports_logo__D2qsq { width:160px; height:40px; object-fit:contain; }
+
+
+.AdminReports_hamburger__hEQ9L {
+  display: none;
+  width:46px;
+  height:40px;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  border-radius:8px;
+  background: transparent;
+  border: none;
+  padding: 6px;
+  transition: background 160ms ease;
+}
+.AdminReports_bar__z77OS {
+  display:block;
+  width:22px;
+  height:2px;
+  background: var(--ar-muted);
+  margin:4px 0;
+  transition: transform 220ms ease, opacity 220ms ease;
+  border-radius: 2px;
+}
+.AdminReports_hamburger__hEQ9L:hover { background: rgba(2,6,23,0.03); }
+.AdminReports_hamburger__hEQ9L:focus { outline: 3px solid rgba(37,99,235,0.14); outline-offset: 3px; }
+.AdminReports_hamburger__hEQ9L.AdminReports_open__qHPR2 .AdminReports_bar__z77OS:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+.AdminReports_hamburger__hEQ9L.AdminReports_open__qHPR2 .AdminReports_bar__z77OS:nth-child(2) { opacity: 0; transform: scaleX(0); }
+.AdminReports_hamburger__hEQ9L.AdminReports_open__qHPR2 .AdminReports_bar__z77OS:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
+
+.AdminReports_navListUserSide__V8QKp,
+.AdminReports_navList__ckcj2 {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:2rem;
+  list-style:none;
+  margin:0;
+  padding:0;
+  margin-top: 5rem;
+}
+.AdminReports_navLink__D1E2Q { color: var(--ar-ink); text-decoration:none; padding:8px 12px; border-radius:10px; font-weight:600; }
+.AdminReports_activeNavItem__dpIh6 .AdminReports_navLink__D1E2Q { background: rgba(37,99,235,0.08); color:var(--ar-accent); }
+.AdminReports_adminProfileLink__6oTv1 { display:inline-flex; align-items:center; }
+.AdminReports_adminProfilePic__h6P_a { width:36px; height:36px; border-radius:999px; object-fit:cover; border:1px solid rgba(2,6,23,0.06); }
+
+
+.AdminReports_reportsPage__5RgOr{
+  background: var(--ar-bg);
+  min-height: calc(100vh - var(--header-height));
+  padding: 28px 20px;
+}
+.AdminReports_mainContainer__PIksV{
+  max-width: 1200px;
+  margin: 0 auto;
+  margin-left: 11rem;
+}
+
+
+.AdminReports_contentCard__9bSJ4{
+  background: var(--ar-surface);
+  border-radius: var(--ar-radius);
+  padding: 18px;
+  box-shadow: var(--ar-shadow);
+  border: 1px solid var(--ar-glass);
+  position: relative;
+  overflow: visible;
+  margin-top: -2.5rem;
+  margin-bottom: -2.5rem;
+  width: 80rem;
+  height: 40rem;
+}
+
+
+.AdminReports_toolbarWrapper__dkoz4 {
+  width: 100%;
+  position: relative;
+  margin-bottom: 8px;
+  z-index: 40;
+}
+.AdminReports_toolbar__0e8JH{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 12px;
+  flex-wrap:wrap;
+
+  position: sticky;
+  top: calc(var(--header-height) + 12px);
+  z-index: 50;
+
+  background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,255,255,0.95));
+  padding: 10px 0;
+  margin-bottom: 6px;
+  border-bottom: 1px solid rgba(15,23,42,0.03);
+}
+.AdminReports_toggleGroup__QwfFp{ display:flex; gap:8px; align-items:center; z-index:51; }
+
+
+.AdminReports_toggleButton__8hNWE{
+  padding:8px 12px;
+  border-radius:999px;
+  border:1px solid transparent;
+  cursor:pointer;
+  font-weight:700;
+  background:transparent;
+  color:var(--ar-muted);
+  /* removed transform from transition to reduce non-essential motion */
+  transition: box-shadow 140ms ease, background 140ms ease;
+  font-family: var(--font-sans);
+  font-size:0.9rem;
+}
+.AdminReports_toggleButton__8hNWE:hover { transform: translateY(-3px); }
+.AdminReports_active__RiX2e { color: var(--ar-surface); background: linear-gradient(90deg, var(--ar-accent), var(--ar-accent-2)); box-shadow: 0 8px 20px rgba(37,99,235,0.12); }
+
+
+.AdminReports_searchContainer__RBs_u { min-width: 260px; display:flex; justify-content:flex-end; flex:1; }
+.AdminReports_searchInput__UJEem{
+  width:100%;
+  max-width:420px;
+  padding:10px 12px;
+  border-radius:10px;
+  border:1px solid rgba(15,23,42,0.06);
+  background:#fff;
+  outline:none;
+  transition: box-shadow 150ms ease, border-color 150ms ease;
+  font-family: var(--font-sans);
+  color:var(--ar-ink);
+}
+.AdminReports_searchInput__UJEem::placeholder { color: #9ca3af; }
+.AdminReports_searchInput__UJEem:focus { box-shadow: 0 10px 30px rgba(37,99,235,0.06); border-color: rgba(37,99,235,0.14); }
+
+
+.AdminReports_reportList__AcakV{
+  overflow-y: auto;
+  max-height: 33rem;
+  padding-right: 8px;
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+
+
+.AdminReports_adminReportCard__WKtXw{
+  border-radius:12px;
+  padding:14px;
+  background: linear-gradient(180deg, #fff, #fbfdff);
+  border:1px solid rgba(15,23,42,0.03);
+  box-shadow: 0 8px 28px rgba(2,6,23,0.04);
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+
+.AdminReports_reportsRow__hndyv{
+  display:flex;
+  gap:16px;
+  align-items:flex-start;
+  width:100%;
+  flex-wrap:wrap;
+}
+.AdminReports_reportMain__Vf_DU{ flex:1 1 420px; min-width:260px; }
+.AdminReports_reportImage__r2i_u{ flex:0 0 340px; max-width:340px; align-self:stretch; }
+
+
+.AdminReports_inlineImage__VPp2r{
+  width:100%;
+  height:220px;
+  object-fit:cover;
+  border-radius:10px;
+  border:1px solid rgba(0,0,0,0.04);
+}
+
+
+.AdminReports_reportHeader__0vnz6{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin-bottom:8px;
+}
+.AdminReports_reportAvatar__9FgJ6{ border-radius:50%; object-fit:cover; }
+.AdminReports_userMeta__WtgAL{ display:flex; flex-direction:column; gap:2px; }
+.AdminReports_reportUser__ZTEXk{ font-weight:700; font-family: var(--font-display); color:var(--ar-ink); font-size:0.98rem; }
+.AdminReports_reportTime__rMV25{ font-size:0.86rem; color:var(--ar-muted); }
+
+
+.AdminReports_bookmarkBtn__CbyVk{ margin-left:auto; background:transparent; border:none; color:var(--ar-muted); cursor:pointer; font-size:1.05rem; }
+.AdminReports_bookmarkBtn__CbyVk:hover{ color:var(--ar-accent); transform:scale(1.04); }
+
+
+.AdminReports_reportTitle__SLMV9{ margin:6px 0; font-family: var(--font-display); font-size:1.05rem; color:var(--ar-ink); }
+.AdminReports_reportLocation__1ryV7{ color:var(--ar-muted); font-size:0.95rem; margin-bottom:6px; display:flex; align-items:center; gap:8px; }
+.AdminReports_reportDetails__yXikW{ color:#111827; line-height:1.45; margin-bottom:8px; }
+
+.AdminReports_statusControl__2my8u{ display:flex; align-items:center; gap:10px; margin-top:6px; }
+.AdminReports_statusLabel__4jM4t{ font-weight:600; color:var(--ar-muted); font-size:0.95rem; }
+.AdminReports_statusSelect__pl_zl{ padding:8px 10px; border-radius:8px; border:1px solid rgba(15,23,42,0.06); background:#fff; font-family: var(--font-sans); }
+
+
+.AdminReports_reportComments__XSK4E{ border-top:1px dashed rgba(15,23,42,0.04); padding-top:12px; display:flex; flex-direction:column; gap:8px; }
+.AdminReports_commentsTitle__V_XcS{ margin:0; font-size:0.95rem; color:var(--ar-ink); font-weight:700; }
+.AdminReports_commentList__zTzMD{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:6px; }
+.AdminReports_commentItem__ftL_R{ font-size:0.95rem; color:#111827; display:flex; gap:8px; align-items:center; }
+.AdminReports_commentTime__CQYqC{ color:var(--ar-muted); margin-left:8px; font-size:0.85rem; }
+
+
+.AdminReports_commentInput__0xlG0{ width:100%; padding:10px 12px; border-radius:10px; border:1px solid rgba(15,23,42,0.06); outline:none; font-family: var(--font-sans); }
+.AdminReports_commentInput__0xlG0:focus{ box-shadow: 0 8px 20px rgba(2,6,23,0.04); }
+
+
+.AdminReports_loadingText__l7WNl{ color:var(--ar-muted); padding:28px 0; text-align:center; }
+.AdminReports_noReportsText__wEPXt{ color:var(--ar-danger); padding:18px 0; text-align:center; }
+
+
+#AdminReports_admin-reportList__t_K0F{ max-height:52vh; overflow-y:auto; padding-right:8px; }
+#AdminReports_admin-reportList__t_K0F::-webkit-scrollbar{ width:8px; height:8px; }
+#AdminReports_admin-reportList__t_K0F::-webkit-scrollbar-thumb{ background:rgba(2,6,23,0.12); border-radius:8px; }
+
+
+.AdminReports_approvalActions__rrfT3 {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: flex-start;
+  margin-top: 8px;
+}
+
+
+.AdminReports_actionBtn__K1sLw {
+  font-family: var(--font-sans, Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial);
+  font-weight: 600;
+  font-size: 14px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease, background 120ms linear, opacity 120ms ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  line-height: 1;
+  user-select: none;
+}
+
+
+.AdminReports_approveBtn__vd7w_ {
+  background: linear-gradient(180deg, #10b981, #0ea86f);
+  color: #ffffff;
+  box-shadow: 0 6px 18px rgba(16,185,129,0.14);
+  border-color: rgba(255,255,255,0.06);
+}
+.AdminReports_approveBtn__vd7w_:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(16,185,129,0.14); }
+.AdminReports_approveBtn__vd7w_:active { transform: translateY(0); opacity: 0.95; }
+.AdminReports_approveBtn__vd7w_:focus { outline: 3px solid rgba(16,185,129,0.18); outline-offset: 2px; }
+
+
+.AdminReports_rejectBtn__trwpL {
+  background: transparent;
+  color: var(--ar-ink, #0b1220);
+  border: 1px solid rgba(239,68,68,0.14);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.6);
+}
+.AdminReports_rejectBtn__trwpL:hover { background: rgba(239,68,68,0.06); transform: translateY(-2px); }
+.AdminReports_rejectBtn__trwpL:active { transform: translateY(0); opacity: 0.95; }
+.AdminReports_rejectBtn__trwpL:focus { outline: 3px solid rgba(239,68,68,0.12); outline-offset: 2px; }
+
+
+.AdminReports_actionBtn__K1sLw[disabled],
+.AdminReports_actionBtn__K1sLw.AdminReports_disabled__GP9Qr {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  pointer-events: none;
+}
+
+/* Modal overlay and container */
+.AdminReports_modalOverlay__ANO7q {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1200;
+  padding: 16px;
+}
+
+.AdminReports_modal__DZvoq {
+  width: 100%;
+  max-width: 720px;
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 12px 40px rgba(2, 6, 23, 0.35);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  outline: none;
+}
+
+/* Modal header */
+.AdminReports_modalHeader__UxIyJ {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+  background: linear-gradient(90deg, rgba(250,250,250,1), rgba(245,245,245,1));
+}
+
+.AdminReports_modalTitle__BXHYR {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #0b2545;
+}
+
+.AdminReports_modalCloseBtn__u2xEC {
+  background: transparent;
+  border: none;
+  font-size: 1rem;
+  color: #546e7a;
+  cursor: pointer;
+  padding: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+}
+
+.AdminReports_modalCloseBtn__u2xEC:hover {
+  background: rgba(0,0,0,0.04);
+}
+
+/* Modal body */
+.AdminReports_modalBody__sm2aX {
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 60vh;
+  overflow: auto;
+}
+
+.AdminReports_modalReportTitle__PSQir {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #0b2545;
+}
+
+.AdminReports_modalReportCategory__kM0Gg {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #475569;
+}
+
+/* Authorities list */
+.AdminReports_authorityList__HZc0D {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.AdminReports_authorityBtn__iQSUd {
+  width: 100%;
+  text-align: left;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(11, 37, 69, 0.08);
+  background: #ffffff;
+  cursor: pointer;
+  color: #0b2545;
+  font-weight: 600;
+  font-size: 0.92rem;
+  transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 1px 0 rgba(11,37,69,0.02);
+}
+
+.AdminReports_authorityBtn__iQSUd:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(2,6,23,0.08);
+  background: #f8fafc;
+}
+
+/* Report to Authorities button wrapper and button */
+.AdminReports_reportToAuthoritiesWrap__ehx1B {
+  margin-top: 12px;
+}
+
+.AdminReports_reportToAuthoritiesBtn__CQWQy {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(11, 37, 69, 0.08);
+  background: #fff;
+  color: #0b2545;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 140ms ease, transform 120ms ease;
+}
+
+.AdminReports_reportToAuthoritiesBtn__CQWQy:hover {
+  background: #f3f6fb;
+  transform: translateY(-1px);
+}
+
+/* Modal footer */
+.AdminReports_modalFooter__mvdO5 {
+  padding: 12px 16px;
+  border-top: 1px solid rgba(15, 23, 42, 0.06);
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  background: #fff;
+}
+
+.AdminReports_cancelBtn__HoOee {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(11, 37, 69, 0.08);
+  background: #ffffff;
+  color: #0b2545;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.AdminReports_reportCategory__J6whk {
+  margin: 4px 0 8px;
+  font-size: 0.875rem;
+  line-height: 1.2;
+  color: #6b7280;
+  font-weight: 500;
+  letter-spacing: 0.0em;
+  text-transform: capitalize;
+}
+
+
+/* Report Image Gallery */
+.AdminReports_reportImageGallery__pYlNc {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  width: 100%;
+}
+
+.AdminReports_reportImageItem__sB3wo {
+  position: relative;
+  aspect-ratio: 16/9;
+  overflow: hidden;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.AdminReports_reportImageItem__sB3wo:hover {
+  transform: scale(1.02);
+}
+
+.AdminReports_reportImageItem__sB3wo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Dark overlay for the 5th image */
+.AdminReports_imageOverlay__tYUEy {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  pointer-events: none;
+}
+
+.AdminReports_overlayText__swtrp {
+  font-size: 48px;
+  font-weight: 700;
+  color: white;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+/* Lightbox Styles */
+.AdminReports_lightboxBackdrop__vRFlt {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.95);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: AdminReports_fadeIn__aPCed 0.2s ease-out;
+}
+
+.AdminReports_lightboxContainer__jbZ0E {
+  position: relative;
+  width: 90%;
+  height: 90%;
+  max-width: 1200px;
+  max-height: 900px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.AdminReports_lightboxImageWrapper__WdqM8 {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 80px;
+}
+
+.AdminReports_lightboxImage__PKeuv {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.AdminReports_lightboxClose__t9WSq {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  font-size: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  z-index: 10001;
+}
+
+.AdminReports_lightboxClose__t9WSq:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
+}
+
+.AdminReports_lightboxNav__SnGcj {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  font-size: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  z-index: 10001;
+}
+
+.AdminReports_lightboxNav__SnGcj:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.AdminReports_lightboxPrev__VOXxa {
+  left: 20px;
+}
+
+.AdminReports_lightboxNext__gpSRU {
+  right: 20px;
+}
+
+.AdminReports_lightboxCounter__uZO0o {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 8px 20px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  z-index: 10001;
+}
+
+.AdminReports_lightboxThumbnails__MUKHL {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.7);
+  border-radius: 12px;
+  max-width: 90%;
+  overflow-x: auto;
+  z-index: 10001;
+}
+
+.AdminReports_thumbnailItem__mb8X9 {
+  width: 80px;
+  height: 60px;
+  border-radius: 6px;
+  overflow: hidden;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.AdminReports_thumbnailItem__mb8X9 img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.AdminReports_thumbnailItem__mb8X9:hover {
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: scale(1.05);
+}
+
+.AdminReports_activeThumbnail__3noHC {
+  border-color: white !important;
+  transform: scale(1.1);
+}
+
+@keyframes AdminReports_fadeIn__aPCed {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Responsive behavior */
+@media (max-width: 640px) {
+  .AdminReports_modal__DZvoq {
+    max-width: 100%;
+    border-radius: 8px;
+  }
+
+  .AdminReports_authorityList__HZc0D {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* Responsive breakpoints */
+@media (min-width: 1441px) {
+  .AdminReports_mainContainer__PIksV { padding: 36px 12px; }
+  .AdminReports_inlineImage__VPp2r { height: 260px; }
+}
+
+@media (min-width: 1025px) and (max-width: 1440px) {
+  .AdminReports_mainContainer__PIksV { padding: 28px 12px; }
+  .AdminReports_searchInput__UJEem { max-width: 360px; }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .AdminReports_toolbar__0e8JH { gap: 10px; }
+  .AdminReports_reportImage__r2i_u { flex-basis: 320px; max-width: 320px; }
+  .AdminReports_inlineImage__VPp2r { height: 220px; }
+}
+
+@media (min-width: 641px) and (max-width: 768px) {
+  .AdminReports_hamburger__hEQ9L { display:flex; }
+  .AdminReports_navListUserSide__V8QKp { gap:10px; }
+  .AdminReports_searchContainer__RBs_u { width:100%; order:3; }
+  .AdminReports_reportsRow__hndyv { flex-direction:column; gap:12px; }
+  .AdminReports_reportImage__r2i_u { flex-basis:100%; max-width:100%; }
+  .AdminReports_inlineImage__VPp2r { height:200px; }
+  .AdminReports_searchInput__UJEem { max-width:100%; }
+}
+
+@media (min-width: 421px) and (max-width: 640px) {
+  .AdminReports_mainContainer__PIksV { padding:12px; }
+  .AdminReports_logo__D2qsq { width:120px; height:auto; }
+  .AdminReports_toggleButton__8hNWE { padding:6px 10px; font-size:0.88rem; }
+  .AdminReports_searchInput__UJEem { max-width:100%; font-size:0.9rem; }
+  .AdminReports_inlineImage__VPp2r { height:180px; }
+  .AdminReports_adminProfilePic__h6P_a { width:34px; height:34px; }
+}
+
+@media (max-width: 420px) {
+  .AdminReports_header__reoaM { padding:10px 12px; }
+  .AdminReports_hamburger__hEQ9L { display:flex; }
+  .AdminReports_navListUserSide__V8QKp { display:none; position:absolute; right:12px; top:60px; background:var(--ar-surface); padding:10px; border-radius:10px; box-shadow:var(--ar-shadow); }
+  .AdminReports_navListUserSide__V8QKp.AdminReports_open__qHPR2 { display:flex; flex-direction:column; gap:10px; }
+  .AdminReports_mainContainer__PIksV { padding:10px; }
+  .AdminReports_searchContainer__RBs_u { width:100%; order:3; }
+  .AdminReports_toolbar__0e8JH { flex-direction:column; align-items:stretch; gap:10px; }
+  .AdminReports_inlineImage__VPp2r { height:160px; }
+  .AdminReports_reportImage__r2i_u { width:100%; max-width:100%; }
+  .AdminReports_reportMain__Vf_DU { min-width:0; }
+  .AdminReports_reportTitle__SLMV9 { font-size:1rem; }
+  .AdminReports_reportDetails__yXikW { font-size:0.92rem; }
+  .AdminReports_commentInput__0xlG0 { padding:10px; font-size:0.95rem; }
+}
+
+/* Utility placeholders for dynamic classes */
+.AdminReports_status_pending__gidqN { }
+.AdminReports_status_in_progress__ZCj5B { }
+.AdminReports_status_resolved__092YN { }
+
+/*!************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[3]!../node_modules/leaflet/dist/leaflet.css ***!
+  \************************************************************************************************************************************************************************************************************************************************************************************/
+/* required styles */
+
+.leaflet-pane,
+.leaflet-tile,
+.leaflet-marker-icon,
+.leaflet-marker-shadow,
+.leaflet-tile-container,
+.leaflet-pane > svg,
+.leaflet-pane > canvas,
+.leaflet-zoom-box,
+.leaflet-image-layer,
+.leaflet-layer {
+	position: absolute;
+	left: 0;
+	top: 0;
+	}
+.leaflet-container {
+	overflow: hidden;
+	}
+.leaflet-tile,
+.leaflet-marker-icon,
+.leaflet-marker-shadow {
+	-webkit-user-select: none;
+	   -moz-user-select: none;
+	        user-select: none;
+	  -webkit-user-drag: none;
+	}
+/* Prevents IE11 from highlighting tiles in blue */
+.leaflet-tile::selection {
+	background: transparent;
+}
+/* Safari renders non-retina tile on retina better with this, but Chrome is worse */
+.leaflet-safari .leaflet-tile {
+	image-rendering: -webkit-optimize-contrast;
+	}
+/* hack that prevents hw layers "stretching" when loading new tiles */
+.leaflet-safari .leaflet-tile-container {
+	width: 1600px;
+	height: 1600px;
+	-webkit-transform-origin: 0 0;
+	}
+.leaflet-marker-icon,
+.leaflet-marker-shadow {
+	display: block;
+	}
+/* .leaflet-container svg: reset svg max-width decleration shipped in Joomla! (joomla.org) 3.x */
+/* .leaflet-container img: map is broken in FF if you have max-width: 100% on tiles */
+.leaflet-container .leaflet-overlay-pane svg {
+	max-width: none !important;
+	max-height: none !important;
+	}
+.leaflet-container .leaflet-marker-pane img,
+.leaflet-container .leaflet-shadow-pane img,
+.leaflet-container .leaflet-tile-pane img,
+.leaflet-container img.leaflet-image-layer,
+.leaflet-container .leaflet-tile {
+	max-width: none !important;
+	max-height: none !important;
+	width: auto;
+	padding: 0;
+	}
+
+.leaflet-container img.leaflet-tile {
+	/* See: https://bugs.chromium.org/p/chromium/issues/detail?id=600120 */
+	mix-blend-mode: plus-lighter;
+}
+
+.leaflet-container.leaflet-touch-zoom {
+	-ms-touch-action: pan-x pan-y;
+	touch-action: pan-x pan-y;
+	}
+.leaflet-container.leaflet-touch-drag {
+	-ms-touch-action: pinch-zoom;
+	/* Fallback for FF which doesn't support pinch-zoom */
+	touch-action: none;
+	touch-action: pinch-zoom;
+}
+.leaflet-container.leaflet-touch-drag.leaflet-touch-zoom {
+	-ms-touch-action: none;
+	touch-action: none;
+}
+.leaflet-container {
+	-webkit-tap-highlight-color: transparent;
+}
+.leaflet-container a {
+	-webkit-tap-highlight-color: rgba(51, 181, 229, 0.4);
+}
+.leaflet-tile {
+	filter: inherit;
+	visibility: hidden;
+	}
+.leaflet-tile-loaded {
+	visibility: inherit;
+	}
+.leaflet-zoom-box {
+	width: 0;
+	height: 0;
+	-moz-box-sizing: border-box;
+	     box-sizing: border-box;
+	z-index: 800;
+	}
+/* workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=888319 */
+.leaflet-overlay-pane svg {
+	-moz-user-select: none;
+	}
+
+.leaflet-pane         { z-index: 400; }
+
+.leaflet-tile-pane    { z-index: 200; }
+.leaflet-overlay-pane { z-index: 400; }
+.leaflet-shadow-pane  { z-index: 500; }
+.leaflet-marker-pane  { z-index: 600; }
+.leaflet-tooltip-pane   { z-index: 650; }
+.leaflet-popup-pane   { z-index: 700; }
+
+.leaflet-map-pane canvas { z-index: 100; }
+.leaflet-map-pane svg    { z-index: 200; }
+
+.leaflet-vml-shape {
+	width: 1px;
+	height: 1px;
+	}
+.lvml {
+	behavior: url(#default#VML);
+	display: inline-block;
+	position: absolute;
+	}
+
+
+/* control positioning */
+
+.leaflet-control {
+	position: relative;
+	z-index: 800;
+	pointer-events: visiblePainted; /* IE 9-10 doesn't have auto */
+	pointer-events: auto;
+	}
+.leaflet-top,
+.leaflet-bottom {
+	position: absolute;
+	z-index: 1000;
+	pointer-events: none;
+	}
+.leaflet-top {
+	top: 0;
+	}
+.leaflet-right {
+	right: 0;
+	}
+.leaflet-bottom {
+	bottom: 0;
+	}
+.leaflet-left {
+	left: 0;
+	}
+.leaflet-control {
+	float: left;
+	clear: both;
+	}
+.leaflet-right .leaflet-control {
+	float: right;
+	}
+.leaflet-top .leaflet-control {
+	margin-top: 10px;
+	}
+.leaflet-bottom .leaflet-control {
+	margin-bottom: 10px;
+	}
+.leaflet-left .leaflet-control {
+	margin-left: 10px;
+	}
+.leaflet-right .leaflet-control {
+	margin-right: 10px;
+	}
+
+
+/* zoom and fade animations */
+
+.leaflet-fade-anim .leaflet-popup {
+	opacity: 0;
+	-webkit-transition: opacity 0.2s linear;
+	   -moz-transition: opacity 0.2s linear;
+	        transition: opacity 0.2s linear;
+	}
+.leaflet-fade-anim .leaflet-map-pane .leaflet-popup {
+	opacity: 1;
+	}
+.leaflet-zoom-animated {
+	-webkit-transform-origin: 0 0;
+	    -ms-transform-origin: 0 0;
+	        transform-origin: 0 0;
+	}
+svg.leaflet-zoom-animated {
+	will-change: transform;
+}
+
+.leaflet-zoom-anim .leaflet-zoom-animated {
+	-webkit-transition: -webkit-transform 0.25s cubic-bezier(0,0,0.25,1);
+	   -moz-transition:    -moz-transform 0.25s cubic-bezier(0,0,0.25,1);
+	        transition:         transform 0.25s cubic-bezier(0,0,0.25,1);
+	}
+.leaflet-zoom-anim .leaflet-tile,
+.leaflet-pan-anim .leaflet-tile {
+	-webkit-transition: none;
+	   -moz-transition: none;
+	        transition: none;
+	}
+
+.leaflet-zoom-anim .leaflet-zoom-hide {
+	visibility: hidden;
+	}
+
+
+/* cursors */
+
+.leaflet-interactive {
+	cursor: pointer;
+	}
+.leaflet-grab {
+	cursor: -webkit-grab;
+	cursor:    -moz-grab;
+	cursor:         grab;
+	}
+.leaflet-crosshair,
+.leaflet-crosshair .leaflet-interactive {
+	cursor: crosshair;
+	}
+.leaflet-popup-pane,
+.leaflet-control {
+	cursor: auto;
+	}
+.leaflet-dragging .leaflet-grab,
+.leaflet-dragging .leaflet-grab .leaflet-interactive,
+.leaflet-dragging .leaflet-marker-draggable {
+	cursor: move;
+	cursor: -webkit-grabbing;
+	cursor:    -moz-grabbing;
+	cursor:         grabbing;
+	}
+
+/* marker & overlays interactivity */
+.leaflet-marker-icon,
+.leaflet-marker-shadow,
+.leaflet-image-layer,
+.leaflet-pane > svg path,
+.leaflet-tile-container {
+	pointer-events: none;
+	}
+
+.leaflet-marker-icon.leaflet-interactive,
+.leaflet-image-layer.leaflet-interactive,
+.leaflet-pane > svg path.leaflet-interactive,
+svg.leaflet-image-layer.leaflet-interactive path {
+	pointer-events: visiblePainted; /* IE 9-10 doesn't have auto */
+	pointer-events: auto;
+	}
+
+/* visual tweaks */
+
+.leaflet-container {
+	background: #ddd;
+	outline-offset: 1px;
+	}
+.leaflet-container a {
+	color: #0078A8;
+	}
+.leaflet-zoom-box {
+	border: 2px dotted #38f;
+	background: rgba(255,255,255,0.5);
+	}
+
+
+/* general typography */
+.leaflet-container {
+	font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
+	font-size: 12px;
+	font-size: 0.75rem;
+	line-height: 1.5;
+	}
+
+
+/* general toolbar styles */
+
+.leaflet-bar {
+	box-shadow: 0 1px 5px rgba(0,0,0,0.65);
+	border-radius: 4px;
+	}
+.leaflet-bar a {
+	background-color: #fff;
+	border-bottom: 1px solid #ccc;
+	width: 26px;
+	height: 26px;
+	line-height: 26px;
+	display: block;
+	text-align: center;
+	text-decoration: none;
+	color: black;
+	}
+.leaflet-bar a,
+.leaflet-control-layers-toggle {
+	background-position: 50% 50%;
+	background-repeat: no-repeat;
+	display: block;
+	}
+.leaflet-bar a:hover,
+.leaflet-bar a:focus {
+	background-color: #f4f4f4;
+	}
+.leaflet-bar a:first-child {
+	border-top-left-radius: 4px;
+	border-top-right-radius: 4px;
+	}
+.leaflet-bar a:last-child {
+	border-bottom-left-radius: 4px;
+	border-bottom-right-radius: 4px;
+	border-bottom: none;
+	}
+.leaflet-bar a.leaflet-disabled {
+	cursor: default;
+	background-color: #f4f4f4;
+	color: #bbb;
+	}
+
+.leaflet-touch .leaflet-bar a {
+	width: 30px;
+	height: 30px;
+	line-height: 30px;
+	}
+.leaflet-touch .leaflet-bar a:first-child {
+	border-top-left-radius: 2px;
+	border-top-right-radius: 2px;
+	}
+.leaflet-touch .leaflet-bar a:last-child {
+	border-bottom-left-radius: 2px;
+	border-bottom-right-radius: 2px;
+	}
+
+/* zoom control */
+
+.leaflet-control-zoom-in,
+.leaflet-control-zoom-out {
+	font: bold 18px 'Lucida Console', Monaco, monospace;
+	text-indent: 1px;
+	}
+
+.leaflet-touch .leaflet-control-zoom-in, .leaflet-touch .leaflet-control-zoom-out  {
+	font-size: 22px;
+	}
+
+
+/* layers control */
+
+.leaflet-control-layers {
+	box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+	background: #fff;
+	border-radius: 5px;
+	}
+.leaflet-control-layers-toggle {
+	background-image: url(/_next/static/media/layers.ef6db872.png);
+	width: 36px;
+	height: 36px;
+	}
+.leaflet-retina .leaflet-control-layers-toggle {
+	background-image: url(/_next/static/media/layers-2x.9859cd12.png);
+	background-size: 26px 26px;
+	}
+.leaflet-touch .leaflet-control-layers-toggle {
+	width: 44px;
+	height: 44px;
+	}
+.leaflet-control-layers .leaflet-control-layers-list,
+.leaflet-control-layers-expanded .leaflet-control-layers-toggle {
+	display: none;
+	}
+.leaflet-control-layers-expanded .leaflet-control-layers-list {
+	display: block;
+	position: relative;
+	}
+.leaflet-control-layers-expanded {
+	padding: 6px 10px 6px 6px;
+	color: #333;
+	background: #fff;
+	}
+.leaflet-control-layers-scrollbar {
+	overflow-y: scroll;
+	overflow-x: hidden;
+	padding-right: 5px;
+	}
+.leaflet-control-layers-selector {
+	margin-top: 2px;
+	position: relative;
+	top: 1px;
+	}
+.leaflet-control-layers label {
+	display: block;
+	font-size: 13px;
+	font-size: 1.08333em;
+	}
+.leaflet-control-layers-separator {
+	height: 0;
+	border-top: 1px solid #ddd;
+	margin: 5px -10px 5px -6px;
+	}
+
+/* Default icon URLs */
+.leaflet-default-icon-path { /* used only in path-guessing heuristic, see L.Icon.Default */
+	background-image: url(/_next/static/media/marker-icon.d577052a.png);
+	}
+
+
+/* attribution and scale controls */
+
+.leaflet-container .leaflet-control-attribution {
+	background: #fff;
+	background: rgba(255, 255, 255, 0.8);
+	margin: 0;
+	}
+.leaflet-control-attribution,
+.leaflet-control-scale-line {
+	padding: 0 5px;
+	color: #333;
+	line-height: 1.4;
+	}
+.leaflet-control-attribution a {
+	text-decoration: none;
+	}
+.leaflet-control-attribution a:hover,
+.leaflet-control-attribution a:focus {
+	text-decoration: underline;
+	}
+.leaflet-attribution-flag {
+	display: inline !important;
+	vertical-align: baseline !important;
+	width: 1em;
+	height: 0.6669em;
+	}
+.leaflet-left .leaflet-control-scale {
+	margin-left: 5px;
+	}
+.leaflet-bottom .leaflet-control-scale {
+	margin-bottom: 5px;
+	}
+.leaflet-control-scale-line {
+	border: 2px solid #777;
+	border-top: none;
+	line-height: 1.1;
+	padding: 2px 5px 1px;
+	white-space: nowrap;
+	-moz-box-sizing: border-box;
+	     box-sizing: border-box;
+	background: rgba(255, 255, 255, 0.8);
+	text-shadow: 1px 1px #fff;
+	}
+.leaflet-control-scale-line:not(:first-child) {
+	border-top: 2px solid #777;
+	border-bottom: none;
+	margin-top: -2px;
+	}
+.leaflet-control-scale-line:not(:first-child):not(:last-child) {
+	border-bottom: 2px solid #777;
+	}
+
+.leaflet-touch .leaflet-control-attribution,
+.leaflet-touch .leaflet-control-layers,
+.leaflet-touch .leaflet-bar {
+	box-shadow: none;
+	}
+.leaflet-touch .leaflet-control-layers,
+.leaflet-touch .leaflet-bar {
+	border: 2px solid rgba(0,0,0,0.2);
+	background-clip: padding-box;
+	}
+
+
+/* popup */
+
+.leaflet-popup {
+	position: absolute;
+	text-align: center;
+	margin-bottom: 20px;
+	}
+.leaflet-popup-content-wrapper {
+	padding: 1px;
+	text-align: left;
+	border-radius: 12px;
+	}
+.leaflet-popup-content {
+	margin: 13px 24px 13px 20px;
+	line-height: 1.3;
+	font-size: 13px;
+	font-size: 1.08333em;
+	min-height: 1px;
+	}
+.leaflet-popup-content p {
+	margin: 17px 0;
+	margin: 1.3em 0;
+	}
+.leaflet-popup-tip-container {
+	width: 40px;
+	height: 20px;
+	position: absolute;
+	left: 50%;
+	margin-top: -1px;
+	margin-left: -20px;
+	overflow: hidden;
+	pointer-events: none;
+	}
+.leaflet-popup-tip {
+	width: 17px;
+	height: 17px;
+	padding: 1px;
+
+	margin: -10px auto 0;
+	pointer-events: auto;
+
+	-webkit-transform: rotate(45deg);
+	   -moz-transform: rotate(45deg);
+	    -ms-transform: rotate(45deg);
+	        transform: rotate(45deg);
+	}
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+	background: white;
+	color: #333;
+	box-shadow: 0 3px 14px rgba(0,0,0,0.4);
+	}
+.leaflet-container a.leaflet-popup-close-button {
+	position: absolute;
+	top: 0;
+	right: 0;
+	border: none;
+	text-align: center;
+	width: 24px;
+	height: 24px;
+	font: 16px/24px Tahoma, Verdana, sans-serif;
+	color: #757575;
+	text-decoration: none;
+	background: transparent;
+	}
+.leaflet-container a.leaflet-popup-close-button:hover,
+.leaflet-container a.leaflet-popup-close-button:focus {
+	color: #585858;
+	}
+.leaflet-popup-scrolled {
+	overflow: auto;
+	}
+
+.leaflet-oldie .leaflet-popup-content-wrapper {
+	-ms-zoom: 1;
+	}
+.leaflet-oldie .leaflet-popup-tip {
+	width: 24px;
+	margin: 0 auto;
+
+	-ms-filter: "progid:DXImageTransform.Microsoft.Matrix(M11=0.70710678, M12=0.70710678, M21=-0.70710678, M22=0.70710678)";
+	filter: progid:DXImageTransform.Microsoft.Matrix(M11=0.70710678, M12=0.70710678, M21=-0.70710678, M22=0.70710678);
+	}
+
+.leaflet-oldie .leaflet-control-zoom,
+.leaflet-oldie .leaflet-control-layers,
+.leaflet-oldie .leaflet-popup-content-wrapper,
+.leaflet-oldie .leaflet-popup-tip {
+	border: 1px solid #999;
+	}
+
+
+/* div icon */
+
+.leaflet-div-icon {
+	background: #fff;
+	border: 1px solid #666;
+	}
+
+
+/* Tooltip */
+/* Base styles for the element that has a tooltip */
+.leaflet-tooltip {
+	position: absolute;
+	padding: 6px;
+	background-color: #fff;
+	border: 1px solid #fff;
+	border-radius: 3px;
+	color: #222;
+	white-space: nowrap;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+	pointer-events: none;
+	box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+	}
+.leaflet-tooltip.leaflet-interactive {
+	cursor: pointer;
+	pointer-events: auto;
+	}
+.leaflet-tooltip-top:before,
+.leaflet-tooltip-bottom:before,
+.leaflet-tooltip-left:before,
+.leaflet-tooltip-right:before {
+	position: absolute;
+	pointer-events: none;
+	border: 6px solid transparent;
+	background: transparent;
+	content: "";
+	}
+
+/* Directions */
+
+.leaflet-tooltip-bottom {
+	margin-top: 6px;
+}
+.leaflet-tooltip-top {
+	margin-top: -6px;
+}
+.leaflet-tooltip-bottom:before,
+.leaflet-tooltip-top:before {
+	left: 50%;
+	margin-left: -6px;
+	}
+.leaflet-tooltip-top:before {
+	bottom: 0;
+	margin-bottom: -12px;
+	border-top-color: #fff;
+	}
+.leaflet-tooltip-bottom:before {
+	top: 0;
+	margin-top: -12px;
+	margin-left: -6px;
+	border-bottom-color: #fff;
+	}
+.leaflet-tooltip-left {
+	margin-left: -6px;
+}
+.leaflet-tooltip-right {
+	margin-left: 6px;
+}
+.leaflet-tooltip-left:before,
+.leaflet-tooltip-right:before {
+	top: 50%;
+	margin-top: -6px;
+	}
+.leaflet-tooltip-left:before {
+	right: 0;
+	margin-right: -12px;
+	border-left-color: #fff;
+	}
+.leaflet-tooltip-right:before {
+	left: 0;
+	margin-left: -12px;
+	border-right-color: #fff;
+	}
+
+/* Printing */
+
+@media print {
+	/* Prevent printers from removing background-images of controls. */
+	.leaflet-control {
+		-webkit-print-color-adjust: exact;
+		print-color-adjust: exact;
+		}
+	}
+
