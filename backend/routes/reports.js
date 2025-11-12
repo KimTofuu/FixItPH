@@ -7,6 +7,7 @@ const reputationController = require('../controllers/reputationController'); // 
 
 
 // --- ADMIN ROUTES  ---
+router.get('/summarize', authenticateToken, isAdmin, reportController.getSummary); // ✅ Add this new route
 router.get('/admin/flagged-reports', authenticateToken, isAdmin, reportController.getFlaggedReports);
 router.get('/admin/reports-for-approval', authenticateToken, isAdmin, reportController.getReportsForApproval);
 router.get('/admin/resolved-reports', authenticateToken, isAdmin, reportController.getResolvedReports);

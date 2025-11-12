@@ -6,6 +6,9 @@
     "@types/react-dom": "^19.1.9"
   },
   "dependencies": {
+    "@google/genai": "^1.29.0",
+    "@google/generative-ai": "^0.24.1",
+    "bytez.js": "^1.1.18",
     "leaflet": "^1.9.4",
     "react-toastify": "^11.0.5"
   }

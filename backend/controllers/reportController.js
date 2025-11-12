@@ -5,6 +5,9 @@ const { cloudinary, upload } = require('../config/cloudinary');
 const { sendEmail } = require('../utils/emailService'); 
 const reputationController = require('./reputationController');
 
+const Bytez = require('bytez.js');
+const bytezClient = new Bytez(process.env.BYTEZ_API_KEY);
+
 // Helper function to format reports with string IDs
 const formatReportsWithStringIds = (reports) => {
   return reports.map(report => {
@@ -597,7 +600,7 @@ exports.getResolvedReports = async (req, res) => {
     console.log(`📊 Fetched ${resolvedReports.length} resolved reports from ResolvedReport collection`);
     res.json(resolvedReports);
   } catch (err) {
-    console.error('getResolvedReports error:', err);
+    console.error('getResolvedReports error', err);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -811,7 +814,7 @@ exports.getFlaggedReports = async (req, res) => {
   }
 };
 
-// Dismiss a specific flag
+// Dismiss a report flag
 exports.dismissFlag = async (req, res) => {
   try {
     const { reportId } = req.params;
@@ -858,5 +861,195 @@ exports.dismissAllFlags = async (req, res) => {
   } catch (error) {
     console.error('Dismiss all flags error:', error);
     res.status(500).json({ message: 'Server error' });
+  }
+};
+
+exports.getSummary = async (req, res) => {
+  try {
+    console.log("🚀 Starting AI summary generation with Bytez...");
+    
+    const apiKey = process.env.BYTEZ_API_KEY;
+    console.log("🔑 Bytez API Key status:", apiKey ? `Key present (${apiKey.substring(0, 10)}...)` : "Key missing");
+
+    if (!apiKey) {
+      return res.status(500).json({ message: "Bytez API key not configured" });
+    }
+
+    // 1. Fetch all reports from the database
+    const reports = await Report.find({})
+      .select('title description category location createdAt status isUrgent')
+      .lean();
+
+    if (reports.length === 0) {
+      return res.json({ 
+        success: true,
+        aiSummary: "No reports available to summarize.",
+        reportCount: 0,
+        urgentCount: 0,
+        categories: [],
+        locations: [],
+        categoryStats: {},
+        locationStats: {},
+        modelUsed: "none",
+        generatedAt: new Date().toISOString()
+      });
+    }
+
+    console.log(`📊 Found ${reports.length} reports to summarize`);
+
+    // 2. Calculate statistics for frontend with simplified locations
+    const urgentCount = reports.filter(r => r.isUrgent).length;
+    const categories = [...new Set(reports.map(r => r.category).filter(Boolean))];
+    
+    // ✅ Extract only the first part of the location (before first comma)
+    const simplifiedLocations = reports.map(r => {
+      if (!r.location) return null;
+      // Split by comma and take the first part, then trim whitespace
+      return r.location.split(',')[0].trim();
+    }).filter(Boolean);
+    
+    const locations = [...new Set(simplifiedLocations)];
+    
+    // Get category counts
+    const categoryStats = {};
+    const locationStats = {};
+    
+    reports.forEach(report => {
+      if (report.category) {
+        categoryStats[report.category] = (categoryStats[report.category] || 0) + 1;
+      }
+      if (report.location) {
+        // ✅ Use simplified location for stats
+        const simplifiedLocation = report.location.split(',')[0].trim();
+        locationStats[simplifiedLocation] = (locationStats[simplifiedLocation] || 0) + 1;
+      }
+    });
+
+    // 3. Format the reports for AI with simplified locations
+    const reportsText = reports
+      .slice(0, 15) // Reduced to 15 reports for better performance
+      .map(r => {
+        // ✅ Use simplified location in AI prompt
+        const simplifiedLocation = r.location ? r.location.split(',')[0].trim() : 'location';
+        return `${r.category || 'Issue'} in ${simplifiedLocation}: ${(r.description || '').substring(0, 80)}...`;
+      })
+      .join('. ');
+
+    const prompt = `Summarize these community reports briefly: ${reportsText}. Focus on main issues and locations.`;
+
+    console.log("🤖 Sending request to Bytez AI...");
+
+    // 4. ✅ Try models sequentially with delays to respect concurrency limits
+    const modelQueue = [
+      "facebook/bart-large-cnn",
+      "t5-small",
+      "gpt2"
+    ];
+
+    // Helper function to delay execution
+    const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+    let aiSummary = null;
+    let usedModel = null;
+
+    for (let i = 0; i < modelQueue.length; i++) {
+      const modelName = modelQueue[i];
+      
+      try {
+        console.log(`🔍 Attempting model ${i + 1}/${modelQueue.length}: ${modelName}`);
+        
+        // Add delay between requests to respect rate limits
+        if (i > 0) {
+          console.log(`⏱️ Waiting 3 seconds before next attempt...`);
+          await delay(3000);
+        }
+        
+        const model = bytezClient.model(modelName);
+        const result = await model.run(prompt);
+
+        console.log(`📦 Model ${modelName} response type:`, typeof result);
+
+        // Check for errors
+        if (result && typeof result === 'object' && result.error) {
+          console.log(`❌ Model ${modelName} error:`, result.error);
+          
+          // If it's a rate limit issue, wait longer and continue
+          if (result.error.includes('concurrency') || result.error.includes('rate limit')) {
+            console.log(`⏱️ Rate limit detected, waiting 5 seconds...`);
+            await delay(5000);
+            continue;
+          }
+          
+          // For other errors, try next model
+          continue;
+        }
+
+        // Extract summary
+        if (typeof result === 'string') {
+          aiSummary = result;
+        } else if (result && typeof result === 'object') {
+          aiSummary = result.output || result.text || result.summary_text || result.generated_text || result.content;
+        }
+
+        // Validate summary
+        if (aiSummary && aiSummary.trim().length > 0) {
+          const summaryLower = aiSummary.toLowerCase();
+          
+          // Check for error indicators
+          if (summaryLower.includes('upgrade your account') ||
+              summaryLower.includes('unauthorized') ||
+              summaryLower.includes('rate limit') ||
+              summaryLower.includes('<!doctype')) {
+            console.log(`❌ Model ${modelName} returned error content`);
+            aiSummary = null;
+            continue;
+          }
+
+          // Success!
+          usedModel = modelName;
+          console.log(`✅ Successfully generated summary with model: ${modelName}`);
+          break;
+        }
+
+      } catch (modelError) {
+        console.log(`❌ Model ${modelName} failed:`, modelError.message);
+        
+        // If it's a JSON parse error (HTML response), wait and continue
+        if (modelError.message.includes('Unexpected token') || modelError.message.includes('JSON')) {
+          console.log(`⏱️ Detected HTML response, waiting 5 seconds before next attempt...`);
+          await delay(5000);
+        }
+      }
+    }
+
+    // If no AI model succeeded, return error
+    if (!aiSummary) {
+      return res.status(500).json({ 
+        success: false,
+        message: "All AI models failed to generate summary"
+      });
+    }
+
+    // 5. Return the AI summary and stats with simplified locations
+    res.json({ 
+      success: true,
+      aiSummary: aiSummary.trim(),
+      reportCount: reports.length,
+      urgentCount,
+      categories: categories.slice(0, 5), // Top 5 categories
+      locations: locations.slice(0, 5),   // Top 5 simplified locations
+      categoryStats,
+      locationStats, // Now contains simplified locations
+      modelUsed: usedModel,
+      generatedAt: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error("❌ AI Summary generation failed:", error);
+    res.status(500).json({ 
+      success: false,
+      message: "AI summary generation failed", 
+      error: error.message
+    });
   }
 };
